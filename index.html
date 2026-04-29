@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Poker Tournament Timer Profissional</title>
+<style>
+  :root{
+    --orange:#ff7a00;
+    --green:#39ff14;
+    --white:#fff8e7;
+    --red:#ff2b2b;
+    --dark:#000000;
+  }
+  html, body {
+    margin:0;
+    width:100%;
+    height:100%;
+    background:var(--dark);
+    font-family: Arial Black, Impact, Helvetica, sans-serif;
+    color:white;
+    overflow:hidden;
+  }
+  .screen {
+    width:100vw;
+    height:100vh;
+    position:relative;
+    background:#000;
+  }
+  .top-label {
+    position:absolute;
+    top:3.2vh;
+    font-size:4.2vw;
+    color:var(--orange);
+    text-shadow: 2px 2px 0 #351000;
+    letter-spacing:.03em;
+    white-space:nowrap;
+  }
+  .top-value {
+    position:absolute;
+    top:9.6vh;
+    font-size:7.6vw;
+    color:var(--green);
+    line-height:1;
+    text-shadow: 2px 2px 0 #073800;
+    white-space:nowrap;
+  }
+  #sbLabel { left:4vw; }
+  #sbValue { left:4vw; }
+
+  #bbLabel { right:4vw; }
+  #bbValue { right:4vw; }
+
+  #level {
+    position:absolute;
+    top:2.4vh;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:4vw;
+    color:var(--white);
+    text-shadow: 3px 3px 0 #b0005b;
+    white-space:nowrap;
+  }
+  #mainTimer {
+    position:absolute;
+    top:32vh;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:14vw;
+    color:#fff;
+    line-height:1;
+    letter-spacing:.02em;
+    text-shadow: 3px 3px 0 #222;
+    white-space:nowrap;
+  }
+  .bottom-title {
+    position:absolute;
+    bottom:19vh;
+    font-size:4vw;
+    color:var(--orange);
+    text-shadow:2px 2px 0 #351000;
+    white-space:nowrap;
+  }
+  .bottom-value {
+    position:absolute;
+    bottom:9vh;
+    font-size:5.8vw;
+    color:var(--green);
+    line-height:1;
+    text-shadow:2px 2px 0 #073800;
+    white-space:nowrap;
+  }
+  #anteTitle { left:5vw; }
+  #anteValue { left:5vw; }
+
+  #middleTitle {
+    left:50%;
+    transform:translateX(-50%);
+    color:var(--red);
+    text-shadow:2px 2px 0 #440000;
+  }
+  #middleValue {
+    left:50%;
+    transform:translateX(-50%);
+    font-size:4vw;
+    color:#fff;
+  }
+
+  #nextTitle { right:5vw; }
+  #nextValue { right:5vw; }
+
+  .breakScreen #sbLabel,
+  .breakScreen #sbValue,
+  .breakScreen #bbLabel,
+  .breakScreen #bbValue,
+  .breakScreen #anteTitle,
+  .breakScreen #anteValue,
+  .breakScreen #nextTitle,
+  .breakScreen #nextValue,
+  .breakScreen #middleTitle,
+  .breakScreen #middleValue {
+    display:none;
+  }
+  .breakScreen #level {
+    font-size:8.5vw;
+    color:var(--red);
+    top:16vh;
+    text-shadow:4px 4px 0 #440000;
+    letter-spacing:.04em;
+  }
+  .breakScreen #mainTimer {
+    top:43vh;
+    font-size:16vw;
+    color:#fff;
+  }
+
+  #controls {
+    position:absolute;
+    left:50%;
+    bottom:1.5vh;
+    transform:translateX(-50%);
+    display:flex;
+    gap:8px;
+    z-index:10;
+    opacity:.94;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:96vw;
+  }
+  button {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size:15px;
+    padding:9px 13px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    background:#222;
+    color:white;
+    border:1px solid #555;
+  }
+  button:hover { background:#333; }
+  .hint {
+    position:absolute;
+    right:12px;
+    bottom:10px;
+    font-family:Helvetica, Arial, sans-serif;
+    font-size:12px;
+    color:#777;
+  }
+  body.recording #controls, body.recording .hint { display:none; }
+</style>
+</head>
+<body>
+<div class="screen" id="screen">
+  <div id="sbLabel" class="top-label">Small Blind</div>
+  <div id="sbValue" class="top-value">100</div>
+
+  <div id="level">Level 1</div>
+
+  <div id="bbLabel" class="top-label">Big Blind</div>
+  <div id="bbValue" class="top-value">200</div>
+
+  <div id="mainTimer">15:00</div>
+
+  <div id="anteTitle" class="bottom-title">Ante</div>
+  <div id="anteValue" class="bottom-value">200</div>
+
+  <div id="middleTitle" class="bottom-title">Break</div>
+  <div id="middleValue" class="bottom-value">01:30:00</div>
+
+  <div id="nextTitle" class="bottom-title">Next Level</div>
+  <div id="nextValue" class="bottom-value">200/400</div>
+
+  <div id="controls">
+    <button onclick="startTimer()">▶ Iniciar</button>
+    <button onclick="pauseTimer()">⏸ Pausar</button>
+    <button onclick="resetTimer()">↺ Reset</button>
+    <button onclick="previousStage()">◀ Voltar nível</button>
+    <button onclick="nextStage()">Próximo nível ▶</button>
+    <button onclick="goToBreak()">Intervalo</button>
+    <button onclick="toggleRecording()">Ocultar botões</button>
+    <button onclick="document.documentElement.requestFullscreen()">Tela cheia</button>
+  </div>
+  <div class="hint">Atalhos: espaço iniciar/pausar · ← voltar · → próximo · B intervalo · H ocultar · F tela cheia.</div>
+</div>
+
+<script>
+const schedule = [
+  {type:'level', level:1, sb:100, bb:200, dur:15*60},
+  {type:'level', level:2, sb:200, bb:400, dur:15*60},
+  {type:'level', level:3, sb:300, bb:600, dur:15*60},
+  {type:'level', level:4, sb:500, bb:1000, dur:15*60},
+  {type:'level', level:5, sb:700, bb:1500, dur:15*60},
+  {type:'level', level:6, sb:1000, bb:2000, dur:15*60},
+  {type:'break', label:'INTERVALO', dur:30*60},
+  {type:'level', level:7, sb:1500, bb:3000, dur:17*60},
+  {type:'level', level:8, sb:2000, bb:4000, dur:17*60},
+  {type:'level', level:9, sb:2500, bb:5000, dur:17*60},
+  {type:'level', level:10, sb:3000, bb:6000, dur:17*60},
+  {type:'level', level:11, sb:4000, bb:8000, dur:17*60},
+  {type:'level', level:12, sb:5000, bb:10000, dur:17*60},
+  {type:'level', level:13, sb:7500, bb:15000, dur:17*60},
+  {type:'level', level:14, sb:10000, bb:20000, dur:17*60},
+  {type:'level', level:15, sb:12000, bb:24000, dur:20*60},
+  {type:'level', level:16, sb:15000, bb:30000, dur:20*60},
+  {type:'level', level:17, sb:20000, bb:40000, dur:20*60},
+  {type:'level', level:18, sb:30000, bb:60000, dur:20*60},
+  {type:'level', level:19, sb:40000, bb:80000, dur:20*60},
+  {type:'level', level:20, sb:50000, bb:100000, dur:20*60},
+  {type:'level', level:21, sb:70000, bb:140000, dur:25*60},
+  {type:'level', level:22, sb:100000, bb:200000, dur:25*60},
+  {type:'level', level:23, sb:150000, bb:300000, dur:25*60},
+  {type:'level', level:24, sb:200000, bb:400000, dur:25*60},
+  {type:'level', level:25, sb:250000, bb:500000, dur:25*60}
+];
+
+const BREAK_AFTER_SECONDS = 6 * 15 * 60; // 01:30:00 até o intervalo
+const BREAK_DURATION = 30 * 60;
+
+let running = false;
+let startTimeMs = null;
+let pausedAtElapsed = 0;
+let timerInterval = null;
+
+function fmtNum(n){
+  if(n >= 1000){
+    if(n % 1000 === 0) return (n/1000) + 'k';
+    return (n/1000).toFixed(1).replace('.0','') + 'k';
+  }
+  return String(n);
+}
+function fmtBlind(n){ return fmtNum(n); }
+
+function fmtMMSS(sec){
+  sec = Math.max(0, Math.ceil(sec));
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function fmtHHMMSS(sec){
+  sec = Math.max(0, Math.ceil(sec));
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  const s = sec%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function cumulativeBefore(index){
+  let total = 0;
+  for(let i=0; i<index; i++) total += schedule[i].dur;
+  return total;
+}
+function currentState(elapsed){
+  let acc = 0;
+  for(let i=0; i<schedule.length; i++){
+    const item = schedule[i];
+    if(elapsed < acc + item.dur){
+      return {index:i, item, elapsedInItem:elapsed-acc, remaining:item.dur-(elapsed-acc)};
+    }
+    acc += item.dur;
+  }
+  return {index:schedule.length-1, item:schedule[schedule.length-1], elapsedInItem:schedule[schedule.length-1].dur, remaining:0, done:true};
+}
+function nextLevelText(index){
+  for(let j=index+1; j<schedule.length; j++){
+    if(schedule[j].type === 'level') return `${fmtBlind(schedule[j].sb)}/${fmtBlind(schedule[j].bb)}`;
+  }
+  return 'Fim';
+}
+function getElapsed(){
+  return running ? ((Date.now() - startTimeMs)/1000 + pausedAtElapsed) : pausedAtElapsed;
+}
+function setElapsed(seconds){
+  pausedAtElapsed = Math.max(0, seconds);
+  if(running) startTimeMs = Date.now();
+  update();
+}
+function update(){
+  render(getElapsed());
+}
+function render(elapsed){
+  const st = currentState(elapsed);
+  const item = st.item;
+  const screen = document.getElementById('screen');
+
+  if(item.type === 'break'){
+    screen.classList.add('breakScreen');
+    document.getElementById('level').textContent = 'INTERVALO';
+    document.getElementById('mainTimer').textContent = fmtMMSS(st.remaining);
+    return;
+  }
+
+  screen.classList.remove('breakScreen');
+
+  document.getElementById('level').textContent = `Level ${item.level}`;
+  document.getElementById('sbValue').textContent = fmtBlind(item.sb);
+  document.getElementById('bbValue').textContent = fmtBlind(item.bb);
+  document.getElementById('anteValue').textContent = fmtBlind(item.bb); // BB Ante
+  document.getElementById('mainTimer').textContent = fmtMMSS(st.remaining);
+  document.getElementById('nextValue').textContent = nextLevelText(st.index);
+
+  if(elapsed < BREAK_AFTER_SECONDS){
+    document.getElementById('middleTitle').textContent = 'Break';
+    document.getElementById('middleTitle').style.color = 'var(--red)';
+    document.getElementById('middleValue').textContent = fmtHHMMSS(BREAK_AFTER_SECONDS - elapsed);
+  } else {
+    document.getElementById('middleTitle').textContent = 'Game Time';
+    document.getElementById('middleTitle').style.color = 'var(--white)';
+    // Após o intervalo, o game time aparece como 01:30:00 e segue subindo.
+    const gameTime = BREAK_AFTER_SECONDS + Math.max(0, elapsed - BREAK_AFTER_SECONDS - BREAK_DURATION);
+    document.getElementById('middleValue').textContent = fmtHHMMSS(gameTime);
+  }
+}
+
+function startTimer(){
+  if(running) return;
+  running = true;
+  startTimeMs = Date.now();
+  timerInterval = setInterval(update, 200);
+  update();
+}
+function pauseTimer(){
+  if(!running) return;
+  pausedAtElapsed += (Date.now() - startTimeMs)/1000;
+  running = false;
+  clearInterval(timerInterval);
+  update();
+}
+function resetTimer(){
+  running = false;
+  clearInterval(timerInterval);
+  startTimeMs = null;
+  pausedAtElapsed = 0;
+  update();
+}
+function nextStage(){
+  const st = currentState(getElapsed());
+  const nextIndex = Math.min(schedule.length-1, st.index + 1);
+  setElapsed(cumulativeBefore(nextIndex));
+}
+function previousStage(){
+  const st = currentState(getElapsed());
+  const currentStart = cumulativeBefore(st.index);
+  if(st.elapsedInItem > 5){
+    setElapsed(currentStart);
+  } else {
+    const prevIndex = Math.max(0, st.index - 1);
+    setElapsed(cumulativeBefore(prevIndex));
+  }
+}
+function goToBreak(){
+  const breakIndex = schedule.findIndex(x => x.type === 'break');
+  setElapsed(cumulativeBefore(breakIndex));
+}
+function toggleRecording(){
+  document.body.classList.toggle('recording');
+}
+document.addEventListener('keydown', (e)=>{
+  if(e.code === 'Space'){ e.preventDefault(); running ? pauseTimer() : startTimer(); }
+  if(e.key.toLowerCase() === 'r') resetTimer();
+  if(e.key.toLowerCase() === 'h') toggleRecording();
+  if(e.key.toLowerCase() === 'f') document.documentElement.requestFullscreen();
+  if(e.key.toLowerCase() === 'b') goToBreak();
+  if(e.key === 'ArrowRight') nextStage();
+  if(e.key === 'ArrowLeft') previousStage();
+});
+update();
+</script>
+</body>
+</html>
