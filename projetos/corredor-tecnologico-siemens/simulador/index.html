@@ -1,0 +1,1624 @@
+<title>Corredor Tecnológico Siemens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+/* ===========================================================================
+   Direção: mesa de operação. A parede é a única coisa que emite luz na página;
+   todo o resto é grafite fosco. O corredor real é escuro com uma parede acesa,
+   então a página comete-se com um único mundo visual — não há tema claro.
+   =========================================================================== */
+:root{
+  --fundo:#0b0e10; --superficie:#12181b; --elevado:#1a2226; --fio:#28333a;
+  --texto:#cbd6da; --fraco:#7a8b93; --apagado:#4d5a62;
+  --petrol:#009999; --energia:#00e6c8; --pico:#a8fff0; --alerta:#e0a34a;
+  --serif:'Archivo',system-ui,-apple-system,sans-serif;
+  --cond:'Barlow Condensed','Archivo Narrow',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--fundo); color:var(--texto);
+  font-family:var(--serif); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; text-wrap:balance}
+.rotulo{
+  font-family:var(--cond); font-weight:600; font-size:12px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--fraco);
+}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+/* ------------------------------------------------------------- barra topo */
+.barra{
+  display:flex; align-items:baseline; gap:20px; flex-wrap:wrap;
+  padding:14px 26px; border-bottom:1px solid var(--fio); background:var(--superficie);
+}
+.barra h1{font-family:var(--cond); font-weight:700; font-size:22px; letter-spacing:.06em; text-transform:uppercase}
+.barra .cliente{color:var(--petrol); font-family:var(--cond); font-weight:600; font-size:22px; letter-spacing:.14em}
+.barra .meta{margin-left:auto; display:flex; gap:22px}
+.barra .meta div{font-family:var(--mono); font-size:11px; color:var(--apagado)}
+.barra .meta b{color:var(--fraco); font-weight:400}
+
+/* ------------------------------------------------------------------ palco */
+.palco{position:relative; background:#050708; overflow:hidden; border-bottom:1px solid var(--fio)}
+.cena{position:relative; height:min(60vh,540px); min-height:350px; perspective:1750px; perspective-origin:66% 42%}
+/* teto e sua luminária linear quente, como na referência */
+.teto{position:absolute; inset:0 0 auto 0; height:22%;
+  background:linear-gradient(#0a0d0f 0%,#070a0b 60%,transparent 100%)}
+.teto::after{content:''; position:absolute; left:6%; right:-6%; top:36%; height:3px;
+  background:linear-gradient(90deg,transparent,#f0e2c8 22%,#fff6e4 55%,transparent);
+  box-shadow:0 0 26px 7px rgba(255,236,205,.32); transform:rotate(-1.1deg)}
+/* piso */
+.piso{position:absolute; inset:auto 0 0 0; height:34%;
+  background:linear-gradient(#0c1012,#14191c 55%,#191f22)}
+
+.mundo{position:absolute; inset:0; transform-style:preserve-3d}
+.parede{
+  position:absolute; left:1.5%; top:15%; width:158%; height:58%;
+  transform-origin:0% 50%; transform:rotateY(29deg); transform-style:preserve-3d;
+}
+.parede canvas{width:100%; height:100%; display:block; image-rendering:auto}
+/* reflexo no piso polido: cópia espelhada da mesma cena, esmaecida */
+.bruma{position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,transparent 34%,rgba(5,8,10,.30) 72%,rgba(5,8,10,.58) 100%)}
+.reflexo{
+  position:absolute; left:0; top:100%; width:100%; height:76%;
+  opacity:.26; pointer-events:none; overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 82%);
+  mask-image:linear-gradient(to bottom,#000 0%,transparent 82%);
+}
+.reflexo canvas{width:100%; height:132%; display:block; transform:scaleY(-1); filter:blur(1.2px)}
+.vinheta{position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(130% 96% at 62% 48%,transparent 34%,rgba(3,5,6,.72) 100%)}
+
+/* pessoa: vive no mesmo espaço 3D da parede, então a perspectiva sai de graça */
+.pessoa{position:absolute; bottom:0; width:64px; height:206px; margin-left:-32px;
+  transform-style:preserve-3d; will-change:transform; pointer-events:none}
+.pessoa svg{width:100%; height:100%; overflow:visible;
+  filter:drop-shadow(-3px 0 9px rgba(0,230,200,.42))}
+.pessoa .corpo{fill:#05080a}
+.pessoa .membro{stroke:#05080a; stroke-width:11; stroke-linecap:round; fill:none}
+.pessoa .sombra{fill:rgba(0,0,0,.5)}
+.andando .fr{animation:pernaA 620ms linear infinite}
+.andando .tr{animation:pernaB 620ms linear infinite}
+.andando .ba{animation:pernaB 620ms linear infinite}
+.andando .bb{animation:pernaA 620ms linear infinite}
+@keyframes pernaA{0%,100%{transform:rotate(17deg)}50%{transform:rotate(-17deg)}}
+@keyframes pernaB{0%,100%{transform:rotate(-17deg)}50%{transform:rotate(17deg)}}
+.pessoa .fr,.pessoa .tr{transform-origin:32px 118px}
+.pessoa .ba,.pessoa .bb{transform-origin:32px 78px}
+
+/* estado corrente, sobreposto ao palco */
+.hud{position:absolute; left:0; right:0; top:0; padding:18px 26px 30px; display:flex;
+  align-items:center; gap:12px; flex-wrap:wrap;
+  background:linear-gradient(180deg,rgba(4,6,7,.92) 0%,rgba(4,6,7,.55) 55%,transparent 100%)}
+.hud .luz{width:9px; height:9px; border-radius:50%; background:var(--energia);
+  box-shadow:0 0 12px var(--energia)}
+.hud .nome{font-family:var(--cond); font-weight:700; font-size:26px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--texto)}
+.hud .frase{font-size:13px; color:#9aa8af; max-width:38ch; text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.marcaRegua{position:absolute; left:0; right:0; bottom:8px; display:flex;
+  justify-content:space-between; padding:0 26px; pointer-events:none}
+.marcaRegua span{font-family:var(--mono); font-size:10px; color:#39464e}
+
+/* ------------------------------------------------------------------ mesa */
+.mesa{display:grid; grid-template-columns:minmax(300px,1.15fr) minmax(340px,1.6fr) minmax(260px,1fr);
+  border-bottom:1px solid var(--fio); background:var(--superficie)}
+.mod{padding:20px 24px; border-right:1px solid var(--fio); min-width:0}
+.mod:last-child{border-right:0}
+.mod > .rotulo{display:block; margin-bottom:14px}
+
+.botoes{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px}
+button{
+  font-family:var(--cond); font-weight:600; font-size:13px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--texto); background:var(--elevado);
+  border:1px solid var(--fio); border-radius:2px; padding:9px 13px; cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;
+}
+button:hover{border-color:var(--petrol); color:var(--pico)}
+button:focus-visible{outline:2px solid var(--energia); outline-offset:2px}
+button.ativo{background:var(--petrol); border-color:var(--petrol); color:#04191b}
+.deslizante{display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; margin-bottom:12px}
+.deslizante label{font-family:var(--cond); font-weight:500; font-size:13px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--fraco); grid-column:1/-1; margin-bottom:-4px}
+input[type=range]{width:100%; accent-color:var(--petrol); background:transparent}
+input[type=range]:focus-visible{outline:2px solid var(--energia); outline-offset:3px}
+.deslizante output{font-family:var(--mono); font-size:12px; color:var(--texto); min-width:66px; text-align:right}
+
+/* máquina de estados */
+.cadeia{display:flex; flex-direction:column; gap:2px}
+.passo{display:grid; grid-template-columns:118px 1fr; gap:12px; align-items:baseline;
+  padding:7px 12px; border-left:2px solid var(--fio);
+  transition:border-color .25s,background .25s}
+.passo.on{border-left-color:var(--energia); background:linear-gradient(90deg,rgba(0,230,200,.10),transparent 70%)}
+.passo .n{font-family:var(--cond); font-weight:700; font-size:15px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--apagado); transition:color .25s; white-space:nowrap}
+.passo.on .n{color:var(--pico)}
+.passo .c{font-size:12px; line-height:1.35; color:#5c6a72}
+.passo.on .c{color:var(--fraco)}
+
+/* telemetria */
+.leituras{display:grid; grid-template-columns:1fr 1fr; gap:11px 16px}
+.leitura .k{font-family:var(--cond); font-weight:500; font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--apagado)}
+.leitura .v{font-family:var(--mono); font-size:18px; color:var(--texto); line-height:1.25}
+.leitura .v small{font-size:11px; color:var(--fraco)}
+.leitura.aviso .v{color:var(--alerta)}
+#grafico{width:100%; height:44px; display:block; margin-top:14px; border-top:1px solid var(--fio); padding-top:8px}
+
+/* ------------------------------------------------------------- conteúdo */
+.corpo{max-width:1180px; margin:0 auto; padding:44px 26px 60px}
+.secao{margin-bottom:52px}
+.secao > .rotulo{display:block; margin-bottom:8px}
+.secao h2{font-family:var(--cond); font-weight:700; font-size:28px; letter-spacing:.03em;
+  text-transform:uppercase; margin-bottom:12px}
+.secao p{max-width:66ch; color:#a8b5bb; margin:0 0 14px}
+.rolagem{overflow-x:auto; border:1px solid var(--fio); background:var(--superficie)}
+.rolagem img,.rolagem svg{display:block; min-width:900px; width:100%}
+
+table{width:100%; border-collapse:collapse; font-size:14px}
+th,td{text-align:left; padding:9px 14px; border-bottom:1px solid var(--fio)}
+th{font-family:var(--cond); font-weight:600; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--fraco)}
+td.n{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right}
+tbody tr:last-child td{border-bottom:0}
+
+.fichas{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1px;
+  background:var(--fio); border:1px solid var(--fio)}
+.ficha{background:var(--superficie); padding:18px 20px}
+.ficha .k{font-family:var(--cond); font-weight:500; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--apagado)}
+.ficha .v{font-family:var(--mono); font-size:24px; color:var(--pico); margin:4px 0 2px}
+.ficha .d{font-size:12.5px; color:var(--fraco); line-height:1.45}
+
+.notas{border-left:2px solid var(--alerta); padding:2px 0 2px 18px; margin:22px 0}
+.notas li{color:#a8b5bb; font-size:14px; margin-bottom:7px}
+.notas li::marker{color:var(--alerta)}
+
+footer{border-top:1px solid var(--fio); padding:22px 26px; color:var(--apagado);
+  font-size:12px; display:flex; gap:18px; flex-wrap:wrap}
+
+@media (max-width:900px){
+  .mesa{grid-template-columns:1fr}
+  .mod{border-right:0; border-bottom:1px solid var(--fio)}
+  .cena{height:44vh}
+  .barra .meta{width:100%; margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .andando .fr,.andando .tr,.andando .ba,.andando .bb{animation:none}
+  button{transition:none}
+}
+</style>
+
+<div class="barra">
+  <h1>Corredor Tecnológico</h1>
+  <span class="cliente">SIEMENS</span>
+  <div class="meta">
+    <div>PAREDE <b id="mMetros">12,00 m</b></div>
+    <div>PIXELS <b id="mPixels">—</b></div>
+    <div>SAÍDAS <b id="mSaidas">—</b></div>
+    <div>REV <b>00</b></div>
+  </div>
+</div>
+
+<div class="palco">
+  <div class="cena" id="cena">
+    <div class="teto"></div>
+    <div class="piso"></div>
+    <div class="mundo">
+      <div class="parede" id="parede">
+        <canvas id="telaParede"></canvas>
+        <div class="pessoa" id="pessoaA" style="display:none">
+          <svg viewBox="0 0 64 206" aria-hidden="true">
+            <ellipse class="sombra" cx="32" cy="203" rx="26" ry="5"/>
+            <line class="membro ba" x1="32" y1="78" x2="14" y2="118"/>
+            <line class="membro bb" x1="32" y1="78" x2="50" y2="118"/>
+            <line class="membro fr" x1="32" y1="118" x2="20" y2="198"/>
+            <line class="membro tr" x1="32" y1="118" x2="44" y2="198"/>
+            <path class="corpo" d="M32 20a13 13 0 1 1 0 26 13 13 0 0 1 0-26zM32 48c11 0 17 7 18 17l3 40c.5 7-4 11-9.5 11h-23c-5.5 0-10-4-9.5-11l3-40c1-10 7-17 18-17z"/>
+          </svg>
+        </div>
+        <div class="pessoa" id="pessoaB" style="display:none">
+          <svg viewBox="0 0 64 206" aria-hidden="true">
+            <ellipse class="sombra" cx="32" cy="203" rx="26" ry="5"/>
+            <line class="membro ba" x1="32" y1="78" x2="14" y2="118"/>
+            <line class="membro bb" x1="32" y1="78" x2="50" y2="118"/>
+            <line class="membro fr" x1="32" y1="118" x2="20" y2="198"/>
+            <line class="membro tr" x1="32" y1="118" x2="44" y2="198"/>
+            <path class="corpo" d="M32 20a13 13 0 1 1 0 26 13 13 0 0 1 0-26zM32 48c11 0 17 7 18 17l3 40c.5 7-4 11-9.5 11h-23c-5.5 0-10-4-9.5-11l3-40c1-10 7-17 18-17z"/>
+          </svg>
+        </div>
+        <div class="bruma"></div>
+        <div class="reflexo"><canvas id="telaReflexo"></canvas></div>
+      </div>
+    </div>
+    <div class="vinheta"></div>
+    <div class="hud">
+      <span class="luz" id="hudLuz"></span>
+      <span class="nome" id="hudNome">Repouso</span>
+      <span class="frase" id="hudFrase">Corredor vazio. A parede respira devagar.</span>
+    </div>
+    <div class="marcaRegua">
+      <span>0 m — entrada A</span><span>6 m</span><span>12 m — entrada B</span>
+    </div>
+  </div>
+</div>
+
+<div class="mesa">
+  <div class="mod">
+    <span class="rotulo">Simular passagem</span>
+    <div class="botoes">
+      <button id="bEsq">Entrar pela esquerda</button>
+      <button id="bDir">Entrar pela direita</button>
+      <button id="bDois">Duas pessoas</button>
+      <button id="bLimpa">Esvaziar</button>
+    </div>
+    <div class="deslizante">
+      <label for="sVel">Velocidade de caminhada</label>
+      <input type="range" id="sVel" min="0.5" max="2.2" step="0.1" value="1.3">
+      <output id="oVel">1,3 m/s</output>
+    </div>
+    <div class="deslizante">
+      <label for="sBrilho">Brilho mestre (agenda)</label>
+      <input type="range" id="sBrilho" min="0.1" max="1" step="0.05" value="1">
+      <output id="oBrilho">100%</output>
+    </div>
+    <div class="botoes" style="margin:2px 0 0">
+      <button id="bParar" class="ativo">Parar na marca</button>
+    </div>
+  </div>
+
+  <div class="mod">
+    <span class="rotulo">Máquina de estados</span>
+    <div class="cadeia" id="cadeia"></div>
+  </div>
+
+  <div class="mod">
+    <span class="rotulo">Telemetria</span>
+    <div class="leituras">
+      <div class="leitura"><div class="k">Pessoas</div><div class="v" id="tPessoas">0</div></div>
+      <div class="leitura"><div class="k">Pacotes ativos</div><div class="v" id="tPacotes">0</div></div>
+      <div class="leitura"><div class="k">Corrente 12 V</div><div class="v" id="tCorrente">—</div></div>
+      <div class="leitura"><div class="k">Potência</div><div class="v" id="tPotencia">—</div></div>
+      <div class="leitura" id="boxAbl"><div class="k">Limitador ABL</div><div class="v" id="tAbl">inativo</div></div>
+      <div class="leitura"><div class="k">Quadros</div><div class="v" id="tFps">—</div></div>
+    </div>
+    <canvas id="grafico"></canvas>
+  </div>
+</div>
+
+<div class="corpo">
+
+  <section class="secao">
+    <span class="rotulo">O que a parede faz</span>
+    <h2>Seis estados, uma leitura</h2>
+    <p>A parede não tem “ligado” e “desligado”. Ela tem um comportamento de repouso que sustenta o corredor
+    quando não há ninguém, e reage à passagem das pessoas com uma sequência que sempre começa pela entrada
+    que foi usada — se a pessoa entra pela direita, a energia nasce na direita.</p>
+    <div class="fichas" id="fichasEstados"></div>
+  </section>
+
+  <section class="secao">
+    <span class="rotulo">Como a parede enxerga</span>
+    <h2>Dois radares, não dois sensores de presença</h2>
+    <p>Um sensor de presença comum responde sim ou não. Os dois radares mmWave nas pontas devolvem a
+    <em>posição</em> de até três pessoas ao longo do corredor, com alcance de 6 m cada — juntos cobrem os 12 m
+    inteiros. É isso que permite a luz andar junto com a pessoa em vez de simplesmente acender o corredor todo.</p>
+    <p>O halo de luz fica deliberadamente 70 cm à frente de quem caminha. A parede convida, não persegue.
+    Quem para em frente à marca dispara o estado de permanência: os pacotes de dados passam a convergir para o
+    processador central e a assinatura pulsa devagar.</p>
+  </section>
+
+  <section class="secao">
+    <span class="rotulo">Desenho de fabricação</span>
+    <h2>Elevação técnica</h2>
+    <p>Toda a geometria é ortogonal ou a 45° exatos — estética autêntica de placa de circuito e, ao mesmo tempo,
+    usinagem CNC simples. Os círculos laranja são os pontos de emenda: como fita de LED não dobra no plano,
+    cada mudança de direção vira corte, furo passante e jumper de três vias por trás do painel.</p>
+    <div class="rolagem" id="caixaElevacao"></div>
+  </section>
+
+  <section class="secao">
+    <span class="rotulo">Números do projeto</span>
+    <h2>Ficha técnica</h2>
+    <div class="rolagem">
+      <table id="tabelaFicha"><tbody></tbody></table>
+    </div>
+    <ul class="notas">
+      <li>O consumo em repouso é o maior custo de energia do sistema, não a animação: a parede passa a maior
+      parte do tempo em repouso. Por isso o brilho mestre segue uma agenda de funcionamento.</li>
+      <li>Paleta e letreiro são referência: a arte final da marca sai do brand book do cliente.</li>
+      <li>Painéis em MDF exigem acabamento com classificação de reação ao fogo compatível com a edificação —
+      item a confirmar com a área de segurança do cliente antes da compra.</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>
+  <span>Simulação executando o mesmo motor de animação que roda na parede.</span>
+  <span>Proposta técnica · rev. 00</span>
+</footer>
+
+<script>/* =============================================================================
+ * CORREDOR TECNOLOGICO SIEMENS - LAYOUT MESTRE
+ * -----------------------------------------------------------------------------
+ * Fonte unica da verdade da geometria do painel.
+ * Consumido por:
+ *   - ferramentas/gerar-elevacao.js   -> desenhos/elevacao-tecnica.svg (marcenaria/CNC)
+ *   - ferramentas/build-simulador.js  -> simulador/index.html (apresentacao ao cliente)
+ *   - firmware/engine-raspberry       -> mapa de pixels do engine de animacao
+ *
+ * SISTEMA DE COORDENADAS
+ *   Unidade: milimetros.
+ *   Origem (0,0): canto INFERIOR ESQUERDO da faixa grafica.
+ *   X cresce ao longo do corredor (0 -> 12000).
+ *   Y cresce para cima (0 -> 1850).
+ *   A faixa grafica e instalada de +200 mm a +2050 mm do piso acabado (NPA).
+ *   Portanto:  Y_projeto = Y_layout + 200
+ *   O rodape luminoso vive em Y = -120 (ou seja, +80 mm do piso), fora da faixa.
+ *
+ * REGRA DE GEOMETRIA
+ *   Todo segmento e horizontal, vertical ou diagonal exata de 45 graus.
+ *   Isso e garantido por construcao pelo DSL abaixo (H / V / D) e conferido
+ *   por validarGeometria(). Motivos:
+ *     - estetica autentica de PCB;
+ *     - usinagem CNC simples (mesma ferramenta, sem interpolacao complexa);
+ *     - fita LED nao dobra no plano: toda mudanca de direcao vira um corte +
+ *       furo passante + jumper de 3 vias por tras do painel.
+ * ========================================================================== */
+
+(function (raiz) {
+  'use strict';
+
+  // --------------------------------------------------------------------------
+  // Dimensoes gerais
+  // --------------------------------------------------------------------------
+  var CORREDOR = {
+    comprimento: 12000,      // mm - extensao total da parede tratada
+    faixaAltura: 1850,       // mm - altura da faixa grafica (1 chapa de MDF)
+    faixaBase: 200,          // mm - altura do inicio da faixa em relacao ao piso
+    peDireito: 2700,         // mm - referencia (confirmar em medicao)
+    rodapeY: -120,           // mm - linha de forca no perfil de aluminio
+    densidade: 60,           // LEDs/m da fita
+    passoLed: 1000 / 60      // mm entre LEDs = 16,667
+  };
+
+  // --------------------------------------------------------------------------
+  // DSL de caminho - garante 0 / 90 / 45 graus por construcao
+  // --------------------------------------------------------------------------
+  function H(dx) { return ['H', dx]; }             // horizontal
+  function V(dy) { return ['V', dy]; }             // vertical
+  function D(dx, dir) { return ['D', dx, dir]; }   // diagonal 45: dy = dir * |dx|
+
+  function construir(x0, y0, ops) {
+    var pts = [[x0, y0]], x = x0, y = y0;
+    for (var i = 0; i < ops.length; i++) {
+      var o = ops[i];
+      if (o[0] === 'H') { x += o[1]; }
+      else if (o[0] === 'V') { y += o[1]; }
+      else { x += o[1]; y += (o[2] < 0 ? -1 : 1) * Math.abs(o[1]); }
+      pts.push([x, y]);
+    }
+    return pts;
+  }
+
+  // t(id, zona, strand, x, y, ...ops)
+  var TRACOS = [];
+  function t(id, zona, strand, x0, y0) {
+    var ops = Array.prototype.slice.call(arguments, 5);
+    TRACOS.push({ id: id, zona: zona, strand: strand, pts: construir(x0, y0, ops) });
+  }
+
+  // ==========================================================================
+  // ZONA A (0 - 3400 mm) - BARRAMENTO DE ENTRADA
+  // Feixe de trilhas paralelas entrando pela esquerda e descendo em degraus de
+  // 45 graus, convergindo para o nucleo. E o "cabecote" da narrativa: e por aqui
+  // que a energia entra quando o sensor da ponta A dispara.
+  // ==========================================================================
+  t('A1', 'A', 0,    0, 1700, H(820),  D(240,-1), H(1440), D(240,-1), H(1020));
+  t('A2', 'A', 0,    0, 1520, H(620),  D(240,-1), H(1400), D(240,-1), H(1180));
+  t('A3', 'A', 1,    0, 1340, H(1500), D(240,-1), H(360),  D(240,-1), H(1320));
+  t('A4', 'A', 1,    0, 1160, H(420),  D(240,-1), H(1140), D(240,-1), H(1620));
+  t('A5', 'A', 2,    0,  900, H(1180), D(240,-1), H(1480), D(240,-1), H(760));
+  t('A6', 'A', 2,    0,  640, H(900),  D(240,-1), H(2260), D(240,-1), H(1560));
+  t('A7', 'A', 3,    0,  380, H(2200), D(240,-1), H(3660));
+  t('A8', 'A', 3,  300, 1820, H(1600), D(240,-1), H(1060));
+  // Derivacoes curtas terminadas em via (pontos de "respiro" do desenho)
+  t('A9',  'A', 2,  980, 1820, V(-140), H(420));
+  t('A10', 'A', 1, 1760,  200, V(300),  H(560));
+  t('A11', 'A', 2, 2980, 1660, D(200,-1), H(420));
+
+  // ==========================================================================
+  // ZONA B (3400 - 6280 mm) - NUCLEO / CPU
+  // Anel octogonal envolvendo o processador impresso em 3D, com trilhas
+  // irradiando nos quatro sentidos. E o ponto focal da animacao de permanencia.
+  // ==========================================================================
+  // Anel do pad (octogono fechado ao redor do chip 600x600 centrado em 4400,1000)
+  t('B0', 'B', 4, 3760, 760, V(480), D(240,1), H(800), D(240,-1), V(-480), D(-240,-1), H(-800), D(-240,1));
+  // Irradiacoes
+  t('B1', 'B', 4, 4900, 1480, V(240), H(1500));
+  t('B2', 'B', 5, 5040, 1240, H(560), D(240,1), H(200), D(240,1));
+  t('B3', 'B', 5, 5040,  880, H(660), D(240,-1), V(-180), D(120,-1), H(220));
+  t('B4', 'B', 5, 4400,  520, V(-220), H(1200), D(240,-1), H(760));
+  t('B5', 'B', 5, 4160,  520, V(-220), H(-760));
+  t('B6', 'B', 5, 3760, 1000, H(-360), D(-240,1), H(-540));
+
+  // ==========================================================================
+  // ZONA C (6280 - 8980 mm) - MARCA
+  // Faixa central limpa: zona de protecao da marca. As trilhas so passam pela
+  // banda superior (y > 1400) e inferior (y < 540).
+  // ==========================================================================
+  t('C1', 'C', 6, 6280, 1700, H(2700));
+  t('C2', 'C', 6, 6280, 1520, H(720),  D(240,1), H(1740));
+  t('C3', 'C', 6, 6280,  420, H(2700));
+  t('C4', 'C', 6, 6280,  240, H(1320), D(240,1), H(1140));
+
+  // ==========================================================================
+  // ZONA D (8980 - 12000 mm) - MALHA DE DADOS
+  // Densidade alta, componentes menores, trilhas finas que se dissolvem no fim
+  // do corredor. E onde a animacao "se desfaz" quando a pessoa sai.
+  // ==========================================================================
+  t('D1', 'D', 7,  8980, 1760, H(900),  D(240,-1), H(1080), D(240,-1), H(560));
+  t('D2', 'D', 7,  8980, 1700, H(420),  D(240,-1), H(1500), D(240,-1), H(620));
+  t('D3', 'D', 7,  8980, 1480, H(1240), D(240,-1), H(700),  D(240,1),  H(600));
+  t('D4', 'D', 8,  8980, 1280, H(680),  D(240,1),  H(340),  D(240,-1), H(1300));
+  t('D5', 'D', 8,  8980,  980, H(1500), D(240,-1), H(400),  D(240,-1), H(640));
+  t('D6', 'D', 8,  8980,  760, H(920),  D(240,-1), H(1180), D(240,1),  H(440));
+  t('D7', 'D', 9,  8980,  420, H(2360), D(240,1),  H(420));
+  t('D8', 'D', 9,  8980,  240, H(1120), D(240,1),  H(1660));
+  // Malha fina de dissolucao (stubs verticais na extremidade)
+  t('D9',  'D', 7, 11300, 1580, V(-220), H(420));
+  t('D10', 'D', 9, 11480, 1100, V(-260), H(240));
+  t('D11', 'D', 9, 11180,  600, V(-180), H(540));
+
+  // ==========================================================================
+  // RODAPE - trilha de forca continua, unico elemento que atravessa os 12 m
+  // sem interrupcao. Ancora visual do corredor inteiro.
+  // ==========================================================================
+  t('RD1', 'R', 10, 0, CORREDOR.rodapeY, H(6000));
+  t('RD2', 'R', 11, 6000, CORREDOR.rodapeY, H(6000));
+
+  // --------------------------------------------------------------------------
+  // COMPONENTES IMPRESSOS EM 3D
+  // x,y = canto inferior esquerdo | l,a = largura,altura | e = espessura (relevo)
+  // halo: gera trilha de contorno retroiluminada em volta da peca
+  // --------------------------------------------------------------------------
+  var COMPONENTES = [
+    { id: 'CPU',  tipo: 'cpu',       x: 4100, y:  700, l: 600, a: 600, e: 28, pinos: 22, halo: true,  strand: 4,
+      nota: 'Processador principal. Nucleo em MDF + capa impressa em 4 partes.' },
+    { id: 'IC01', tipo: 'ci',        x: 1620, y: 1500, l: 340, a: 160, e: 14, pinos: 10, halo: true,  strand: 0 },
+    { id: 'IC02', tipo: 'ci',        x: 2660, y:  700, l: 260, a: 120, e: 14, pinos:  8, halo: true,  strand: 1 },
+    { id: 'IC03', tipo: 'ci',        x: 9300, y: 1120, l: 420, a: 180, e: 16, pinos: 12, halo: true,  strand: 7 },
+    { id: 'IC04', tipo: 'ci',        x:10400, y:  560, l: 300, a: 140, e: 14, pinos:  9, halo: true,  strand: 9 },
+    { id: 'IC05', tipo: 'ci',        x:11060, y: 1360, l: 220, a: 110, e: 12, pinos:  7, halo: false, strand: 9 },
+    { id: 'L1',   tipo: 'indutor',   x: 5280, y: 1440, l: 180, a: 180, e: 24, halo: true,  strand: 4 },
+    { id: 'C1',   tipo: 'capacitor', x: 3480, y: 1560, l:  90, a:  90, e: 22, halo: false, strand: 4 },
+    { id: 'C2',   tipo: 'capacitor', x: 3600, y: 1560, l:  90, a:  90, e: 22, halo: false, strand: 4 },
+    { id: 'C3',   tipo: 'capacitor', x: 3720, y: 1560, l:  90, a:  90, e: 22, halo: false, strand: 4 },
+    { id: 'R1',   tipo: 'smd',       x: 2360, y: 1240, l: 120, a:  46, e:  8, halo: false },
+    { id: 'R2',   tipo: 'smd',       x: 2540, y: 1240, l: 120, a:  46, e:  8, halo: false },
+    { id: 'R3',   tipo: 'smd',       x: 9860, y:  840, l: 120, a:  46, e:  8, halo: false },
+    { id: 'R4',   tipo: 'smd',       x:10040, y:  840, l: 120, a:  46, e:  8, halo: false },
+    { id: 'Q1',   tipo: 'smd',       x: 6740, y: 1580, l: 160, a:  90, e: 10, halo: false },
+    { id: 'Q2',   tipo: 'smd',       x: 7900, y:  280, l: 160, a:  90, e: 10, halo: false },
+    { id: 'EDGE', tipo: 'conector',  x:11760, y:  620, l: 240, a: 620, e: 18, halo: true,  strand: 9,
+      nota: 'Conector de borda: fecha a narrativa no fim do corredor.' }
+  ];
+
+  // --------------------------------------------------------------------------
+  // MARCA
+  // Zona de protecao respeitada por todas as trilhas. Letreiro em acrilico com
+  // retroiluminacao dedicada (strand 9) para pulso sutil sincronizado.
+  // ARTE OFICIAL: aplicar a partir do brand book do cliente, nao redesenhar.
+  // --------------------------------------------------------------------------
+  var MARCA = {
+    texto: 'SIEMENS',
+    assinatura: 'Tecnologia que conecta o futuro',
+    x: 6580, y: 900, largura: 2000, alturaCaixa: 260,
+    assinaturaY: 700, assinaturaAltura: 78,
+    protecao: { x: 6280, y: 600, l: 2600, a: 1000 },
+    strandBacklight: 12
+  };
+
+  // --------------------------------------------------------------------------
+  // SENSORES - radar mmWave nas duas extremidades, olhando para o eixo do corredor
+  // Cobertura util ~6 m cada, com sobreposicao no centro resolvida por fusao.
+  // --------------------------------------------------------------------------
+  var SENSORES = [
+    { id: 'S-A', modelo: 'LD2450', x: 150,   alturaMontagem: 1600, alcance: 6000, sentido: +1 },
+    { id: 'S-B', modelo: 'LD2450', x: 11850, alturaMontagem: 1600, alcance: 6000, sentido: -1 }
+  ];
+
+  // --------------------------------------------------------------------------
+  // PALETA - referencia da identidade do cliente.
+  // ATENCAO: valores a validar contra o brand book oficial antes da producao.
+  // --------------------------------------------------------------------------
+  var PALETA = {
+    fundoPainel: '#14181c',
+    repouso:     '#04323c',   // azul profundo, nivel de standby
+    trilha:      '#009999',   // petrol - cor base das trilhas energizadas
+    energia:     '#00e6c8',   // verde-agua - pacotes de dados
+    pico:        '#a8fff0',   // nucleo quase branco do pulso
+    marca:       '#00c8b4'
+  };
+
+  // ==========================================================================
+  // DERIVADOS - mapa de pixels
+  // ==========================================================================
+
+  function comprimentoTraco(pts) {
+    var s = 0;
+    for (var i = 1; i < pts.length; i++) {
+      s += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    }
+    return s;
+  }
+
+  // Gera o contorno retroiluminado de um componente (offset de 22 mm)
+  function haloDoComponente(c, off) {
+    var o = off === undefined ? 22 : off;
+    var x0 = c.x - o, y0 = c.y - o, x1 = c.x + c.l + o, y1 = c.y + c.a + o;
+    return [[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]];
+  }
+
+  function montarTracos() {
+    var lista = TRACOS.map(function (tr) {
+      return { id: tr.id, zona: tr.zona, strand: tr.strand, pts: tr.pts, halo: false };
+    });
+    COMPONENTES.forEach(function (c) {
+      if (!c.halo) return;
+      lista.push({
+        id: 'H-' + c.id, zona: 'H', strand: c.strand === undefined ? 3 : c.strand,
+        pts: haloDoComponente(c), halo: true, componente: c.id
+      });
+    });
+    // Backlight do letreiro: retangulo atras das letras
+    lista.push({
+      id: 'H-MARCA', zona: 'M', strand: MARCA.strandBacklight, halo: true,
+      pts: haloDoComponente({ x: MARCA.x, y: MARCA.y, l: MARCA.largura, a: MARCA.alturaCaixa }, 40)
+    });
+    return lista;
+  }
+
+  // Distribui LEDs a cada passoLed ao longo de cada traco.
+  // Retorna { pixels, tracos, strands, totais }
+  function gerarMapaPixels() {
+    var tracos = montarTracos();
+    var pixels = [];
+    var idx = 0;
+
+    tracos.forEach(function (tr, ti) {
+      var passo = CORREDOR.passoLed;
+      var comp = comprimentoTraco(tr.pts);
+      var n = Math.max(2, Math.round(comp / passo));
+      var real = comp / n;
+      tr.indicePrimeiroPixel = idx;
+      tr.qtdPixels = n + 1;
+      tr.comprimento = comp;
+      tr.tracoIndex = ti;
+
+      // percorre a polyline distribuindo pontos equidistantes
+      var restante = 0, seg = 0;
+      var px = tr.pts[0][0], py = tr.pts[0][1];
+      for (var k = 0; k <= n; k++) {
+        var alvo = k * real;
+        // caminha ate a distancia alvo
+        var acc = 0, done = false;
+        for (var i = 1; i < tr.pts.length && !done; i++) {
+          var ax = tr.pts[i - 1][0], ay = tr.pts[i - 1][1];
+          var bx = tr.pts[i][0], by = tr.pts[i][1];
+          var L = Math.hypot(bx - ax, by - ay);
+          if (acc + L >= alvo - 1e-6 || i === tr.pts.length - 1) {
+            var f = L === 0 ? 0 : Math.min(1, (alvo - acc) / L);
+            px = ax + (bx - ax) * f;
+            py = ay + (by - ay) * f;
+            done = true;
+          }
+          acc += L;
+        }
+        pixels.push({
+          i: idx++, x: px, y: py,
+          traco: ti, posNoTraco: k, totalNoTraco: n + 1,
+          strand: tr.strand, zona: tr.zona, halo: !!tr.halo
+        });
+      }
+      void restante; void seg;
+    });
+
+    // Consolidacao por strand (cada strand = 1 saida de dados fisica)
+    var strands = {};
+    pixels.forEach(function (p) {
+      if (!strands[p.strand]) strands[p.strand] = { id: p.strand, qtd: 0, xMin: 1e9, xMax: -1e9 };
+      var s = strands[p.strand];
+      s.qtd++; s.xMin = Math.min(s.xMin, p.x); s.xMax = Math.max(s.xMax, p.x);
+    });
+
+    var metrosFita = tracos.reduce(function (a, tr) { return a + tr.comprimento; }, 0) / 1000;
+
+    return {
+      pixels: pixels,
+      tracos: tracos,
+      strands: strands,
+      totais: {
+        qtdPixels: pixels.length,
+        metrosFita: metrosFita,
+        qtdTracos: tracos.length,
+        qtdCantos: tracos.reduce(function (a, tr) { return a + Math.max(0, tr.pts.length - 2); }, 0),
+        potenciaMaxW: metrosFita * 15,          // WS2815 60 LED/m @ branco pleno
+        potenciaOperacionalW: metrosFita * 15 * 0.40  // com limitador de brilho ativo
+      }
+    };
+  }
+
+  // Confere a regra 0/90/45 e reporta desvios (usado no build).
+  function validarGeometria() {
+    var erros = [];
+    montarTracos().forEach(function (tr) {
+      for (var i = 1; i < tr.pts.length; i++) {
+        var dx = Math.abs(tr.pts[i][0] - tr.pts[i - 1][0]);
+        var dy = Math.abs(tr.pts[i][1] - tr.pts[i - 1][1]);
+        var ok = dx < 0.01 || dy < 0.01 || Math.abs(dx - dy) < 0.01;
+        if (!ok) erros.push(tr.id + ' seg ' + i + ' dx=' + dx.toFixed(1) + ' dy=' + dy.toFixed(1));
+      }
+    });
+    return erros;
+  }
+
+  var API = {
+    CORREDOR: CORREDOR, TRACOS: TRACOS, COMPONENTES: COMPONENTES,
+    MARCA: MARCA, SENSORES: SENSORES, PALETA: PALETA,
+    gerarMapaPixels: gerarMapaPixels, validarGeometria: validarGeometria,
+    haloDoComponente: haloDoComponente, comprimentoTraco: comprimentoTraco
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  else raiz.LAYOUT = API;
+
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+</script>
+<script>/* =============================================================================
+ * CORREDOR TECNOLOGICO SIEMENS - ENGINE DE ANIMACAO
+ * -----------------------------------------------------------------------------
+ * Codigo unico, dois destinos:
+ *   - simulador/index.html : o que o cliente aprova
+ *   - Raspberry Pi (Node)  : o que roda na parede
+ * O que for aprovado na simulacao e literalmente o que vai instalado. Sem
+ * "na obra fica diferente".
+ *
+ * ENTRADA : posicoes das pessoas em mm ao longo do corredor (0..12000),
+ *           vindas da fusao dos dois radares mmWave.
+ * SAIDA   : Uint8Array RGB, 3 bytes por pixel, na ordem do mapa de pixels.
+ * ========================================================================== */
+
+(function (raiz) {
+  'use strict';
+
+  var LAYOUT = (typeof module !== 'undefined' && module.exports)
+    ? require('./layout.js') : raiz.LAYOUT;
+
+  // ==========================================================================
+  // MAQUINA DE ESTADOS
+  // --------------------------------------------------------------------------
+  //                    alguem entra
+  //      REPOUSO  ---------------------->  DESPERTAR
+  //         ^                                  | frente varre o corredor
+  //         | decaimento                       v
+  //     ADORMECER  <---- corredor vazio ---  ACOMPANHAR <--+
+  //         |             por 12 s              |          | volta a andar
+  //         | alguem                            | parou    |
+  //         | reentra                           v          |
+  //         +--> DESPERTAR                  PERMANENCIA ---+
+  // ==========================================================================
+  var ESTADOS = {
+    REPOUSO:     'REPOUSO',      // ninguem no corredor - parede viva, quase parada
+    DESPERTAR:   'DESPERTAR',    // frente de energia varre a partir da entrada usada
+    ACOMPANHAR:  'ACOMPANHAR',   // a luz anda junto com a pessoa
+    PERMANENCIA: 'PERMANENCIA',  // pessoa parada - a parede "processa" ali
+    ADORMECER:   'ADORMECER',    // esvaziou - energia escoa para as pontas
+    SHOW:        'SHOW'          // coreografia manual, para visitas e eventos
+  };
+
+  var PADRAO = {
+    nivelRepouso:      0.075,  // brilho de standby das trilhas
+    respiracaoRepouso: 0.045,  // amplitude do "respiro" lento no repouso
+    ganhoOnda:         1.00,
+    velocidadeOnda:    6500,   // mm/s da frente de despertar
+    larguraOnda:       900,    // mm - meia largura da gaussiana da frente
+    raioPessoa:        1500,   // mm - alcance do halo que segue a pessoa
+    ganhoPessoa:       0.55,
+    avancoPessoa:      700,    // mm - a luz anda ligeiramente A FRENTE da pessoa
+    tempoParaVazio:    12000,  // ms sem ninguem antes de adormecer
+    tempoParaParado:   2200,   // ms quase imóvel antes de entrar em permanencia
+    limiarParadoMmS:  250,     // mm/s abaixo disso considera-se parado
+    duracaoAdormecer:  4500,   // ms do escoamento ate o repouso
+    pacotesPorSegundo: 26,     // taxa de emissao em regime acompanhando
+    brilhoGlobal:      1.00,
+    // Multiplicador mestre da agenda de funcionamento. O repouso e o maior
+    // consumidor do sistema (fica ligado o dia inteiro), entao fora do horario
+    // comercial este valor cai e a parede praticamente desliga.
+    brilhoMestre:      1.00
+  };
+
+  // --------------------------------------------------------------------------
+  // Rampa de cor: intensidade 0..1 -> RGB. Precalculada em LUT de 256 passos.
+  // A curva nao e linear: o trecho de baixo e alongado para que o repouso tenha
+  // presenca sem estourar, e o topo satura rapido para dar "estalo" no pulso.
+  // --------------------------------------------------------------------------
+  function hexParaRgb(h) {
+    return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+  }
+  function montarLut(paleta) {
+    var paradas = [
+      [0.00, hexParaRgb(paleta.fundoPainel === undefined ? '#000000' : '#000000')],
+      [0.06, hexParaRgb(paleta.repouso)],
+      [0.38, hexParaRgb(paleta.trilha)],
+      [0.72, hexParaRgb(paleta.energia)],
+      [1.00, hexParaRgb(paleta.pico)]
+    ];
+    var lut = new Uint8Array(256 * 3);
+    for (var i = 0; i < 256; i++) {
+      var v = i / 255, k = 0;
+      while (k < paradas.length - 2 && v > paradas[k + 1][0]) k++;
+      var a = paradas[k], b = paradas[k + 1];
+      var f = (v - a[0]) / (b[0] - a[0]);
+      f = Math.max(0, Math.min(1, f));
+      lut[i * 3]     = a[1][0] + (b[1][0] - a[1][0]) * f;
+      lut[i * 3 + 1] = a[1][1] + (b[1][1] - a[1][1]) * f;
+      lut[i * 3 + 2] = a[1][2] + (b[1][2] - a[1][2]) * f;
+    }
+    return lut;
+  }
+
+  // Ruido de valor deterministico - o cintilar do repouso precisa ser identico
+  // na simulacao e na parede, senao o cliente aprova uma coisa e recebe outra.
+  function ruido1d(x, semente) {
+    var i = Math.floor(x), f = x - i;
+    function h(n) {
+      n = (n << 13) ^ n; n = n + semente | 0;
+      return ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741823.0 - 1;
+    }
+    var a = h(i), b = h(i + 1);
+    var s = f * f * (3 - 2 * f);
+    return a + (b - a) * s;
+  }
+
+  // ==========================================================================
+  function Engine(opts) {
+    opts = opts || {};
+    this.mapa = opts.mapa || LAYOUT.gerarMapaPixels();
+    this.cfg = Object.assign({}, PADRAO, opts.cfg || {});
+    this.paleta = opts.paleta || LAYOUT.PALETA;
+    this.lut = montarLut(this.paleta);
+
+    var n = this.mapa.pixels.length;
+    this.n = n;
+    this.intensidade = new Float32Array(n);
+    this.saida = new Uint8Array(n * 3);
+
+    // Cache plano dos atributos usados no laco quente (evita acesso a objeto)
+    this.px = new Float32Array(n);
+    this.pTraco = new Int32Array(n);
+    this.pPos = new Int32Array(n);
+    this.pHalo = new Uint8Array(n);
+    for (var i = 0; i < n; i++) {
+      var p = this.mapa.pixels[i];
+      this.px[i] = p.x; this.pTraco[i] = p.traco;
+      this.pPos[i] = p.posNoTraco; this.pHalo[i] = p.halo ? 1 : 0;
+    }
+
+    // Indice: primeiro pixel de cada traco, para converter (traco,pos) -> indice
+    this.baseTraco = this.mapa.tracos.map(function (t) { return t.indicePrimeiroPixel; });
+    this.tamTraco = this.mapa.tracos.map(function (t) { return t.qtdPixels; });
+
+    // Estado de boot de cada componente impresso (0 apagado .. 1 aceso)
+    var self = this;
+    this.componentes = LAYOUT.COMPONENTES.map(function (c) {
+      return { id: c.id, xCentro: c.x + c.l / 2, boot: 0, cintila: 0 };
+    });
+    void self;
+
+    this.estado = ESTADOS.REPOUSO;
+    this.tempo = 0;
+    this.tempoNoEstado = 0;
+    this.energia = 0;          // 0..1 - quanta energia o painel tem acumulada
+    this.frenteOnda = null;    // {x, dir, forca}
+    this.rastro = 0;           // memoria do rastro deixado pela frente de onda
+    this.pacotes = [];
+    this.pessoas = [];
+    this.msVazio = 0;
+    this.msParado = 0;
+    this.ladoEntrada = 1;      // +1 entrou pela esquerda, -1 pela direita
+    this.consumoEstimadoW = 0;
+    this.escalaAbl = 1;
+  }
+
+  // --------------------------------------------------------------------------
+  // Entrada dos sensores. Cada pessoa: {id, x(mm), v(mm/s)}
+  // A fusao dos dois radares acontece antes daqui (ver firmware/engine-raspberry).
+  // --------------------------------------------------------------------------
+  Engine.prototype.setPessoas = function (lista) {
+    var anterior = this.pessoas;
+    this.pessoas = (lista || []).map(function (p) {
+      var ant = anterior.filter(function (a) { return a.id === p.id; })[0];
+      return { id: p.id, x: p.x, v: p.v !== undefined ? p.v : (ant ? p.x - ant.x : 0) };
+    });
+    // Primeira pessoa a aparecer define de que ponta a onda parte.
+    if (anterior.length === 0 && this.pessoas.length > 0) {
+      this.ladoEntrada = this.pessoas[0].x < 6000 ? 1 : -1;
+    }
+  };
+
+  Engine.prototype.irPara = function (novo) {
+    if (this.estado === novo) return;
+    this.estado = novo;
+    this.tempoNoEstado = 0;
+    if (novo === ESTADOS.DESPERTAR) {
+      this.frenteOnda = { x: this.ladoEntrada > 0 ? -600 : 12600, dir: this.ladoEntrada, forca: 1 };
+      this.rastro = 1;
+      this.componentes.forEach(function (c) { c.boot = 0; });
+    }
+    if (novo === ESTADOS.REPOUSO) { this.pacotes.length = 0; this.energia = 0; }
+  };
+
+  // --------------------------------------------------------------------------
+  // Transicoes
+  // --------------------------------------------------------------------------
+  Engine.prototype.atualizarEstado = function (dt) {
+    var cfg = this.cfg;
+    var temGente = this.pessoas.length > 0;
+
+    if (temGente) this.msVazio = 0; else this.msVazio += dt;
+
+    var vMax = 0;
+    this.pessoas.forEach(function (p) { vMax = Math.max(vMax, Math.abs(p.v)); });
+    if (temGente && vMax < cfg.limiarParadoMmS) this.msParado += dt; else this.msParado = 0;
+
+    switch (this.estado) {
+      case ESTADOS.REPOUSO:
+        if (temGente) this.irPara(ESTADOS.DESPERTAR);
+        break;
+
+      case ESTADOS.DESPERTAR:
+        // a frente terminou de varrer os 12 m -> passa a acompanhar
+        if (!this.frenteOnda ||
+            (this.frenteOnda.dir > 0 && this.frenteOnda.x > 13200) ||
+            (this.frenteOnda.dir < 0 && this.frenteOnda.x < -1200)) {
+          this.frenteOnda = null;
+          this.irPara(temGente ? ESTADOS.ACOMPANHAR : ESTADOS.ADORMECER);
+        }
+        break;
+
+      case ESTADOS.ACOMPANHAR:
+        if (!temGente && this.msVazio > cfg.tempoParaVazio) this.irPara(ESTADOS.ADORMECER);
+        else if (this.msParado > cfg.tempoParaParado) this.irPara(ESTADOS.PERMANENCIA);
+        break;
+
+      case ESTADOS.PERMANENCIA:
+        if (!temGente && this.msVazio > cfg.tempoParaVazio) this.irPara(ESTADOS.ADORMECER);
+        else if (this.msParado === 0) this.irPara(ESTADOS.ACOMPANHAR);
+        break;
+
+      case ESTADOS.ADORMECER:
+        // reentrada interrompe o adormecer na hora - nada de esperar terminar
+        if (temGente) this.irPara(ESTADOS.DESPERTAR);
+        else if (this.tempoNoEstado > cfg.duracaoAdormecer) this.irPara(ESTADOS.REPOUSO);
+        break;
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Pacotes de dados: os "bits" que correm pelas trilhas.
+  // --------------------------------------------------------------------------
+  Engine.prototype.emitirPacote = function (tracoIdx, sentido, brilho, velocidade) {
+    if (this.pacotes.length > 260) return;   // teto de custo por quadro
+    var tam = this.tamTraco[tracoIdx];
+    this.pacotes.push({
+      traco: tracoIdx,
+      pos: sentido > 0 ? -6 : tam + 6,
+      vel: (velocidade || 90) * sentido,
+      comp: 7 + Math.random() * 16,
+      brilho: brilho === undefined ? 1 : brilho
+    });
+  };
+
+  Engine.prototype.moverPacotes = function (dt) {
+    var s = dt / 1000, vivos = [];
+    for (var i = 0; i < this.pacotes.length; i++) {
+      var k = this.pacotes[i];
+      k.pos += k.vel * s;
+      var tam = this.tamTraco[k.traco];
+      if (k.pos > -40 && k.pos < tam + 40) vivos.push(k);
+    }
+    this.pacotes = vivos;
+  };
+
+  // Escolhe uma trilha que passe perto de um X do corredor.
+  Engine.prototype.tracoPerto = function (xAlvo, tolerancia) {
+    var tol = tolerancia || 1400, cand = [];
+    var tr = this.mapa.tracos;
+    for (var i = 0; i < tr.length; i++) {
+      var pts = tr[i].pts, achou = false;
+      for (var j = 0; j < pts.length && !achou; j++) {
+        if (Math.abs(pts[j][0] - xAlvo) < tol) achou = true;
+      }
+      if (achou) cand.push(i);
+    }
+    return cand.length ? cand[(Math.random() * cand.length) | 0] : -1;
+  };
+
+  // --------------------------------------------------------------------------
+  // PASSO PRINCIPAL
+  // --------------------------------------------------------------------------
+  Engine.prototype.passo = function (dt) {
+    dt = Math.min(dt, 80);           // protege contra travada de aba/GC
+    this.tempo += dt;
+    this.tempoNoEstado += dt;
+    var cfg = this.cfg, s = dt / 1000;
+
+    this.atualizarEstado(dt);
+
+    // --- energia global ---
+    var alvoEnergia =
+      this.estado === ESTADOS.REPOUSO     ? 0.00 :
+      this.estado === ESTADOS.DESPERTAR   ? 0.85 :
+      this.estado === ESTADOS.ACOMPANHAR  ? 0.70 :
+      this.estado === ESTADOS.PERMANENCIA ? 0.80 :
+      this.estado === ESTADOS.SHOW        ? 0.90 : 0.0;
+    var taxa = this.estado === ESTADOS.ADORMECER ? 0.9 : 4.0;
+    this.energia += (alvoEnergia - this.energia) * Math.min(1, taxa * s);
+
+    // --- frente de despertar ---
+    if (this.frenteOnda) this.frenteOnda.x += cfg.velocidadeOnda * this.frenteOnda.dir * s;
+    // O rastro nao pode sumir junto com a frente: sem esta memoria, o instante
+    // em que a frente sai do corredor derruba ~200 W de uma vez e a parede
+    // "pisca" na passagem para o modo acompanhar.
+    if (!this.frenteOnda) this.rastro += (0 - this.rastro) * Math.min(1, 1.4 * s);
+
+    // --- boot dos componentes: acende quando a frente passa por cima ---
+    var fr = this.frenteOnda;
+    for (var ci = 0; ci < this.componentes.length; ci++) {
+      var c = this.componentes[ci];
+      var deveAcender = false;
+      if (fr) {
+        deveAcender = fr.dir > 0 ? (fr.x > c.xCentro) : (fr.x < c.xCentro);
+      } else if (this.estado === ESTADOS.ACOMPANHAR || this.estado === ESTADOS.PERMANENCIA) {
+        deveAcender = true;
+      }
+      var alvo = deveAcender ? 1 : 0;
+      var vel = this.estado === ESTADOS.ADORMECER ? 1.2 : 6.0;
+      c.boot += (alvo - c.boot) * Math.min(1, vel * s);
+      // pisca-pisca de partida, como equipamento energizando
+      if (deveAcender && c.boot < 0.85) c.cintila = Math.random() < 0.35 ? 1 : 0.4;
+      else c.cintila += (1 - c.cintila) * Math.min(1, 8 * s);
+    }
+
+    // --- emissao de pacotes ---
+    this.emitirConformeEstado(dt);
+    this.moverPacotes(dt);
+
+    // --- composicao por pixel ---
+    this.compor();
+
+    // --- limitador de brilho / estimativa de consumo ---
+    this.aplicarAbl();
+
+    return this.saida;
+  };
+
+  Engine.prototype.emitirConformeEstado = function (dt) {
+    var cfg = this.cfg, self = this;
+    var esperado = 0, sentidoPadrao = this.ladoEntrada;
+
+    if (this.estado === ESTADOS.REPOUSO) {
+      esperado = 0.35;   // um pacote solitario a cada ~3 s: a parede respira
+    } else if (this.estado === ESTADOS.DESPERTAR) {
+      esperado = cfg.pacotesPorSegundo * 1.6;
+    } else if (this.estado === ESTADOS.ACOMPANHAR) {
+      // sem ninguem detectado, a emissao ja comeca a ceder antes de adormecer
+      esperado = cfg.pacotesPorSegundo * (this.pessoas.length ? 1 : 0.25);
+    } else if (this.estado === ESTADOS.PERMANENCIA) {
+      esperado = cfg.pacotesPorSegundo * 0.8;
+    } else if (this.estado === ESTADOS.ADORMECER) {
+      esperado = 2;
+    } else if (this.estado === ESTADOS.SHOW) {
+      esperado = cfg.pacotesPorSegundo * 1.8;
+    }
+
+    var qtd = esperado * (dt / 1000);
+    var inteiros = Math.floor(qtd) + (Math.random() < (qtd % 1) ? 1 : 0);
+
+    for (var i = 0; i < inteiros; i++) {
+      var alvoX, sentido = sentidoPadrao, brilho = 1, vel = 90;
+
+      if (this.estado === ESTADOS.DESPERTAR && this.frenteOnda) {
+        // pacotes nascem colados na frente de onda
+        alvoX = this.frenteOnda.x;
+        vel = 150;
+      } else if (this.pessoas.length && this.estado !== ESTADOS.REPOUSO) {
+        var p = this.pessoas[(Math.random() * this.pessoas.length) | 0];
+        alvoX = p.x + (Math.random() - 0.5) * 2600;
+        sentido = p.v > 60 ? 1 : (p.v < -60 ? -1 : (Math.random() < 0.5 ? 1 : -1));
+        // andando rapido, os dados correm mais rapido junto
+        vel = 70 + Math.min(180, Math.abs(p.v) / 8);
+        if (this.estado === ESTADOS.PERMANENCIA) {
+          // parado: os dados convergem para o processador
+          alvoX = 4400 + (Math.random() - 0.5) * 3000;
+          sentido = alvoX > 4400 ? -1 : 1;
+          vel = 110;
+        }
+      } else {
+        alvoX = Math.random() * 12000;
+        brilho = 0.45;
+        vel = 45;
+      }
+
+      var ti = self.tracoPerto(alvoX, this.estado === ESTADOS.REPOUSO ? 6000 : 1600);
+      if (ti >= 0) self.emitirPacote(ti, sentido, brilho, vel);
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // Composicao: um valor de intensidade por pixel, depois LUT -> RGB.
+  // --------------------------------------------------------------------------
+  Engine.prototype.compor = function () {
+    var n = this.n, cfg = this.cfg, I = this.intensidade;
+    var t = this.tempo / 1000;
+    var base = cfg.nivelRepouso;
+    var fr = this.frenteOnda;
+    var pess = this.pessoas;
+    var energia = this.energia;
+
+    // escoamento no adormecer: a energia esvazia do centro para as pontas
+    var rastro = this.rastro; void rastro;
+    var escoando = this.estado === ESTADOS.ADORMECER
+      ? Math.min(1, this.tempoNoEstado / cfg.duracaoAdormecer) : 0;
+
+    for (var i = 0; i < n; i++) {
+      var x = this.px[i];
+
+      // 1. PISO de repouso, com respiro lento e cintilar deterministico.
+      //    Este termo nunca escoa: e o que garante que o corredor volte ao
+      //    repouso por transicao suave e nao com um apagao seguido de reacender.
+      var piso = base * (1 + cfg.respiracaoRepouso *
+        (Math.sin(t * 0.55 + x * 0.0006) + ruido1d(x * 0.004 + t * 0.35, 7) * 0.8));
+
+      // 2. EXTRA: tudo que e reacao a presenca. So este termo escoa.
+      var extra = energia * 0.22;
+
+      // 3. frente de despertar
+      if (fr) {
+        var d = (x - fr.x) / cfg.larguraOnda;
+        extra += Math.exp(-d * d) * cfg.ganhoOnda * fr.forca;
+        // rastro atras da frente: a trilha fica energizada depois que passa
+        if ((fr.dir > 0 && x < fr.x) || (fr.dir < 0 && x > fr.x)) extra += 0.18 * this.rastro;
+      } else if (this.rastro > 0.001) {
+        // frente ja saiu: o corredor inteiro esta varrido, o rastro decai por igual
+        extra += 0.18 * this.rastro;
+      }
+
+      // 4. halo que acompanha cada pessoa, ligeiramente adiantado no sentido
+      //    da caminhada - a luz "convida" em vez de perseguir
+      for (var k = 0; k < pess.length; k++) {
+        var p = pess[k];
+        var alvo = p.x + (p.v > 0 ? cfg.avancoPessoa : (p.v < 0 ? -cfg.avancoPessoa : 0));
+        var dp = (x - alvo) / cfg.raioPessoa;
+        extra += Math.exp(-dp * dp) * cfg.ganhoPessoa;
+      }
+
+      // 5. escoamento: a energia esvazia primeiro no centro e sai pelas pontas
+      if (escoando > 0) {
+        var distDaPonta = Math.min(x, 12000 - x) / 6000;   // 0 na ponta, 1 no centro
+        extra *= Math.max(0, 1 - escoando * (0.35 + 0.9 * distDaPonta));
+      }
+
+      I[i] = piso + extra;
+    }
+
+    // 6. pacotes - so tocam os pixels da propria trilha
+    var fadePacote = 1 - escoando * 0.95;
+    for (var q = 0; q < this.pacotes.length; q++) {
+      var pk = this.pacotes[q];
+      var b0 = this.baseTraco[pk.traco], tam = this.tamTraco[pk.traco];
+      var ini = Math.max(0, Math.floor(pk.vel > 0 ? pk.pos - pk.comp : pk.pos));
+      var fim = Math.min(tam - 1, Math.ceil(pk.vel > 0 ? pk.pos : pk.pos + pk.comp));
+      for (var j = ini; j <= fim; j++) {
+        var dist = Math.abs(pk.pos - j) / pk.comp;
+        if (dist > 1) continue;
+        var f = (1 - dist); f = f * f;
+        I[b0 + j] += f * pk.brilho * 0.95 * fadePacote;
+      }
+    }
+
+    // 7. halos dos componentes seguem o boot da peca correspondente
+    var tracos = this.mapa.tracos;
+    for (var ti = 0; ti < tracos.length; ti++) {
+      var tr = tracos[ti];
+      if (!tr.halo || !tr.componente) continue;
+      var comp = null;
+      for (var z = 0; z < this.componentes.length; z++) {
+        if (this.componentes[z].id === tr.componente) { comp = this.componentes[z]; break; }
+      }
+      if (!comp) continue;
+      var g = comp.boot * comp.cintila;
+      var b = tr.indicePrimeiroPixel;
+      for (var w = 0; w < tr.qtdPixels; w++) I[b + w] = I[b + w] * (1 - 0.45 * g) + g * 0.52;
+    }
+
+    // 8. LUT -> RGB
+    var out = this.saida, lut = this.lut, bg = cfg.brilhoGlobal * cfg.brilhoMestre;
+    for (var m = 0; m < n; m++) {
+      var val = I[m] * bg;
+      val = val < 0 ? 0 : (val > 1 ? 1 : val);
+      var idx = (val * 255) | 0;
+      out[m * 3]     = lut[idx * 3];
+      out[m * 3 + 1] = lut[idx * 3 + 1];
+      out[m * 3 + 2] = lut[idx * 3 + 2];
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  // ABL - limitador automatico de brilho.
+  // Estima a corrente do quadro e, se passar do teto, escala o quadro inteiro.
+  // Escalar tudo junto preserva a composicao: melhor a cena inteira 8% mais
+  // fraca do que uma zona clipando e "chapando" o desenho.
+  // --------------------------------------------------------------------------
+  Engine.prototype.aplicarAbl = function (limiteA) {
+    var out = this.saida, n = this.n;
+    var soma = 0;
+    for (var i = 0; i < n * 3; i++) soma += out[i];
+    // WS2815 12 V: 0,25 W por LED em branco pleno -> 20,8 mA por LED -> 6,94 mA
+    // por canal. (Usar os 20 mA/canal da familia 5 V superestima em 3x.)
+    var correnteA = (soma / 255) * 0.00694;
+    var teto = limiteA === undefined ? 120 : limiteA;   // 4 zonas x 30 A
+
+    this.escalaAbl = 1;
+    if (correnteA > teto) {
+      this.escalaAbl = teto / correnteA;
+      for (var j = 0; j < n * 3; j++) out[j] = (out[j] * this.escalaAbl) | 0;
+      correnteA = teto;
+    }
+    this.consumoEstimadoW = correnteA * 12;
+    this.correnteEstimadaA = correnteA;
+  };
+
+  Engine.prototype.telemetria = function () {
+    return {
+      estado: this.estado,
+      energia: this.energia,
+      pacotes: this.pacotes.length,
+      pessoas: this.pessoas.length,
+      consumoW: this.consumoEstimadoW,
+      correnteA: this.correnteEstimadaA || 0,
+      abl: this.escalaAbl,
+      msVazio: this.msVazio
+    };
+  };
+
+  var API = { Engine: Engine, ESTADOS: ESTADOS, PADRAO: PADRAO, montarLut: montarLut };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  else raiz.ENGINE = API;
+
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+var FICHA = {"maiorStrand":705,"tetoFps":47,"qtdFontes":4,"potFonte":450,"ablPorZona":30,"picoW":1039,"redeA":"5,4","repousoW":273};
+var ELEVACAO_SVG = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16200 4770\">\n<title>Corredor Tecnologico Siemens - Elevacao tecnica</title>\n<defs>\n  <pattern id=\"hatch\" width=\"40\" height=\"40\" patternTransform=\"rotate(45)\" patternUnits=\"userSpaceOnUse\">\n    <line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"40\" stroke=\"#5b6672\" stroke-width=\"7\"/>\n  </pattern>\n  <marker id=\"seta\" markerWidth=\"10\" markerHeight=\"10\" refX=\"9\" refY=\"3\" orient=\"auto\">\n    <path d=\"M0,0 L9,3 L0,6 z\" fill=\"#1d2733\"/>\n  </marker>\n</defs>\n<rect width=\"16200\" height=\"4770\" fill=\"#ffffff\"/>\n<rect x=\"30\" y=\"30\" width=\"16140\" height=\"4710\" fill=\"none\" stroke=\"#1d2733\" stroke-width=\"12\"/>\n<g id=\"arquitetura\">\n<rect x=\"2100\" y=\"900\" width=\"12000\" height=\"1850\" fill=\"#f3f5f7\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"1500\" y1=\"2950\" x2=\"14700\" y2=\"2950\" stroke=\"#1d2733\" stroke-width=\"14\"/>\n<line x1=\"1500\" y1=\"2950\" x2=\"1410\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"1800\" y1=\"2950\" x2=\"1710\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"2100\" y1=\"2950\" x2=\"2010\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"2400\" y1=\"2950\" x2=\"2310\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"2700\" y1=\"2950\" x2=\"2610\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"3000\" y1=\"2950\" x2=\"2910\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"3300\" y1=\"2950\" x2=\"3210\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"3600\" y1=\"2950\" x2=\"3510\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"3900\" y1=\"2950\" x2=\"3810\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"4200\" y1=\"2950\" x2=\"4110\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"4500\" y1=\"2950\" x2=\"4410\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"4800\" y1=\"2950\" x2=\"4710\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"5100\" y1=\"2950\" x2=\"5010\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"5400\" y1=\"2950\" x2=\"5310\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"5700\" y1=\"2950\" x2=\"5610\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"6000\" y1=\"2950\" x2=\"5910\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"6300\" y1=\"2950\" x2=\"6210\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"6600\" y1=\"2950\" x2=\"6510\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"6900\" y1=\"2950\" x2=\"6810\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"7200\" y1=\"2950\" x2=\"7110\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"7500\" y1=\"2950\" x2=\"7410\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"7800\" y1=\"2950\" x2=\"7710\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"8100\" y1=\"2950\" x2=\"8010\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"8400\" y1=\"2950\" x2=\"8310\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"8700\" y1=\"2950\" x2=\"8610\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"9000\" y1=\"2950\" x2=\"8910\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"9300\" y1=\"2950\" x2=\"9210\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"9600\" y1=\"2950\" x2=\"9510\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"9900\" y1=\"2950\" x2=\"9810\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"10200\" y1=\"2950\" x2=\"10110\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"10500\" y1=\"2950\" x2=\"10410\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"10800\" y1=\"2950\" x2=\"10710\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"11100\" y1=\"2950\" x2=\"11010\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"11400\" y1=\"2950\" x2=\"11310\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"11700\" y1=\"2950\" x2=\"11610\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"12000\" y1=\"2950\" x2=\"11910\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"12300\" y1=\"2950\" x2=\"12210\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"12600\" y1=\"2950\" x2=\"12510\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"12900\" y1=\"2950\" x2=\"12810\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"13200\" y1=\"2950\" x2=\"13110\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"13500\" y1=\"2950\" x2=\"13410\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"13800\" y1=\"2950\" x2=\"13710\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"14100\" y1=\"2950\" x2=\"14010\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<line x1=\"14400\" y1=\"2950\" x2=\"14310\" y2=\"3040\" stroke=\"#8a97a5\" stroke-width=\"6\"/>\n<text x=\"14760\" y=\"2964\" font-family=\"Helvetica,Arial\" font-size=\"62\" fill=\"#1d2733\">NPA +0,00</text>\n<rect x=\"2100\" y=\"2832\" width=\"12000\" height=\"76\" fill=\"#dfe6ec\" stroke=\"#1d2733\" stroke-width=\"7\"/>\n</g>\n<g id=\"paineis\">\n<line x1=\"2100\" y1=\"900\" x2=\"2100\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"2850\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P1</text>\n<line x1=\"3600\" y1=\"900\" x2=\"3600\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"4350\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P2</text>\n<line x1=\"5100\" y1=\"900\" x2=\"5100\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"5850\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P3</text>\n<line x1=\"6600\" y1=\"900\" x2=\"6600\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"7350\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P4</text>\n<line x1=\"8100\" y1=\"900\" x2=\"8100\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"8850\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P5</text>\n<line x1=\"9600\" y1=\"900\" x2=\"9600\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"10350\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P6</text>\n<line x1=\"11100\" y1=\"900\" x2=\"11100\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"11850\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P7</text>\n<line x1=\"12600\" y1=\"900\" x2=\"12600\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n<text x=\"13350\" y=\"860\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"76\" font-weight=\"bold\" fill=\"#7d8b99\">P8</text>\n<line x1=\"14100\" y1=\"900\" x2=\"14100\" y2=\"2750\" stroke=\"#c2ccd6\" stroke-width=\"7\" stroke-dasharray=\"60 40\"/>\n</g>\n<g id=\"canaletas\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n<path d=\"M2100.0,1050.0 L2920.0,1050.0 L3160.0,1290.0 L4600.0,1290.0 L4840.0,1530.0 L5860.0,1530.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,1230.0 L2720.0,1230.0 L2960.0,1470.0 L4360.0,1470.0 L4600.0,1710.0 L5780.0,1710.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,1410.0 L3600.0,1410.0 L3840.0,1650.0 L4200.0,1650.0 L4440.0,1890.0 L5760.0,1890.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,1590.0 L2520.0,1590.0 L2760.0,1830.0 L3900.0,1830.0 L4140.0,2070.0 L5760.0,2070.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,1850.0 L3280.0,1850.0 L3520.0,2090.0 L5000.0,2090.0 L5240.0,2330.0 L6000.0,2330.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,2110.0 L3000.0,2110.0 L3240.0,2350.0 L5500.0,2350.0 L5740.0,2590.0 L7300.0,2590.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,2370.0 L4300.0,2370.0 L4540.0,2610.0 L8200.0,2610.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2400.0,930.0 L4000.0,930.0 L4240.0,1170.0 L5300.0,1170.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M3080.0,930.0 L3080.0,1070.0 L3500.0,1070.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M3860.0,2550.0 L3860.0,2250.0 L4420.0,2250.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M5080.0,1090.0 L5280.0,1290.0 L5700.0,1290.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M5860.0,1990.0 L5860.0,1510.0 L6100.0,1270.0 L6900.0,1270.0 L7140.0,1510.0 L7140.0,1990.0 L6900.0,2230.0 L6100.0,2230.0 L5860.0,1990.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M7000.0,1270.0 L7000.0,1030.0 L8500.0,1030.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M7140.0,1510.0 L7700.0,1510.0 L7940.0,1270.0 L8140.0,1270.0 L8380.0,1030.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M7140.0,1870.0 L7800.0,1870.0 L8040.0,2110.0 L8040.0,2290.0 L8160.0,2410.0 L8380.0,2410.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M6500.0,2230.0 L6500.0,2450.0 L7700.0,2450.0 L7940.0,2690.0 L8700.0,2690.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M6260.0,2230.0 L6260.0,2450.0 L5500.0,2450.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M5860.0,1750.0 L5500.0,1750.0 L5260.0,1510.0 L4720.0,1510.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M8380.0,1050.0 L11080.0,1050.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M8380.0,1230.0 L9100.0,1230.0 L9340.0,990.0 L11080.0,990.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M8380.0,2330.0 L11080.0,2330.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M8380.0,2510.0 L9700.0,2510.0 L9940.0,2270.0 L11080.0,2270.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,990.0 L11980.0,990.0 L12220.0,1230.0 L13300.0,1230.0 L13540.0,1470.0 L14100.0,1470.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,1050.0 L11500.0,1050.0 L11740.0,1290.0 L13240.0,1290.0 L13480.0,1530.0 L14100.0,1530.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,1270.0 L12320.0,1270.0 L12560.0,1510.0 L13260.0,1510.0 L13500.0,1270.0 L14100.0,1270.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,1470.0 L11760.0,1470.0 L12000.0,1230.0 L12340.0,1230.0 L12580.0,1470.0 L13880.0,1470.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,1770.0 L12580.0,1770.0 L12820.0,2010.0 L13220.0,2010.0 L13460.0,2250.0 L14100.0,2250.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,1990.0 L12000.0,1990.0 L12240.0,2230.0 L13420.0,2230.0 L13660.0,1990.0 L14100.0,1990.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,2330.0 L13440.0,2330.0 L13680.0,2090.0 L14100.0,2090.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M11080.0,2510.0 L12200.0,2510.0 L12440.0,2270.0 L14100.0,2270.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M13400.0,1170.0 L13400.0,1390.0 L13820.0,1390.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M13580.0,1650.0 L13580.0,1910.0 L13820.0,1910.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M13280.0,2150.0 L13280.0,2330.0 L13820.0,2330.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M2100.0,2870.0 L8100.0,2870.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M8100.0,2870.0 L14100.0,2870.0\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<path d=\"M6178.0,2072.0 L6822.0,2072.0 L6822.0,1428.0 L6178.0,1428.0 L6178.0,2072.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M3698.0,1272.0 L4082.0,1272.0 L4082.0,1068.0 L3698.0,1068.0 L3698.0,1272.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M4738.0,2072.0 L5042.0,2072.0 L5042.0,1908.0 L4738.0,1908.0 L4738.0,2072.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M11378.0,1652.0 L11842.0,1652.0 L11842.0,1428.0 L11378.0,1428.0 L11378.0,1652.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M12478.0,2212.0 L12822.0,2212.0 L12822.0,2028.0 L12478.0,2028.0 L12478.0,2212.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M7358.0,1332.0 L7582.0,1332.0 L7582.0,1108.0 L7358.0,1108.0 L7358.0,1332.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M13838.0,2152.0 L14122.0,2152.0 L14122.0,1488.0 L13838.0,1488.0 L13838.0,2152.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<path d=\"M8640.0,1890.0 L10720.0,1890.0 L10720.0,1550.0 L8640.0,1550.0 L8640.0,1890.0\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n</g>\n<g id=\"emendas\">\n<circle cx=\"2920.0\" cy=\"1050.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3160.0\" cy=\"1290.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4600.0\" cy=\"1290.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4840.0\" cy=\"1530.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"2720.0\" cy=\"1230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"2960.0\" cy=\"1470.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4360.0\" cy=\"1470.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4600.0\" cy=\"1710.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3600.0\" cy=\"1410.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3840.0\" cy=\"1650.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4200.0\" cy=\"1650.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4440.0\" cy=\"1890.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"2520.0\" cy=\"1590.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"2760.0\" cy=\"1830.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3900.0\" cy=\"1830.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4140.0\" cy=\"2070.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3280.0\" cy=\"1850.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3520.0\" cy=\"2090.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5000.0\" cy=\"2090.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5240.0\" cy=\"2330.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3000.0\" cy=\"2110.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3240.0\" cy=\"2350.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5500.0\" cy=\"2350.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5740.0\" cy=\"2590.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4300.0\" cy=\"2370.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4540.0\" cy=\"2610.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4000.0\" cy=\"930.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4240.0\" cy=\"1170.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3080.0\" cy=\"1070.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3860.0\" cy=\"2250.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5280.0\" cy=\"1290.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5860.0\" cy=\"1510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6100.0\" cy=\"1270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6900.0\" cy=\"1270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7140.0\" cy=\"1510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7140.0\" cy=\"1990.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6900.0\" cy=\"2230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6100.0\" cy=\"2230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7000.0\" cy=\"1030.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7700.0\" cy=\"1510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7940.0\" cy=\"1270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"8140.0\" cy=\"1270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7800.0\" cy=\"1870.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"8040.0\" cy=\"2110.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"8040.0\" cy=\"2290.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"8160.0\" cy=\"2410.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6500.0\" cy=\"2450.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7700.0\" cy=\"2450.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7940.0\" cy=\"2690.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6260.0\" cy=\"2450.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5500.0\" cy=\"1750.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5260.0\" cy=\"1510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"9100.0\" cy=\"1230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"9340.0\" cy=\"990.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"9700.0\" cy=\"2510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"9940.0\" cy=\"2270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11980.0\" cy=\"990.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12220.0\" cy=\"1230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13300.0\" cy=\"1230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13540.0\" cy=\"1470.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11500.0\" cy=\"1050.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11740.0\" cy=\"1290.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13240.0\" cy=\"1290.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13480.0\" cy=\"1530.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12320.0\" cy=\"1270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12560.0\" cy=\"1510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13260.0\" cy=\"1510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13500.0\" cy=\"1270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11760.0\" cy=\"1470.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12000.0\" cy=\"1230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12340.0\" cy=\"1230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12580.0\" cy=\"1470.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12580.0\" cy=\"1770.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12820.0\" cy=\"2010.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13220.0\" cy=\"2010.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13460.0\" cy=\"2250.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12000.0\" cy=\"1990.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12240.0\" cy=\"2230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13420.0\" cy=\"2230.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13660.0\" cy=\"1990.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13440.0\" cy=\"2330.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13680.0\" cy=\"2090.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12200.0\" cy=\"2510.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12440.0\" cy=\"2270.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13400.0\" cy=\"1390.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13580.0\" cy=\"1910.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13280.0\" cy=\"2330.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6822.0\" cy=\"2072.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6822.0\" cy=\"1428.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"6178.0\" cy=\"1428.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4082.0\" cy=\"1272.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4082.0\" cy=\"1068.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"3698.0\" cy=\"1068.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5042.0\" cy=\"2072.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"5042.0\" cy=\"1908.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"4738.0\" cy=\"1908.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11842.0\" cy=\"1652.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11842.0\" cy=\"1428.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"11378.0\" cy=\"1428.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12822.0\" cy=\"2212.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12822.0\" cy=\"2028.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"12478.0\" cy=\"2028.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7582.0\" cy=\"1332.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7582.0\" cy=\"1108.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"7358.0\" cy=\"1108.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"14122.0\" cy=\"2152.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"14122.0\" cy=\"1488.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"13838.0\" cy=\"1488.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"10720.0\" cy=\"1890.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"10720.0\" cy=\"1550.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<circle cx=\"8640.0\" cy=\"1550.0\" r=\"26\" fill=\"#ffffff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n</g>\n<g id=\"vias\">\n<circle cx=\"5860\" cy=\"1530\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5860\" cy=\"1530\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5780\" cy=\"1710\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5780\" cy=\"1710\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5760\" cy=\"1890\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5760\" cy=\"1890\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5760\" cy=\"2070\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5760\" cy=\"2070\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"6000\" cy=\"2330\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"6000\" cy=\"2330\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"7300\" cy=\"2590\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"7300\" cy=\"2590\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8200\" cy=\"2610\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8200\" cy=\"2610\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"2400\" cy=\"930\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"2400\" cy=\"930\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5300\" cy=\"1170\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5300\" cy=\"1170\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"3080\" cy=\"930\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"3080\" cy=\"930\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"3500\" cy=\"1070\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"3500\" cy=\"1070\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"3860\" cy=\"2550\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"3860\" cy=\"2550\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"4420\" cy=\"2250\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"4420\" cy=\"2250\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5080\" cy=\"1090\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5080\" cy=\"1090\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5700\" cy=\"1290\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5700\" cy=\"1290\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"7000\" cy=\"1270\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"7000\" cy=\"1270\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8500\" cy=\"1030\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8500\" cy=\"1030\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"7140\" cy=\"1510\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"7140\" cy=\"1510\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"7140\" cy=\"1870\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"7140\" cy=\"1870\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8380\" cy=\"2410\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8380\" cy=\"2410\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"6500\" cy=\"2230\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"6500\" cy=\"2230\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8700\" cy=\"2690\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8700\" cy=\"2690\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"6260\" cy=\"2230\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"6260\" cy=\"2230\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5500\" cy=\"2450\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5500\" cy=\"2450\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"5860\" cy=\"1750\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"5860\" cy=\"1750\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"4720\" cy=\"1510\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"4720\" cy=\"1510\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8380\" cy=\"1230\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8380\" cy=\"1230\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8380\" cy=\"2330\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8380\" cy=\"2330\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"8380\" cy=\"2510\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"8380\" cy=\"2510\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"11080\" cy=\"2270\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"11080\" cy=\"2270\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"11080\" cy=\"1270\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"11080\" cy=\"1270\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"11080\" cy=\"1470\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"11080\" cy=\"1470\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13880\" cy=\"1470\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13880\" cy=\"1470\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"11080\" cy=\"1770\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"11080\" cy=\"1770\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"11080\" cy=\"1990\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"11080\" cy=\"1990\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"11080\" cy=\"2510\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"11080\" cy=\"2510\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13400\" cy=\"1170\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13400\" cy=\"1170\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13820\" cy=\"1390\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13820\" cy=\"1390\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13580\" cy=\"1650\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13580\" cy=\"1650\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13820\" cy=\"1910\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13820\" cy=\"1910\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13280\" cy=\"2150\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13280\" cy=\"2150\" r=\"17\" fill=\"#0a7f8c\"/>\n<circle cx=\"13820\" cy=\"2330\" r=\"46\" fill=\"none\" stroke=\"#0a7f8c\" stroke-width=\"13\"/>\n<circle cx=\"13820\" cy=\"2330\" r=\"17\" fill=\"#0a7f8c\"/>\n</g>\n<g id=\"componentes\">\n<rect x=\"6200\" y=\"1450\" width=\"600\" height=\"600\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"6500\" y=\"1770.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f1720\">CPU</text>\n<line x1=\"6226.086956521739\" y1=\"1450\" x2=\"6226.086956521739\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6226.086956521739\" y1=\"2050\" x2=\"6226.086956521739\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6252.173913043478\" y1=\"1450\" x2=\"6252.173913043478\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6252.173913043478\" y1=\"2050\" x2=\"6252.173913043478\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6278.260869565217\" y1=\"1450\" x2=\"6278.260869565217\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6278.260869565217\" y1=\"2050\" x2=\"6278.260869565217\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6304.347826086957\" y1=\"1450\" x2=\"6304.347826086957\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6304.347826086957\" y1=\"2050\" x2=\"6304.347826086957\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6330.434782608696\" y1=\"1450\" x2=\"6330.434782608696\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6330.434782608696\" y1=\"2050\" x2=\"6330.434782608696\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6356.521739130435\" y1=\"1450\" x2=\"6356.521739130435\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6356.521739130435\" y1=\"2050\" x2=\"6356.521739130435\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6382.608695652174\" y1=\"1450\" x2=\"6382.608695652174\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6382.608695652174\" y1=\"2050\" x2=\"6382.608695652174\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6408.695652173913\" y1=\"1450\" x2=\"6408.695652173913\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6408.695652173913\" y1=\"2050\" x2=\"6408.695652173913\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6434.782608695652\" y1=\"1450\" x2=\"6434.782608695652\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6434.782608695652\" y1=\"2050\" x2=\"6434.782608695652\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6460.869565217391\" y1=\"1450\" x2=\"6460.869565217391\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6460.869565217391\" y1=\"2050\" x2=\"6460.869565217391\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6486.95652173913\" y1=\"1450\" x2=\"6486.95652173913\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6486.95652173913\" y1=\"2050\" x2=\"6486.95652173913\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6513.04347826087\" y1=\"1450\" x2=\"6513.04347826087\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6513.04347826087\" y1=\"2050\" x2=\"6513.04347826087\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6539.130434782609\" y1=\"1450\" x2=\"6539.130434782609\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6539.130434782609\" y1=\"2050\" x2=\"6539.130434782609\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6565.217391304348\" y1=\"1450\" x2=\"6565.217391304348\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6565.217391304348\" y1=\"2050\" x2=\"6565.217391304348\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6591.304347826087\" y1=\"1450\" x2=\"6591.304347826087\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6591.304347826087\" y1=\"2050\" x2=\"6591.304347826087\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6617.391304347826\" y1=\"1450\" x2=\"6617.391304347826\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6617.391304347826\" y1=\"2050\" x2=\"6617.391304347826\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6643.478260869565\" y1=\"1450\" x2=\"6643.478260869565\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6643.478260869565\" y1=\"2050\" x2=\"6643.478260869565\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6669.565217391304\" y1=\"1450\" x2=\"6669.565217391304\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6669.565217391304\" y1=\"2050\" x2=\"6669.565217391304\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6695.652173913043\" y1=\"1450\" x2=\"6695.652173913043\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6695.652173913043\" y1=\"2050\" x2=\"6695.652173913043\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6721.739130434783\" y1=\"1450\" x2=\"6721.739130434783\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6721.739130434783\" y1=\"2050\" x2=\"6721.739130434783\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6747.826086956522\" y1=\"1450\" x2=\"6747.826086956522\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6747.826086956522\" y1=\"2050\" x2=\"6747.826086956522\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6773.913043478261\" y1=\"1450\" x2=\"6773.913043478261\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"6773.913043478261\" y1=\"2050\" x2=\"6773.913043478261\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<rect x=\"3720\" y=\"1090\" width=\"340\" height=\"160\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"3890\" y=\"1190.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f1720\">IC01</text>\n<line x1=\"3750.909090909091\" y1=\"1090\" x2=\"3750.909090909091\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3750.909090909091\" y1=\"1250\" x2=\"3750.909090909091\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3781.818181818182\" y1=\"1090\" x2=\"3781.818181818182\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3781.818181818182\" y1=\"1250\" x2=\"3781.818181818182\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3812.727272727273\" y1=\"1090\" x2=\"3812.727272727273\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3812.727272727273\" y1=\"1250\" x2=\"3812.727272727273\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3843.636363636364\" y1=\"1090\" x2=\"3843.636363636364\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3843.636363636364\" y1=\"1250\" x2=\"3843.636363636364\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3874.5454545454545\" y1=\"1090\" x2=\"3874.5454545454545\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3874.5454545454545\" y1=\"1250\" x2=\"3874.5454545454545\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3905.4545454545455\" y1=\"1090\" x2=\"3905.4545454545455\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3905.4545454545455\" y1=\"1250\" x2=\"3905.4545454545455\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3936.3636363636365\" y1=\"1090\" x2=\"3936.3636363636365\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3936.3636363636365\" y1=\"1250\" x2=\"3936.3636363636365\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3967.272727272727\" y1=\"1090\" x2=\"3967.272727272727\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3967.272727272727\" y1=\"1250\" x2=\"3967.272727272727\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3998.181818181818\" y1=\"1090\" x2=\"3998.181818181818\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"3998.181818181818\" y1=\"1250\" x2=\"3998.181818181818\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4029.090909090909\" y1=\"1090\" x2=\"4029.090909090909\" y2=\"1044\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4029.090909090909\" y1=\"1250\" x2=\"4029.090909090909\" y2=\"1296\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<rect x=\"4760\" y=\"1930\" width=\"260\" height=\"120\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"4890\" y=\"2010.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f1720\">IC02</text>\n<line x1=\"4788.888888888889\" y1=\"1930\" x2=\"4788.888888888889\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4788.888888888889\" y1=\"2050\" x2=\"4788.888888888889\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4817.777777777777\" y1=\"1930\" x2=\"4817.777777777777\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4817.777777777777\" y1=\"2050\" x2=\"4817.777777777777\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4846.666666666666\" y1=\"1930\" x2=\"4846.666666666666\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4846.666666666666\" y1=\"2050\" x2=\"4846.666666666666\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4875.555555555556\" y1=\"1930\" x2=\"4875.555555555556\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4875.555555555556\" y1=\"2050\" x2=\"4875.555555555556\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4904.444444444444\" y1=\"1930\" x2=\"4904.444444444444\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4904.444444444444\" y1=\"2050\" x2=\"4904.444444444444\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4933.333333333334\" y1=\"1930\" x2=\"4933.333333333334\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4933.333333333334\" y1=\"2050\" x2=\"4933.333333333334\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4962.222222222223\" y1=\"1930\" x2=\"4962.222222222223\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4962.222222222223\" y1=\"2050\" x2=\"4962.222222222223\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4991.111111111111\" y1=\"1930\" x2=\"4991.111111111111\" y2=\"1884\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"4991.111111111111\" y1=\"2050\" x2=\"4991.111111111111\" y2=\"2096\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<rect x=\"11400\" y=\"1450\" width=\"420\" height=\"180\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"11610\" y=\"1560.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f1720\">IC03</text>\n<line x1=\"11432.307692307691\" y1=\"1450\" x2=\"11432.307692307691\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11432.307692307691\" y1=\"1630\" x2=\"11432.307692307691\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11464.615384615385\" y1=\"1450\" x2=\"11464.615384615385\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11464.615384615385\" y1=\"1630\" x2=\"11464.615384615385\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11496.923076923076\" y1=\"1450\" x2=\"11496.923076923076\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11496.923076923076\" y1=\"1630\" x2=\"11496.923076923076\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11529.23076923077\" y1=\"1450\" x2=\"11529.23076923077\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11529.23076923077\" y1=\"1630\" x2=\"11529.23076923077\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11561.538461538461\" y1=\"1450\" x2=\"11561.538461538461\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11561.538461538461\" y1=\"1630\" x2=\"11561.538461538461\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11593.846153846154\" y1=\"1450\" x2=\"11593.846153846154\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11593.846153846154\" y1=\"1630\" x2=\"11593.846153846154\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11626.153846153846\" y1=\"1450\" x2=\"11626.153846153846\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11626.153846153846\" y1=\"1630\" x2=\"11626.153846153846\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11658.461538461539\" y1=\"1450\" x2=\"11658.461538461539\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11658.461538461539\" y1=\"1630\" x2=\"11658.461538461539\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11690.76923076923\" y1=\"1450\" x2=\"11690.76923076923\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11690.76923076923\" y1=\"1630\" x2=\"11690.76923076923\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11723.076923076924\" y1=\"1450\" x2=\"11723.076923076924\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11723.076923076924\" y1=\"1630\" x2=\"11723.076923076924\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11755.384615384615\" y1=\"1450\" x2=\"11755.384615384615\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11755.384615384615\" y1=\"1630\" x2=\"11755.384615384615\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11787.692307692309\" y1=\"1450\" x2=\"11787.692307692309\" y2=\"1404\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"11787.692307692309\" y1=\"1630\" x2=\"11787.692307692309\" y2=\"1676\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<rect x=\"12500\" y=\"2050\" width=\"300\" height=\"140\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"12650\" y=\"2140.6666666666665\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f1720\">IC04</text>\n<line x1=\"12530\" y1=\"2050\" x2=\"12530\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12530\" y1=\"2190\" x2=\"12530\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12560\" y1=\"2050\" x2=\"12560\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12560\" y1=\"2190\" x2=\"12560\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12590\" y1=\"2050\" x2=\"12590\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12590\" y1=\"2190\" x2=\"12590\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12620\" y1=\"2050\" x2=\"12620\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12620\" y1=\"2190\" x2=\"12620\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12650\" y1=\"2050\" x2=\"12650\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12650\" y1=\"2190\" x2=\"12650\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12680\" y1=\"2050\" x2=\"12680\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12680\" y1=\"2190\" x2=\"12680\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12710\" y1=\"2050\" x2=\"12710\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12710\" y1=\"2190\" x2=\"12710\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12740\" y1=\"2050\" x2=\"12740\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12740\" y1=\"2190\" x2=\"12740\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12770\" y1=\"2050\" x2=\"12770\" y2=\"2004\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"12770\" y1=\"2190\" x2=\"12770\" y2=\"2236\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<rect x=\"13160\" y=\"1280\" width=\"220\" height=\"110\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"13270\" y=\"1349.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">IC05</text>\n<line x1=\"13187.5\" y1=\"1280\" x2=\"13187.5\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13187.5\" y1=\"1390\" x2=\"13187.5\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13215\" y1=\"1280\" x2=\"13215\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13215\" y1=\"1390\" x2=\"13215\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13242.5\" y1=\"1280\" x2=\"13242.5\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13242.5\" y1=\"1390\" x2=\"13242.5\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13270\" y1=\"1280\" x2=\"13270\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13270\" y1=\"1390\" x2=\"13270\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13297.5\" y1=\"1280\" x2=\"13297.5\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13297.5\" y1=\"1390\" x2=\"13297.5\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13325\" y1=\"1280\" x2=\"13325\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13325\" y1=\"1390\" x2=\"13325\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13352.5\" y1=\"1280\" x2=\"13352.5\" y2=\"1234\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<line x1=\"13352.5\" y1=\"1390\" x2=\"13352.5\" y2=\"1436\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<rect x=\"7380\" y=\"1130\" width=\"180\" height=\"180\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"7470\" y=\"1234.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">L1</text>\n<rect x=\"5580\" y=\"1100\" width=\"90\" height=\"90\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"5625\" y=\"1159.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">C1</text>\n<rect x=\"5700\" y=\"1100\" width=\"90\" height=\"90\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"5745\" y=\"1159.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">C2</text>\n<rect x=\"5820\" y=\"1100\" width=\"90\" height=\"90\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"5865\" y=\"1159.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">C3</text>\n<rect x=\"4460\" y=\"1464\" width=\"120\" height=\"46\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"4520\" y=\"1501.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">R1</text>\n<rect x=\"4640\" y=\"1464\" width=\"120\" height=\"46\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"4700\" y=\"1501.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">R2</text>\n<rect x=\"11960\" y=\"1864\" width=\"120\" height=\"46\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"12020\" y=\"1901.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">R3</text>\n<rect x=\"12140\" y=\"1864\" width=\"120\" height=\"46\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"12200\" y=\"1901.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">R4</text>\n<rect x=\"8840\" y=\"1080\" width=\"160\" height=\"90\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"8920\" y=\"1139.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">Q1</text>\n<rect x=\"10000\" y=\"2380\" width=\"160\" height=\"90\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"10080\" y=\"2439.6666666666665\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">Q2</text>\n<rect x=\"13860\" y=\"1510\" width=\"240\" height=\"620\" fill=\"url(#hatch)\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"13980\" y=\"1834.6666666666667\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"44\" font-weight=\"bold\" fill=\"#0f1720\">EDGE</text>\n</g>\n<g id=\"marca\">\n<rect x=\"8380\" y=\"1150\" width=\"2600\" height=\"1000\" fill=\"none\" stroke=\"#b45309\" stroke-width=\"9\" stroke-dasharray=\"90 60\"/>\n<text x=\"9680\" y=\"2246\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"52\" fill=\"#b45309\">ZONA DE PROTECAO DA MARCA - nenhuma trilha invade</text>\n<rect x=\"8680\" y=\"1590\" width=\"2000\" height=\"260\" fill=\"none\" stroke=\"#1d2733\" stroke-width=\"9\"/>\n<text x=\"9680\" y=\"1782\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"180\" font-weight=\"bold\" letter-spacing=\"14\" fill=\"#1d2733\">SIEMENS</text>\n<text x=\"9680\" y=\"2070\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"66\" fill=\"#4a5865\">Tecnologia que conecta o futuro</text>\n<text x=\"8680\" y=\"1920\" font-family=\"Helvetica,Arial\" font-size=\"46\" fill=\"#7d8b99\">letreiro: aplicar arte oficial do brand book - nao redesenhar</text>\n</g>\n<g id=\"sensores\">\n<rect x=\"2180\" y=\"1280\" width=\"140\" height=\"140\" fill=\"#fff\" stroke=\"#0f766e\" stroke-width=\"12\"/>\n<text x=\"2250\" y=\"1372\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f766e\">R</text>\n<line x1=\"2340\" y1=\"1350\" x2=\"8250\" y2=\"1350\" stroke=\"#0f766e\" stroke-width=\"8\" stroke-dasharray=\"120 70\" marker-end=\"url(#seta)\"/>\n<text x=\"5250\" y=\"1310\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"56\" fill=\"#0f766e\">S-A LD2450 - cobertura 6 m</text>\n<rect x=\"13880\" y=\"1280\" width=\"140\" height=\"140\" fill=\"#fff\" stroke=\"#0f766e\" stroke-width=\"12\"/>\n<text x=\"13950\" y=\"1372\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#0f766e\">R</text>\n<line x1=\"13860\" y1=\"1350\" x2=\"7950\" y2=\"1350\" stroke=\"#0f766e\" stroke-width=\"8\" stroke-dasharray=\"120 70\" marker-end=\"url(#seta)\"/>\n<text x=\"10950\" y=\"1310\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"56\" fill=\"#0f766e\">S-B LD2450 - cobertura 6 m</text>\n</g>\n<g id=\"zonas\">\n<line x1=\"2100\" y1=\"3000\" x2=\"5500\" y2=\"3000\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"2100\" y1=\"2960\" x2=\"2100\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"5500\" y1=\"2960\" x2=\"5500\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<text x=\"3800\" y=\"3095\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#4a5865\">ZONA A - BARRAMENTO DE ENTRADA</text>\n<line x1=\"5500\" y1=\"3000\" x2=\"8380\" y2=\"3000\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"5500\" y1=\"2960\" x2=\"5500\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"8380\" y1=\"2960\" x2=\"8380\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<text x=\"6940\" y=\"3095\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#4a5865\">ZONA B - NUCLEO / CPU</text>\n<line x1=\"8380\" y1=\"3000\" x2=\"11080\" y2=\"3000\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"8380\" y1=\"2960\" x2=\"8380\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"11080\" y1=\"2960\" x2=\"11080\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<text x=\"9730\" y=\"3095\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#4a5865\">ZONA C - MARCA</text>\n<line x1=\"11080\" y1=\"3000\" x2=\"14100\" y2=\"3000\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"11080\" y1=\"2960\" x2=\"11080\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<line x1=\"14100\" y1=\"2960\" x2=\"14100\" y2=\"3040\" stroke=\"#4a5865\" stroke-width=\"10\"/>\n<text x=\"12590\" y=\"3095\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"62\" font-weight=\"bold\" fill=\"#4a5865\">ZONA D - MALHA DE DADOS</text>\n</g>\n<g id=\"forca\">\n<line x1=\"2100\" y1=\"3230\" x2=\"5100\" y2=\"3230\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<line x1=\"2100\" y1=\"3190\" x2=\"2100\" y2=\"3270\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<text x=\"3600\" y=\"3325\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"56\" fill=\"#b91c1c\">Z1 | F1 LRS-450-12 | 1924 px | 32.1 m | 289 W op.</text>\n<line x1=\"5100\" y1=\"3230\" x2=\"8100\" y2=\"3230\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<line x1=\"5100\" y1=\"3190\" x2=\"5100\" y2=\"3270\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<text x=\"6600\" y=\"3325\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"56\" fill=\"#b91c1c\">Z2 | F2 LRS-450-12 | 1673 px | 27.9 m | 251 W op.</text>\n<line x1=\"8100\" y1=\"3230\" x2=\"11100\" y2=\"3230\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<line x1=\"8100\" y1=\"3190\" x2=\"8100\" y2=\"3270\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<text x=\"9600\" y=\"3325\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"56\" fill=\"#b91c1c\">Z3 | F3 LRS-450-12 | 1261 px | 21.0 m | 189 W op.</text>\n<line x1=\"11100\" y1=\"3230\" x2=\"14100\" y2=\"3230\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<line x1=\"11100\" y1=\"3190\" x2=\"11100\" y2=\"3270\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n<text x=\"12600\" y=\"3325\" text-anchor=\"middle\" font-family=\"Helvetica,Arial\" font-size=\"56\" fill=\"#b91c1c\">Z4 | F4 LRS-450-12 | 2069 px | 34.5 m | 310 W op.</text>\n<line x1=\"14100\" y1=\"3190\" x2=\"14100\" y2=\"3270\" stroke=\"#b91c1c\" stroke-width=\"10\"/>\n</g>\n<g id=\"cotas\" font-family=\"Helvetica,Arial\" fill=\"#1d2733\">\n<line x1=\"2100\" y1=\"640\" x2=\"14100\" y2=\"640\" stroke=\"#1d2733\" stroke-width=\"8\" marker-end=\"url(#seta)\" marker-start=\"url(#seta)\"/>\n<text x=\"8100\" y=\"600\" text-anchor=\"middle\" font-size=\"86\" font-weight=\"bold\">12.000 mm  =  8 x 1.500 (painel)</text>\n<line x1=\"2100\" y1=\"595\" x2=\"2100\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"3600\" y1=\"595\" x2=\"3600\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"5100\" y1=\"595\" x2=\"5100\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"6600\" y1=\"595\" x2=\"6600\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"8100\" y1=\"595\" x2=\"8100\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"9600\" y1=\"595\" x2=\"9600\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"11100\" y1=\"595\" x2=\"11100\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"12600\" y1=\"595\" x2=\"12600\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"14100\" y1=\"595\" x2=\"14100\" y2=\"685\" stroke=\"#1d2733\" stroke-width=\"8\"/>\n<line x1=\"1640\" y1=\"2870\" x2=\"2100\" y2=\"2870\" stroke=\"#1d2733\" stroke-width=\"7\" stroke-dasharray=\"40 30\"/>\n<text x=\"1630\" y=\"2852\" text-anchor=\"end\" font-size=\"60\" font-weight=\"bold\">+0,08</text>\n<text x=\"1630\" y=\"2922\" text-anchor=\"end\" font-size=\"46\" fill=\"#6b7a89\">eixo do rodape luminoso</text>\n<line x1=\"1640\" y1=\"2750\" x2=\"2100\" y2=\"2750\" stroke=\"#1d2733\" stroke-width=\"7\" stroke-dasharray=\"40 30\"/>\n<text x=\"1630\" y=\"2732\" text-anchor=\"end\" font-size=\"60\" font-weight=\"bold\">+0,20</text>\n<text x=\"1630\" y=\"2802\" text-anchor=\"end\" font-size=\"46\" fill=\"#6b7a89\">base da faixa grafica</text>\n<line x1=\"1640\" y1=\"900\" x2=\"2100\" y2=\"900\" stroke=\"#1d2733\" stroke-width=\"7\" stroke-dasharray=\"40 30\"/>\n<text x=\"1630\" y=\"882\" text-anchor=\"end\" font-size=\"60\" font-weight=\"bold\">+2,05</text>\n<text x=\"1630\" y=\"952\" text-anchor=\"end\" font-size=\"46\" fill=\"#6b7a89\">topo da faixa grafica</text>\n<line x1=\"1800\" y1=\"2750\" x2=\"1800\" y2=\"900\" stroke=\"#1d2733\" stroke-width=\"8\" marker-end=\"url(#seta)\" marker-start=\"url(#seta)\"/>\n<text transform=\"translate(1760,1825) rotate(-90)\" text-anchor=\"middle\" font-size=\"66\" font-weight=\"bold\">1.850</text>\n</g>\n<g id=\"legenda\" font-family=\"Helvetica,Arial\" fill=\"#1d2733\">\n<rect x=\"2100\" y=\"3580\" width=\"6400\" height=\"800\" fill=\"none\" stroke=\"#c2ccd6\" stroke-width=\"7\"/>\n<text x=\"2160\" y=\"3660\" font-size=\"70\" font-weight=\"bold\">LEGENDA</text>\n<line x1=\"2180\" y1=\"3754\" x2=\"2430\" y2=\"3754\" stroke=\"#0a7f8c\" stroke-width=\"14\"/>\n<text x=\"2510\" y=\"3770\" font-size=\"56\">Canaleta usinada 14 x 14 mm - fita WS2815 + difusor acrilico rente</text>\n<line x1=\"2180\" y1=\"3859\" x2=\"2430\" y2=\"3859\" stroke=\"#9aa7b4\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<text x=\"2510\" y=\"3875\" font-size=\"56\">Canaleta de halo - retroilumina o contorno da peca impressa</text>\n<circle cx=\"2300\" cy=\"3964\" r=\"26\" fill=\"#fff\" stroke=\"#c2410c\" stroke-width=\"9\"/>\n<text x=\"2510\" y=\"3980\" font-size=\"56\">Ponto de emenda (111 no total) - corte + furo passante + jumper 3 vias por tras</text>\n<line x1=\"2180\" y1=\"4069\" x2=\"2430\" y2=\"4069\" stroke=\"#b45309\" stroke-width=\"14\" stroke-dasharray=\"70 45\"/>\n<text x=\"2510\" y=\"4085\" font-size=\"56\">Zona de protecao da marca</text>\n<line x1=\"2180\" y1=\"4174\" x2=\"2430\" y2=\"4174\" stroke=\"#0f766e\" stroke-width=\"14\"/>\n<text x=\"2510\" y=\"4190\" font-size=\"56\">Radar mmWave LD2450 + cone de cobertura</text>\n<line x1=\"2180\" y1=\"4279\" x2=\"2430\" y2=\"4279\" stroke=\"#b91c1c\" stroke-width=\"14\"/>\n<text x=\"2510\" y=\"4295\" font-size=\"56\">Limite de zona de forca (1 fonte + 1 bloco de distribuicao por zona)</text>\n</g>\n<g id=\"selo\" font-family=\"Helvetica,Arial\" fill=\"#1d2733\">\n<rect x=\"9900\" y=\"3580\" width=\"4200\" height=\"800\" fill=\"none\" stroke=\"#1d2733\" stroke-width=\"10\"/>\n<text x=\"9970\" y=\"3710\" font-size=\"96\" font-weight=\"bold\">CORREDOR TECNOLOGICO</text>\n<text x=\"9970\" y=\"3825\" font-size=\"72\">Cliente: Siemens</text>\n<text x=\"9970\" y=\"3930\" font-size=\"56\" fill=\"#4a5865\">Elevacao tecnica - parede de 12,00 m</text>\n<text x=\"9970\" y=\"4035\" font-size=\"56\" fill=\"#4a5865\">6927 pixels enderecaveis | 114.7 m de fita | 13 saidas de dados</text>\n<text x=\"9970\" y=\"4140\" font-size=\"56\" fill=\"#4a5865\">Pico com ABL: 1039 W | rede 220 V: 5.4 A</text>\n<text x=\"9970\" y=\"4245\" font-size=\"56\" fill=\"#4a5865\">Escala 1:20 em A1 | cotas em mm | rev. 00</text>\n</g>\n</svg>";</script>
+<script>
+(function(){
+'use strict';
+var L = LAYOUT, EN = ENGINE;
+var C = L.CORREDOR;
+
+/* ---------------------------------------------------------------------------
+   Escalas de renderização.
+   A tela da parede cobre x 0..12000 mm e y do piso (NPA) ao topo da faixa.
+--------------------------------------------------------------------------- */
+var MAT = 0.22;                      // px por mm na tela de material
+var EMI = 0.11;                      // px por mm no buffer emissivo
+var ALT_MM = C.faixaBase + C.faixaAltura;   // 200 + 1850 = 2050 mm
+var Wm = Math.round(C.comprimento * MAT), Hm = Math.round(ALT_MM * MAT);
+var We = Math.round(C.comprimento * EMI), He = Math.round(ALT_MM * EMI);
+
+// layout(y) -> topo da tela.  y=1850 no topo, y=-200 no piso.
+function telaY(y, esc){ return (C.faixaAltura - y) * esc; }
+function telaX(x, esc){ return x * esc; }
+
+var tela = document.getElementById('telaParede');
+tela.width = Wm; tela.height = Hm;
+var ctx = tela.getContext('2d');
+
+var refl = document.getElementById('telaReflexo');
+refl.width = Wm; refl.height = Hm;
+var rctx = refl.getContext('2d');
+
+var material = document.createElement('canvas');
+material.width = Wm; material.height = Hm;
+var mctx = material.getContext('2d');
+
+var emissivo = document.createElement('canvas');
+emissivo.width = We; emissivo.height = He;
+var ectx = emissivo.getContext('2d');
+var imgEmi = ectx.createImageData(We, He);
+
+// tela de brilho largo: 1/4 da resolucao emissiva, reampliada na composicao
+var brilho = document.createElement('canvas');
+brilho.width = Math.round(We/4); brilho.height = Math.round(He/4);
+var bctx = brilho.getContext('2d');
+
+/* ---------------------------------------------------------------------------
+   CAMADA DE MATÉRIA — desenhada uma única vez.
+   É o painel apagado: grafite, canaletas escavadas, peças impressas, letreiro.
+--------------------------------------------------------------------------- */
+function desenharMateria(){
+  var g = mctx;
+  g.fillStyle = '#11161a'; g.fillRect(0,0,Wm,Hm);
+
+  // painel: leve gradiente vertical + textura fina
+  var grad = g.createLinearGradient(0,0,0,telaY(0,MAT));
+  grad.addColorStop(0,'#171d22'); grad.addColorStop(1,'#0e1316');
+  g.fillStyle = grad; g.fillRect(0,0,Wm,telaY(0,MAT));
+  g.globalAlpha = .045;
+  for (var i=0;i<2600;i++){
+    g.fillStyle = i%2 ? '#ffffff' : '#000000';
+    g.fillRect(Math.random()*Wm, Math.random()*telaY(0,MAT), 1.6, 1.6);
+  }
+  g.globalAlpha = 1;
+
+  // juntas entre painéis de 1,50 m
+  g.strokeStyle = 'rgba(0,0,0,.42)'; g.lineWidth = 1.4;
+  for (var p=1;p<8;p++){
+    var xj = telaX(p*1500, MAT);
+    g.beginPath(); g.moveTo(xj,0); g.lineTo(xj,telaY(0,MAT)); g.stroke();
+  }
+
+  // canaletas escavadas: sombra no fundo + fio de luz na aresta superior
+  var mapa = EN_MAPA;
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  mapa.tracos.forEach(function(tr){
+    tracarCaminho(g, tr.pts, MAT);
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 14*MAT; g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.055)'; g.lineWidth = 14*MAT*0.42;
+    g.translate(0,-1.1); g.stroke(); g.translate(0,1.1);
+  });
+
+  // peças impressas em 3D: corpo com luz vinda de cima e sombra projetada
+  L.COMPONENTES.forEach(function(c){
+    var x = telaX(c.x,MAT), y = telaY(c.y+c.a,MAT);
+    var w = c.l*MAT, h = c.a*MAT, rel = Math.max(2, c.e*MAT*0.9);
+    g.fillStyle = 'rgba(0,0,0,.5)';
+    g.fillRect(x+rel*0.5, y+rel*0.7, w, h);
+    var gc = g.createLinearGradient(0,y,0,y+h);
+    gc.addColorStop(0,'#5a6672'); gc.addColorStop(.30,'#3b454e'); gc.addColorStop(1,'#222a30');
+    g.fillStyle = gc; g.fillRect(x,y,w,h);
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(x,y+.6); g.lineTo(x+w,y+.6); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(x,y+h-.6); g.lineTo(x+w,y+h-.6); g.stroke();
+    if (c.pinos){
+      g.fillStyle = '#8b98a4';
+      var passo = w/(c.pinos+1);
+      for (var k=1;k<=c.pinos;k++){
+        g.fillRect(x+passo*k-1.1, y-rel*0.8, 2.2, rel*0.8);
+        g.fillRect(x+passo*k-1.1, y+h, 2.2, rel*0.8);
+      }
+    }
+    if (c.tipo==='cpu'){
+      g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1;
+      g.strokeRect(x+w*.16, y+h*.16, w*.68, h*.68);
+    }
+  });
+
+  // letreiro
+  var M = L.MARCA;
+  g.fillStyle = '#dfe9ec';
+  g.font = '700 ' + (M.alturaCaixa*MAT*0.86) + 'px Barlow Condensed, Archivo, sans-serif';
+  g.textBaseline = 'alphabetic';
+  var texto = M.texto, larguraAlvo = M.largura*MAT;
+  var med = g.measureText(texto).width;
+  g.save();
+  g.translate(telaX(M.x,MAT), telaY(M.y,MAT));
+  g.scale(larguraAlvo/med, 1);
+  g.fillText(texto, 0, 0);
+  g.restore();
+  g.fillStyle = '#8fa0a8';
+  g.font = '500 ' + (M.assinaturaAltura*MAT) + 'px Archivo, sans-serif';
+  var med2 = g.measureText(M.assinatura).width;
+  g.fillText(M.assinatura, telaX(M.x,MAT) + (larguraAlvo-med2)/2, telaY(M.assinaturaY,MAT));
+
+  // perfil de alumínio do rodapé e piso
+  g.fillStyle = '#1b2226';
+  g.fillRect(0, telaY(C.rodapeY,MAT)-5*MAT*3, Wm, 30*MAT);
+  g.fillStyle = '#0a0d0f';
+  g.fillRect(0, telaY(-200,MAT)-2, Wm, 6);
+}
+
+function tracarCaminho(g, pts, esc){
+  g.beginPath();
+  for (var i=0;i<pts.length;i++){
+    var X = telaX(pts[i][0],esc), Y = telaY(pts[i][1],esc);
+    if (i) g.lineTo(X,Y); else g.moveTo(X,Y);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   ENGINE + mapa de pixels
+--------------------------------------------------------------------------- */
+var EN_MAPA = L.gerarMapaPixels();
+var motor = new EN.Engine({ mapa: EN_MAPA });
+
+// posição de cada pixel já convertida para o buffer emissivo
+var exs = new Int16Array(EN_MAPA.pixels.length);
+var eys = new Int16Array(EN_MAPA.pixels.length);
+EN_MAPA.pixels.forEach(function(p,i){
+  exs[i] = Math.round(telaX(p.x,EMI));
+  eys[i] = Math.round(telaY(p.y,EMI));
+});
+
+/* ---------------------------------------------------------------------------
+   Pintura do quadro emissivo: escreve direto no ImageData (rápido) e o brilho
+   nasce dos passes de desfoque, que é o que um difusor faz de verdade.
+--------------------------------------------------------------------------- */
+function pintarEmissivo(rgb){
+  var d = imgEmi.data;
+  d.fill(0);
+  for (var i=0, n=exs.length; i<n; i++){
+    var r = rgb[i*3], gg = rgb[i*3+1], b = rgb[i*3+2];
+    if (r+gg+b < 8) continue;
+    var x = exs[i], y = eys[i];
+    for (var dy=0; dy<2; dy++){
+      var yy = y+dy; if (yy<0||yy>=He) continue;
+      for (var dx=0; dx<2; dx++){
+        var xx = x+dx; if (xx<0||xx>=We) continue;
+        var o = (yy*We+xx)*4;
+        var nr = d[o]+r, ng = d[o+1]+gg, nb = d[o+2]+b;
+        d[o]   = nr>255?255:nr;
+        d[o+1] = ng>255?255:ng;
+        d[o+2] = nb>255?255:nb;
+        d[o+3] = 255;
+      }
+    }
+  }
+  ectx.putImageData(imgEmi,0,0);
+}
+
+function compor(){
+  // brilho largo numa tela pequena: um unico desfoque barato
+  bctx.clearRect(0,0,brilho.width,brilho.height);
+  bctx.filter = 'blur(1.6px)';
+  bctx.drawImage(emissivo,0,0,brilho.width,brilho.height);
+  bctx.filter = 'none';
+
+  ctx.drawImage(material,0,0);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = .62; ctx.drawImage(brilho,0,0,Wm,Hm);          // halo amplo
+  ctx.globalAlpha = .80; ctx.filter = 'blur(2.5px)'; ctx.drawImage(emissivo,0,0,Wm,Hm);
+  ctx.filter = 'none';
+  ctx.globalAlpha = .95; ctx.drawImage(emissivo,0,0,Wm,Hm);        // nucleo
+  ctx.restore();
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  rctx.drawImage(tela,0,0);
+}
+
+/* ---------------------------------------------------------------------------
+   Pessoas simuladas
+--------------------------------------------------------------------------- */
+var pessoas = [];
+var proxId = 1;
+var pararNaMarca = true;
+var velocidade = 1300;   // mm/s
+var elems = { 1:null, 2:null };
+var poolEl = [document.getElementById('pessoaA'), document.getElementById('pessoaB')];
+
+function entrar(sentido){
+  if (pessoas.length >= 2) return;
+  pessoas.push({
+    id: proxId++,
+    x: sentido > 0 ? -900 : 12900,
+    v: velocidade * sentido,
+    dir: sentido,
+    paradaAte: 0,
+    jaParou: false
+  });
+}
+
+function moverPessoas(dt, agora){
+  var s = dt/1000;
+  for (var i=pessoas.length-1;i>=0;i--){
+    var p = pessoas[i];
+    if (agora < p.paradaAte){ p.v = 0; continue; }
+    p.v = velocidade * p.dir;
+    p.x += p.v * s;
+    // parada em frente à assinatura da marca
+    var xMarca = L.MARCA.x + L.MARCA.largura/2;
+    if (pararNaMarca && !p.jaParou && Math.abs(p.x - xMarca) < 140){
+      p.jaParou = true; p.paradaAte = agora + 5200; p.v = 0;
+    }
+    if (p.x < -1400 || p.x > 13400) pessoas.splice(i,1);
+  }
+  motor.setPessoas(pessoas.map(function(p){ return {id:p.id, x:p.x, v:p.v}; }));
+}
+
+function posicionarPessoas(){
+  // A tela cobre 2.050 mm de altura. Uma pessoa de 1.750 mm ocupa 85% dela -
+  // fixar a altura em px faria a figura mudar de tamanho a cada viewport.
+  var altPessoa = (parede.clientHeight || 200) * (1750 / ALT_MM);
+  poolEl.forEach(function(el,i){
+    var p = pessoas[i];
+    if (!p){ el.style.display='none'; return; }
+    el.style.display = 'block';
+    el.style.height = altPessoa + 'px';
+    el.style.width = (altPessoa * 64/206) + 'px';
+    el.style.marginLeft = (-altPessoa * 32/206) + 'px';
+    var frac = p.x / C.comprimento;               // 0..1 ao longo da parede
+    var px = frac * (parede.clientWidth || 1);
+    // ~900 mm à frente da parede, dentro do mesmo espaço 3D: a perspectiva
+    // da figura sai de graça, junto com a da parede
+    var z = (parede.clientWidth || 1) / C.comprimento * 900;
+    el.style.transform = 'translateX(' + px + 'px) translateZ(' + z + 'px)';
+    el.classList.toggle('andando', Math.abs(p.v) > 60);
+  });
+}
+var parede = document.getElementById('parede');
+
+/* ---------------------------------------------------------------------------
+   Máquina de estados na interface
+--------------------------------------------------------------------------- */
+var DESCRICAO = {
+  REPOUSO:     ['Repouso','Corredor vazio. A parede respira devagar.','Ninguém detectado. Trilhas em 7,5% de brilho, um pacote solitário a cada três segundos.'],
+  DESPERTAR:   ['Despertar','Alguém entrou. A energia varre o corredor.','Uma frente de luz parte da entrada usada a 6,5 m/s e energiza as trilhas. Cada peça impressa acende na ordem em que a frente passa por ela.'],
+  ACOMPANHAR:  ['Acompanhar','A luz caminha junto, 70 cm à frente.','O halo segue a posição devolvida pelo radar. Andar mais rápido acelera os pacotes de dados nas trilhas.'],
+  PERMANENCIA: ['Permanência','Parou. A parede processa ali.','Detectada imobilidade por mais de 2,2 s: os pacotes convergem para o processador central e a assinatura pulsa.'],
+  ADORMECER:   ['Adormecer','Esvaziou. A energia escoa pelas pontas.','Doze segundos sem ninguém. A energia extra drena do centro para as extremidades, sem apagão — o piso de repouso nunca é drenado.'],
+  SHOW:        ['Modo evento','Coreografia manual para visitas.','Sequência completa acionada pelo painel, independente dos sensores.']
+};
+var ORDEM = ['REPOUSO','DESPERTAR','ACOMPANHAR','PERMANENCIA','ADORMECER'];
+var cadeia = document.getElementById('cadeia');
+ORDEM.forEach(function(k){
+  var d = document.createElement('div');
+  d.className = 'passo'; d.dataset.estado = k;
+  d.innerHTML = '<div class="n">'+DESCRICAO[k][0]+'</div><div class="c">'+DESCRICAO[k][1]+'</div>';
+  cadeia.appendChild(d);
+});
+var passos = cadeia.querySelectorAll('.passo');
+
+var fichasEstados = document.getElementById('fichasEstados');
+ORDEM.forEach(function(k,i){
+  var f = document.createElement('div');
+  f.className = 'ficha';
+  f.innerHTML = '<div class="k">Estado '+(i+1)+'</div><div class="v" style="font-size:19px">'+
+                DESCRICAO[k][0]+'</div><div class="d">'+DESCRICAO[k][2]+'</div>';
+  fichasEstados.appendChild(f);
+});
+
+/* ---------------------------------------------------------------------------
+   Telemetria
+--------------------------------------------------------------------------- */
+var el = function(id){ return document.getElementById(id); };
+var hist = new Float32Array(150); var hp = 0;
+var gCanvas = el('grafico'), gctx = gCanvas.getContext('2d');
+function desenharGrafico(){
+  var w = gCanvas.clientWidth, h = 44;
+  if (w < 8) return;
+  if (gCanvas.width !== w*2){ gCanvas.width = w*2; gCanvas.height = h*2; }
+  gctx.setTransform(2,0,0,2,0,0);
+  gctx.clearRect(0,0,w,h);
+  var teto = 1440;
+  gctx.strokeStyle = '#28333a'; gctx.lineWidth = 1;
+  gctx.beginPath(); gctx.moveTo(0,h-0.5); gctx.lineTo(w,h-0.5); gctx.stroke();
+  gctx.beginPath();
+  for (var i=0;i<hist.length;i++){
+    var v = hist[(hp+i)%hist.length];
+    var x = i/(hist.length-1)*w, y = h - (v/teto)*h;
+    if (i) gctx.lineTo(x,y); else gctx.moveTo(x,y);
+  }
+  gctx.strokeStyle = '#00e6c8'; gctx.lineWidth = 1.4; gctx.stroke();
+  gctx.lineTo(w,h); gctx.lineTo(0,h); gctx.closePath();
+  gctx.fillStyle = 'rgba(0,230,200,.10)'; gctx.fill();
+}
+
+function atualizarPainel(t, fps){
+  var nome = DESCRICAO[t.estado];
+  el('hudNome').textContent = nome[0];
+  el('hudFrase').textContent = nome[1];
+  el('hudLuz').style.background = t.estado==='REPOUSO' ? '#3d4a52' : '#00e6c8';
+  el('hudLuz').style.boxShadow = t.estado==='REPOUSO' ? 'none' : '0 0 12px #00e6c8';
+  for (var i=0;i<passos.length;i++) passos[i].classList.toggle('on', passos[i].dataset.estado===t.estado);
+  el('tPessoas').textContent = t.pessoas;
+  el('tPacotes').textContent = t.pacotes;
+  el('tCorrente').innerHTML = t.correnteA.toFixed(1) + ' <small>A</small>';
+  el('tPotencia').innerHTML = Math.round(t.consumoW) + ' <small>W</small>';
+  var ablOn = t.abl < 0.999;
+  el('boxAbl').classList.toggle('aviso', ablOn);
+  el('tAbl').textContent = ablOn ? ('cortando ' + Math.round((1-t.abl)*100) + '%') : 'inativo';
+  el('tFps').innerHTML = Math.round(fps) + ' <small>fps</small>';
+}
+
+/* ---------------------------------------------------------------------------
+   Laço principal
+--------------------------------------------------------------------------- */
+var ultimo = performance.now(), acumFps = 60, contaGraf = 0;
+function laco(agora){
+  var dt = Math.min(60, agora - ultimo); ultimo = agora;
+  acumFps += (1000/Math.max(1,dt) - acumFps) * 0.06;
+
+  moverPessoas(dt, agora);
+  var rgb = motor.passo(dt);
+  pintarEmissivo(rgb);
+  compor();
+  posicionarPessoas();
+
+  var t = motor.telemetria();
+  atualizarPainel(t, acumFps);
+  if (++contaGraf % 4 === 0){
+    hist[hp] = t.consumoW; hp = (hp+1) % hist.length;
+    desenharGrafico();
+  }
+  requestAnimationFrame(laco);
+}
+
+/* ---------------------------------------------------------------------------
+   Controles
+--------------------------------------------------------------------------- */
+el('bEsq').addEventListener('click', function(){ entrar(+1); });
+el('bDir').addEventListener('click', function(){ entrar(-1); });
+el('bDois').addEventListener('click', function(){ pessoas.length = 0; entrar(+1); entrar(-1); });
+el('bLimpa').addEventListener('click', function(){ pessoas.length = 0; motor.setPessoas([]); });
+el('bParar').addEventListener('click', function(){
+  pararNaMarca = !pararNaMarca; this.classList.toggle('ativo', pararNaMarca);
+});
+el('sVel').addEventListener('input', function(){
+  velocidade = parseFloat(this.value)*1000;
+  el('oVel').textContent = parseFloat(this.value).toFixed(1).replace('.',',') + ' m/s';
+});
+el('sBrilho').addEventListener('input', function(){
+  motor.cfg.brilhoMestre = parseFloat(this.value);
+  el('oBrilho').textContent = Math.round(this.value*100) + '%';
+});
+
+/* ---------------------------------------------------------------------------
+   Ficha técnica e cabeçalho, calculados a partir do layout real
+--------------------------------------------------------------------------- */
+var tot = EN_MAPA.totais;
+var nStrands = Object.keys(EN_MAPA.strands).length;
+el('mPixels').textContent = tot.qtdPixels.toLocaleString('pt-BR');
+el('mSaidas').textContent = nStrands;
+
+var LINHAS = [
+  ['Extensão tratada','12,00 m','parede única, faixa gráfica de 1,85 m de altura'],
+  ['Pixels endereçáveis', tot.qtdPixels.toLocaleString('pt-BR'), 'WS2815 12 V, 60 LED/m, linha de dados com backup'],
+  ['Fita instalada', tot.metrosFita.toFixed(1).replace('.',',') + ' m', 'embutida em canaleta usinada de 14 × 14 mm'],
+  ['Pontos de emenda', String(tot.qtdCantos), 'corte + furo passante + jumper de 3 vias por trás do painel'],
+  ['Saídas de dados', String(nStrands), 'máx. ' + FICHA.maiorStrand + ' px por saída — teto de ' + FICHA.tetoFps + ' quadros por segundo'],
+  ['Controladores','2 × ESP32 com Ethernet','recebem sACN do engine; Wi-Fi não sustenta a sincronia'],
+  ['Fontes', FICHA.qtdFontes + ' × ' + FICHA.potFonte + ' W / 12 V','uma por zona de 3 m, com limitador de ' + FICHA.ablPorZona + ' A por zona'],
+  ['Pico com ABL', FICHA.picoW.toLocaleString('pt-BR') + ' W','consumo na rede 220 V: ' + FICHA.redeA + ' A — circuito exclusivo, curva C'],
+  ['Repouso','≈ ' + FICHA.repousoW + ' W','estado dominante em horas de uso; controlado pela agenda de brilho'],
+  ['Sensores','2 × radar mmWave LD2450','posição de até 3 pessoas, alcance de 6 m cada']
+];
+var tb = document.querySelector('#tabelaFicha tbody');
+LINHAS.forEach(function(l){
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<th style="width:24%">'+l[0]+'</th><td class="n" style="width:20%">'+l[1]+'</td><td>'+l[2]+'</td>';
+  tb.appendChild(tr);
+});
+
+document.getElementById('caixaElevacao').innerHTML = ELEVACAO_SVG;
+
+/* ------------------------------------------------------------------- start */
+function iniciar(){
+  desenharMateria();
+  desenharGrafico();
+  requestAnimationFrame(laco);
+}
+// o letreiro e desenhado no canvas: sem a fonte pronta, sai no fallback
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(iniciar);
+else iniciar();
+// abre com uma passagem, para a página já mostrar o comportamento
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setTimeout(function(){ entrar(+1); }, 1200);
+}
+})();
+</script>

@@ -1,0 +1,763 @@
+<title>Corredor Tecnológico Siemens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+/* ===========================================================================
+   Direção: mesa de operação. A parede é a única coisa que emite luz na página;
+   todo o resto é grafite fosco. O corredor real é escuro com uma parede acesa,
+   então a página comete-se com um único mundo visual — não há tema claro.
+   =========================================================================== */
+:root{
+  --fundo:#0b0e10; --superficie:#12181b; --elevado:#1a2226; --fio:#28333a;
+  --texto:#cbd6da; --fraco:#7a8b93; --apagado:#4d5a62;
+  --petrol:#009999; --energia:#00e6c8; --pico:#a8fff0; --alerta:#e0a34a;
+  --serif:'Archivo',system-ui,-apple-system,sans-serif;
+  --cond:'Barlow Condensed','Archivo Narrow',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--fundo); color:var(--texto);
+  font-family:var(--serif); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; text-wrap:balance}
+.rotulo{
+  font-family:var(--cond); font-weight:600; font-size:12px;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--fraco);
+}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+/* ------------------------------------------------------------- barra topo */
+.barra{
+  display:flex; align-items:baseline; gap:20px; flex-wrap:wrap;
+  padding:14px 26px; border-bottom:1px solid var(--fio); background:var(--superficie);
+}
+.barra h1{font-family:var(--cond); font-weight:700; font-size:22px; letter-spacing:.06em; text-transform:uppercase}
+.barra .cliente{color:var(--petrol); font-family:var(--cond); font-weight:600; font-size:22px; letter-spacing:.14em}
+.barra .meta{margin-left:auto; display:flex; gap:22px}
+.barra .meta div{font-family:var(--mono); font-size:11px; color:var(--apagado)}
+.barra .meta b{color:var(--fraco); font-weight:400}
+
+/* ------------------------------------------------------------------ palco */
+.palco{position:relative; background:#050708; overflow:hidden; border-bottom:1px solid var(--fio)}
+.cena{position:relative; height:min(60vh,540px); min-height:350px; perspective:1750px; perspective-origin:66% 42%}
+/* teto e sua luminária linear quente, como na referência */
+.teto{position:absolute; inset:0 0 auto 0; height:22%;
+  background:linear-gradient(#0a0d0f 0%,#070a0b 60%,transparent 100%)}
+.teto::after{content:''; position:absolute; left:6%; right:-6%; top:36%; height:3px;
+  background:linear-gradient(90deg,transparent,#f0e2c8 22%,#fff6e4 55%,transparent);
+  box-shadow:0 0 26px 7px rgba(255,236,205,.32); transform:rotate(-1.1deg)}
+/* piso */
+.piso{position:absolute; inset:auto 0 0 0; height:34%;
+  background:linear-gradient(#0c1012,#14191c 55%,#191f22)}
+
+.mundo{position:absolute; inset:0; transform-style:preserve-3d}
+.parede{
+  position:absolute; left:1.5%; top:15%; width:158%; height:58%;
+  transform-origin:0% 50%; transform:rotateY(29deg); transform-style:preserve-3d;
+}
+.parede canvas{width:100%; height:100%; display:block; image-rendering:auto}
+/* reflexo no piso polido: cópia espelhada da mesma cena, esmaecida */
+.bruma{position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(90deg,transparent 0%,transparent 34%,rgba(5,8,10,.30) 72%,rgba(5,8,10,.58) 100%)}
+.reflexo{
+  position:absolute; left:0; top:100%; width:100%; height:76%;
+  opacity:.26; pointer-events:none; overflow:hidden;
+  -webkit-mask-image:linear-gradient(to bottom,#000 0%,transparent 82%);
+  mask-image:linear-gradient(to bottom,#000 0%,transparent 82%);
+}
+.reflexo canvas{width:100%; height:132%; display:block; transform:scaleY(-1); filter:blur(1.2px)}
+.vinheta{position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(130% 96% at 62% 48%,transparent 34%,rgba(3,5,6,.72) 100%)}
+
+/* pessoa: vive no mesmo espaço 3D da parede, então a perspectiva sai de graça */
+.pessoa{position:absolute; bottom:0; width:64px; height:206px; margin-left:-32px;
+  transform-style:preserve-3d; will-change:transform; pointer-events:none}
+.pessoa svg{width:100%; height:100%; overflow:visible;
+  filter:drop-shadow(-3px 0 9px rgba(0,230,200,.42))}
+.pessoa .corpo{fill:#05080a}
+.pessoa .membro{stroke:#05080a; stroke-width:11; stroke-linecap:round; fill:none}
+.pessoa .sombra{fill:rgba(0,0,0,.5)}
+.andando .fr{animation:pernaA 620ms linear infinite}
+.andando .tr{animation:pernaB 620ms linear infinite}
+.andando .ba{animation:pernaB 620ms linear infinite}
+.andando .bb{animation:pernaA 620ms linear infinite}
+@keyframes pernaA{0%,100%{transform:rotate(17deg)}50%{transform:rotate(-17deg)}}
+@keyframes pernaB{0%,100%{transform:rotate(-17deg)}50%{transform:rotate(17deg)}}
+.pessoa .fr,.pessoa .tr{transform-origin:32px 118px}
+.pessoa .ba,.pessoa .bb{transform-origin:32px 78px}
+
+/* estado corrente, sobreposto ao palco */
+.hud{position:absolute; left:0; right:0; top:0; padding:18px 26px 30px; display:flex;
+  align-items:center; gap:12px; flex-wrap:wrap;
+  background:linear-gradient(180deg,rgba(4,6,7,.92) 0%,rgba(4,6,7,.55) 55%,transparent 100%)}
+.hud .luz{width:9px; height:9px; border-radius:50%; background:var(--energia);
+  box-shadow:0 0 12px var(--energia)}
+.hud .nome{font-family:var(--cond); font-weight:700; font-size:26px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--texto)}
+.hud .frase{font-size:13px; color:#9aa8af; max-width:38ch; text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.marcaRegua{position:absolute; left:0; right:0; bottom:8px; display:flex;
+  justify-content:space-between; padding:0 26px; pointer-events:none}
+.marcaRegua span{font-family:var(--mono); font-size:10px; color:#39464e}
+
+/* ------------------------------------------------------------------ mesa */
+.mesa{display:grid; grid-template-columns:minmax(300px,1.15fr) minmax(340px,1.6fr) minmax(260px,1fr);
+  border-bottom:1px solid var(--fio); background:var(--superficie)}
+.mod{padding:20px 24px; border-right:1px solid var(--fio); min-width:0}
+.mod:last-child{border-right:0}
+.mod > .rotulo{display:block; margin-bottom:14px}
+
+.botoes{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px}
+button{
+  font-family:var(--cond); font-weight:600; font-size:13px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--texto); background:var(--elevado);
+  border:1px solid var(--fio); border-radius:2px; padding:9px 13px; cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;
+}
+button:hover{border-color:var(--petrol); color:var(--pico)}
+button:focus-visible{outline:2px solid var(--energia); outline-offset:2px}
+button.ativo{background:var(--petrol); border-color:var(--petrol); color:#04191b}
+.deslizante{display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; margin-bottom:12px}
+.deslizante label{font-family:var(--cond); font-weight:500; font-size:13px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--fraco); grid-column:1/-1; margin-bottom:-4px}
+input[type=range]{width:100%; accent-color:var(--petrol); background:transparent}
+input[type=range]:focus-visible{outline:2px solid var(--energia); outline-offset:3px}
+.deslizante output{font-family:var(--mono); font-size:12px; color:var(--texto); min-width:66px; text-align:right}
+
+/* máquina de estados */
+.cadeia{display:flex; flex-direction:column; gap:2px}
+.passo{display:grid; grid-template-columns:118px 1fr; gap:12px; align-items:baseline;
+  padding:7px 12px; border-left:2px solid var(--fio);
+  transition:border-color .25s,background .25s}
+.passo.on{border-left-color:var(--energia); background:linear-gradient(90deg,rgba(0,230,200,.10),transparent 70%)}
+.passo .n{font-family:var(--cond); font-weight:700; font-size:15px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--apagado); transition:color .25s; white-space:nowrap}
+.passo.on .n{color:var(--pico)}
+.passo .c{font-size:12px; line-height:1.35; color:#5c6a72}
+.passo.on .c{color:var(--fraco)}
+
+/* telemetria */
+.leituras{display:grid; grid-template-columns:1fr 1fr; gap:11px 16px}
+.leitura .k{font-family:var(--cond); font-weight:500; font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--apagado)}
+.leitura .v{font-family:var(--mono); font-size:18px; color:var(--texto); line-height:1.25}
+.leitura .v small{font-size:11px; color:var(--fraco)}
+.leitura.aviso .v{color:var(--alerta)}
+#grafico{width:100%; height:44px; display:block; margin-top:14px; border-top:1px solid var(--fio); padding-top:8px}
+
+/* ------------------------------------------------------------- conteúdo */
+.corpo{max-width:1180px; margin:0 auto; padding:44px 26px 60px}
+.secao{margin-bottom:52px}
+.secao > .rotulo{display:block; margin-bottom:8px}
+.secao h2{font-family:var(--cond); font-weight:700; font-size:28px; letter-spacing:.03em;
+  text-transform:uppercase; margin-bottom:12px}
+.secao p{max-width:66ch; color:#a8b5bb; margin:0 0 14px}
+.rolagem{overflow-x:auto; border:1px solid var(--fio); background:var(--superficie)}
+.rolagem img,.rolagem svg{display:block; min-width:900px; width:100%}
+
+table{width:100%; border-collapse:collapse; font-size:14px}
+th,td{text-align:left; padding:9px 14px; border-bottom:1px solid var(--fio)}
+th{font-family:var(--cond); font-weight:600; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--fraco)}
+td.n{font-family:var(--mono); font-variant-numeric:tabular-nums; text-align:right}
+tbody tr:last-child td{border-bottom:0}
+
+.fichas{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1px;
+  background:var(--fio); border:1px solid var(--fio)}
+.ficha{background:var(--superficie); padding:18px 20px}
+.ficha .k{font-family:var(--cond); font-weight:500; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--apagado)}
+.ficha .v{font-family:var(--mono); font-size:24px; color:var(--pico); margin:4px 0 2px}
+.ficha .d{font-size:12.5px; color:var(--fraco); line-height:1.45}
+
+.notas{border-left:2px solid var(--alerta); padding:2px 0 2px 18px; margin:22px 0}
+.notas li{color:#a8b5bb; font-size:14px; margin-bottom:7px}
+.notas li::marker{color:var(--alerta)}
+
+footer{border-top:1px solid var(--fio); padding:22px 26px; color:var(--apagado);
+  font-size:12px; display:flex; gap:18px; flex-wrap:wrap}
+
+@media (max-width:900px){
+  .mesa{grid-template-columns:1fr}
+  .mod{border-right:0; border-bottom:1px solid var(--fio)}
+  .cena{height:44vh}
+  .barra .meta{width:100%; margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){
+  .andando .fr,.andando .tr,.andando .ba,.andando .bb{animation:none}
+  button{transition:none}
+}
+</style>
+
+<div class="barra">
+  <h1>Corredor Tecnológico</h1>
+  <span class="cliente">SIEMENS</span>
+  <div class="meta">
+    <div>PAREDE <b id="mMetros">12,00 m</b></div>
+    <div>PIXELS <b id="mPixels">—</b></div>
+    <div>SAÍDAS <b id="mSaidas">—</b></div>
+    <div>REV <b>00</b></div>
+  </div>
+</div>
+
+<div class="palco">
+  <div class="cena" id="cena">
+    <div class="teto"></div>
+    <div class="piso"></div>
+    <div class="mundo">
+      <div class="parede" id="parede">
+        <canvas id="telaParede"></canvas>
+        <div class="pessoa" id="pessoaA" style="display:none">
+          <svg viewBox="0 0 64 206" aria-hidden="true">
+            <ellipse class="sombra" cx="32" cy="203" rx="26" ry="5"/>
+            <line class="membro ba" x1="32" y1="78" x2="14" y2="118"/>
+            <line class="membro bb" x1="32" y1="78" x2="50" y2="118"/>
+            <line class="membro fr" x1="32" y1="118" x2="20" y2="198"/>
+            <line class="membro tr" x1="32" y1="118" x2="44" y2="198"/>
+            <path class="corpo" d="M32 20a13 13 0 1 1 0 26 13 13 0 0 1 0-26zM32 48c11 0 17 7 18 17l3 40c.5 7-4 11-9.5 11h-23c-5.5 0-10-4-9.5-11l3-40c1-10 7-17 18-17z"/>
+          </svg>
+        </div>
+        <div class="pessoa" id="pessoaB" style="display:none">
+          <svg viewBox="0 0 64 206" aria-hidden="true">
+            <ellipse class="sombra" cx="32" cy="203" rx="26" ry="5"/>
+            <line class="membro ba" x1="32" y1="78" x2="14" y2="118"/>
+            <line class="membro bb" x1="32" y1="78" x2="50" y2="118"/>
+            <line class="membro fr" x1="32" y1="118" x2="20" y2="198"/>
+            <line class="membro tr" x1="32" y1="118" x2="44" y2="198"/>
+            <path class="corpo" d="M32 20a13 13 0 1 1 0 26 13 13 0 0 1 0-26zM32 48c11 0 17 7 18 17l3 40c.5 7-4 11-9.5 11h-23c-5.5 0-10-4-9.5-11l3-40c1-10 7-17 18-17z"/>
+          </svg>
+        </div>
+        <div class="bruma"></div>
+        <div class="reflexo"><canvas id="telaReflexo"></canvas></div>
+      </div>
+    </div>
+    <div class="vinheta"></div>
+    <div class="hud">
+      <span class="luz" id="hudLuz"></span>
+      <span class="nome" id="hudNome">Repouso</span>
+      <span class="frase" id="hudFrase">Corredor vazio. A parede respira devagar.</span>
+    </div>
+    <div class="marcaRegua">
+      <span>0 m — entrada A</span><span>6 m</span><span>12 m — entrada B</span>
+    </div>
+  </div>
+</div>
+
+<div class="mesa">
+  <div class="mod">
+    <span class="rotulo">Simular passagem</span>
+    <div class="botoes">
+      <button id="bEsq">Entrar pela esquerda</button>
+      <button id="bDir">Entrar pela direita</button>
+      <button id="bDois">Duas pessoas</button>
+      <button id="bLimpa">Esvaziar</button>
+    </div>
+    <div class="deslizante">
+      <label for="sVel">Velocidade de caminhada</label>
+      <input type="range" id="sVel" min="0.5" max="2.2" step="0.1" value="1.3">
+      <output id="oVel">1,3 m/s</output>
+    </div>
+    <div class="deslizante">
+      <label for="sBrilho">Brilho mestre (agenda)</label>
+      <input type="range" id="sBrilho" min="0.1" max="1" step="0.05" value="1">
+      <output id="oBrilho">100%</output>
+    </div>
+    <div class="botoes" style="margin:2px 0 0">
+      <button id="bParar" class="ativo">Parar na marca</button>
+    </div>
+  </div>
+
+  <div class="mod">
+    <span class="rotulo">Máquina de estados</span>
+    <div class="cadeia" id="cadeia"></div>
+  </div>
+
+  <div class="mod">
+    <span class="rotulo">Telemetria</span>
+    <div class="leituras">
+      <div class="leitura"><div class="k">Pessoas</div><div class="v" id="tPessoas">0</div></div>
+      <div class="leitura"><div class="k">Pacotes ativos</div><div class="v" id="tPacotes">0</div></div>
+      <div class="leitura"><div class="k">Corrente 12 V</div><div class="v" id="tCorrente">—</div></div>
+      <div class="leitura"><div class="k">Potência</div><div class="v" id="tPotencia">—</div></div>
+      <div class="leitura" id="boxAbl"><div class="k">Limitador ABL</div><div class="v" id="tAbl">inativo</div></div>
+      <div class="leitura"><div class="k">Quadros</div><div class="v" id="tFps">—</div></div>
+    </div>
+    <canvas id="grafico"></canvas>
+  </div>
+</div>
+
+<div class="corpo">
+
+  <section class="secao">
+    <span class="rotulo">O que a parede faz</span>
+    <h2>Seis estados, uma leitura</h2>
+    <p>A parede não tem “ligado” e “desligado”. Ela tem um comportamento de repouso que sustenta o corredor
+    quando não há ninguém, e reage à passagem das pessoas com uma sequência que sempre começa pela entrada
+    que foi usada — se a pessoa entra pela direita, a energia nasce na direita.</p>
+    <div class="fichas" id="fichasEstados"></div>
+  </section>
+
+  <section class="secao">
+    <span class="rotulo">Como a parede enxerga</span>
+    <h2>Dois radares, não dois sensores de presença</h2>
+    <p>Um sensor de presença comum responde sim ou não. Os dois radares mmWave nas pontas devolvem a
+    <em>posição</em> de até três pessoas ao longo do corredor, com alcance de 6 m cada — juntos cobrem os 12 m
+    inteiros. É isso que permite a luz andar junto com a pessoa em vez de simplesmente acender o corredor todo.</p>
+    <p>O halo de luz fica deliberadamente 70 cm à frente de quem caminha. A parede convida, não persegue.
+    Quem para em frente à marca dispara o estado de permanência: os pacotes de dados passam a convergir para o
+    processador central e a assinatura pulsa devagar.</p>
+  </section>
+
+  <section class="secao">
+    <span class="rotulo">Desenho de fabricação</span>
+    <h2>Elevação técnica</h2>
+    <p>Toda a geometria é ortogonal ou a 45° exatos — estética autêntica de placa de circuito e, ao mesmo tempo,
+    usinagem CNC simples. Os círculos laranja são os pontos de emenda: como fita de LED não dobra no plano,
+    cada mudança de direção vira corte, furo passante e jumper de três vias por trás do painel.</p>
+    <div class="rolagem" id="caixaElevacao"></div>
+  </section>
+
+  <section class="secao">
+    <span class="rotulo">Números do projeto</span>
+    <h2>Ficha técnica</h2>
+    <div class="rolagem">
+      <table id="tabelaFicha"><tbody></tbody></table>
+    </div>
+    <ul class="notas">
+      <li>O consumo em repouso é o maior custo de energia do sistema, não a animação: a parede passa a maior
+      parte do tempo em repouso. Por isso o brilho mestre segue uma agenda de funcionamento.</li>
+      <li>Paleta e letreiro são referência: a arte final da marca sai do brand book do cliente.</li>
+      <li>Painéis em MDF exigem acabamento com classificação de reação ao fogo compatível com a edificação —
+      item a confirmar com a área de segurança do cliente antes da compra.</li>
+    </ul>
+  </section>
+
+</div>
+
+<footer>
+  <span>Simulação executando o mesmo motor de animação que roda na parede.</span>
+  <span>Proposta técnica · rev. 00</span>
+</footer>
+
+<script>/*INJETAR_LAYOUT*/</script>
+<script>/*INJETAR_ENGINE*/</script>
+<script>
+(function(){
+'use strict';
+var L = LAYOUT, EN = ENGINE;
+var C = L.CORREDOR;
+
+/* ---------------------------------------------------------------------------
+   Escalas de renderização.
+   A tela da parede cobre x 0..12000 mm e y do piso (NPA) ao topo da faixa.
+--------------------------------------------------------------------------- */
+var MAT = 0.22;                      // px por mm na tela de material
+var EMI = 0.11;                      // px por mm no buffer emissivo
+var ALT_MM = C.faixaBase + C.faixaAltura;   // 200 + 1850 = 2050 mm
+var Wm = Math.round(C.comprimento * MAT), Hm = Math.round(ALT_MM * MAT);
+var We = Math.round(C.comprimento * EMI), He = Math.round(ALT_MM * EMI);
+
+// layout(y) -> topo da tela.  y=1850 no topo, y=-200 no piso.
+function telaY(y, esc){ return (C.faixaAltura - y) * esc; }
+function telaX(x, esc){ return x * esc; }
+
+var tela = document.getElementById('telaParede');
+tela.width = Wm; tela.height = Hm;
+var ctx = tela.getContext('2d');
+
+var refl = document.getElementById('telaReflexo');
+refl.width = Wm; refl.height = Hm;
+var rctx = refl.getContext('2d');
+
+var material = document.createElement('canvas');
+material.width = Wm; material.height = Hm;
+var mctx = material.getContext('2d');
+
+var emissivo = document.createElement('canvas');
+emissivo.width = We; emissivo.height = He;
+var ectx = emissivo.getContext('2d');
+var imgEmi = ectx.createImageData(We, He);
+
+// tela de brilho largo: 1/4 da resolucao emissiva, reampliada na composicao
+var brilho = document.createElement('canvas');
+brilho.width = Math.round(We/4); brilho.height = Math.round(He/4);
+var bctx = brilho.getContext('2d');
+
+/* ---------------------------------------------------------------------------
+   CAMADA DE MATÉRIA — desenhada uma única vez.
+   É o painel apagado: grafite, canaletas escavadas, peças impressas, letreiro.
+--------------------------------------------------------------------------- */
+function desenharMateria(){
+  var g = mctx;
+  g.fillStyle = '#11161a'; g.fillRect(0,0,Wm,Hm);
+
+  // painel: leve gradiente vertical + textura fina
+  var grad = g.createLinearGradient(0,0,0,telaY(0,MAT));
+  grad.addColorStop(0,'#171d22'); grad.addColorStop(1,'#0e1316');
+  g.fillStyle = grad; g.fillRect(0,0,Wm,telaY(0,MAT));
+  g.globalAlpha = .045;
+  for (var i=0;i<2600;i++){
+    g.fillStyle = i%2 ? '#ffffff' : '#000000';
+    g.fillRect(Math.random()*Wm, Math.random()*telaY(0,MAT), 1.6, 1.6);
+  }
+  g.globalAlpha = 1;
+
+  // juntas entre painéis de 1,50 m
+  g.strokeStyle = 'rgba(0,0,0,.42)'; g.lineWidth = 1.4;
+  for (var p=1;p<8;p++){
+    var xj = telaX(p*1500, MAT);
+    g.beginPath(); g.moveTo(xj,0); g.lineTo(xj,telaY(0,MAT)); g.stroke();
+  }
+
+  // canaletas escavadas: sombra no fundo + fio de luz na aresta superior
+  var mapa = EN_MAPA;
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  mapa.tracos.forEach(function(tr){
+    tracarCaminho(g, tr.pts, MAT);
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 14*MAT; g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,.055)'; g.lineWidth = 14*MAT*0.42;
+    g.translate(0,-1.1); g.stroke(); g.translate(0,1.1);
+  });
+
+  // peças impressas em 3D: corpo com luz vinda de cima e sombra projetada
+  L.COMPONENTES.forEach(function(c){
+    var x = telaX(c.x,MAT), y = telaY(c.y+c.a,MAT);
+    var w = c.l*MAT, h = c.a*MAT, rel = Math.max(2, c.e*MAT*0.9);
+    g.fillStyle = 'rgba(0,0,0,.5)';
+    g.fillRect(x+rel*0.5, y+rel*0.7, w, h);
+    var gc = g.createLinearGradient(0,y,0,y+h);
+    gc.addColorStop(0,'#5a6672'); gc.addColorStop(.30,'#3b454e'); gc.addColorStop(1,'#222a30');
+    g.fillStyle = gc; g.fillRect(x,y,w,h);
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(x,y+.6); g.lineTo(x+w,y+.6); g.stroke();
+    g.strokeStyle = 'rgba(0,0,0,.55)'; g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(x,y+h-.6); g.lineTo(x+w,y+h-.6); g.stroke();
+    if (c.pinos){
+      g.fillStyle = '#8b98a4';
+      var passo = w/(c.pinos+1);
+      for (var k=1;k<=c.pinos;k++){
+        g.fillRect(x+passo*k-1.1, y-rel*0.8, 2.2, rel*0.8);
+        g.fillRect(x+passo*k-1.1, y+h, 2.2, rel*0.8);
+      }
+    }
+    if (c.tipo==='cpu'){
+      g.strokeStyle = 'rgba(255,255,255,.07)'; g.lineWidth = 1;
+      g.strokeRect(x+w*.16, y+h*.16, w*.68, h*.68);
+    }
+  });
+
+  // letreiro
+  var M = L.MARCA;
+  g.fillStyle = '#dfe9ec';
+  g.font = '700 ' + (M.alturaCaixa*MAT*0.86) + 'px Barlow Condensed, Archivo, sans-serif';
+  g.textBaseline = 'alphabetic';
+  var texto = M.texto, larguraAlvo = M.largura*MAT;
+  var med = g.measureText(texto).width;
+  g.save();
+  g.translate(telaX(M.x,MAT), telaY(M.y,MAT));
+  g.scale(larguraAlvo/med, 1);
+  g.fillText(texto, 0, 0);
+  g.restore();
+  g.fillStyle = '#8fa0a8';
+  g.font = '500 ' + (M.assinaturaAltura*MAT) + 'px Archivo, sans-serif';
+  var med2 = g.measureText(M.assinatura).width;
+  g.fillText(M.assinatura, telaX(M.x,MAT) + (larguraAlvo-med2)/2, telaY(M.assinaturaY,MAT));
+
+  // perfil de alumínio do rodapé e piso
+  g.fillStyle = '#1b2226';
+  g.fillRect(0, telaY(C.rodapeY,MAT)-5*MAT*3, Wm, 30*MAT);
+  g.fillStyle = '#0a0d0f';
+  g.fillRect(0, telaY(-200,MAT)-2, Wm, 6);
+}
+
+function tracarCaminho(g, pts, esc){
+  g.beginPath();
+  for (var i=0;i<pts.length;i++){
+    var X = telaX(pts[i][0],esc), Y = telaY(pts[i][1],esc);
+    if (i) g.lineTo(X,Y); else g.moveTo(X,Y);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   ENGINE + mapa de pixels
+--------------------------------------------------------------------------- */
+var EN_MAPA = L.gerarMapaPixels();
+var motor = new EN.Engine({ mapa: EN_MAPA });
+
+// posição de cada pixel já convertida para o buffer emissivo
+var exs = new Int16Array(EN_MAPA.pixels.length);
+var eys = new Int16Array(EN_MAPA.pixels.length);
+EN_MAPA.pixels.forEach(function(p,i){
+  exs[i] = Math.round(telaX(p.x,EMI));
+  eys[i] = Math.round(telaY(p.y,EMI));
+});
+
+/* ---------------------------------------------------------------------------
+   Pintura do quadro emissivo: escreve direto no ImageData (rápido) e o brilho
+   nasce dos passes de desfoque, que é o que um difusor faz de verdade.
+--------------------------------------------------------------------------- */
+function pintarEmissivo(rgb){
+  var d = imgEmi.data;
+  d.fill(0);
+  for (var i=0, n=exs.length; i<n; i++){
+    var r = rgb[i*3], gg = rgb[i*3+1], b = rgb[i*3+2];
+    if (r+gg+b < 8) continue;
+    var x = exs[i], y = eys[i];
+    for (var dy=0; dy<2; dy++){
+      var yy = y+dy; if (yy<0||yy>=He) continue;
+      for (var dx=0; dx<2; dx++){
+        var xx = x+dx; if (xx<0||xx>=We) continue;
+        var o = (yy*We+xx)*4;
+        var nr = d[o]+r, ng = d[o+1]+gg, nb = d[o+2]+b;
+        d[o]   = nr>255?255:nr;
+        d[o+1] = ng>255?255:ng;
+        d[o+2] = nb>255?255:nb;
+        d[o+3] = 255;
+      }
+    }
+  }
+  ectx.putImageData(imgEmi,0,0);
+}
+
+function compor(){
+  // brilho largo numa tela pequena: um unico desfoque barato
+  bctx.clearRect(0,0,brilho.width,brilho.height);
+  bctx.filter = 'blur(1.6px)';
+  bctx.drawImage(emissivo,0,0,brilho.width,brilho.height);
+  bctx.filter = 'none';
+
+  ctx.drawImage(material,0,0);
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = .62; ctx.drawImage(brilho,0,0,Wm,Hm);          // halo amplo
+  ctx.globalAlpha = .80; ctx.filter = 'blur(2.5px)'; ctx.drawImage(emissivo,0,0,Wm,Hm);
+  ctx.filter = 'none';
+  ctx.globalAlpha = .95; ctx.drawImage(emissivo,0,0,Wm,Hm);        // nucleo
+  ctx.restore();
+  ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  rctx.drawImage(tela,0,0);
+}
+
+/* ---------------------------------------------------------------------------
+   Pessoas simuladas
+--------------------------------------------------------------------------- */
+var pessoas = [];
+var proxId = 1;
+var pararNaMarca = true;
+var velocidade = 1300;   // mm/s
+var elems = { 1:null, 2:null };
+var poolEl = [document.getElementById('pessoaA'), document.getElementById('pessoaB')];
+
+function entrar(sentido){
+  if (pessoas.length >= 2) return;
+  pessoas.push({
+    id: proxId++,
+    x: sentido > 0 ? -900 : 12900,
+    v: velocidade * sentido,
+    dir: sentido,
+    paradaAte: 0,
+    jaParou: false
+  });
+}
+
+function moverPessoas(dt, agora){
+  var s = dt/1000;
+  for (var i=pessoas.length-1;i>=0;i--){
+    var p = pessoas[i];
+    if (agora < p.paradaAte){ p.v = 0; continue; }
+    p.v = velocidade * p.dir;
+    p.x += p.v * s;
+    // parada em frente à assinatura da marca
+    var xMarca = L.MARCA.x + L.MARCA.largura/2;
+    if (pararNaMarca && !p.jaParou && Math.abs(p.x - xMarca) < 140){
+      p.jaParou = true; p.paradaAte = agora + 5200; p.v = 0;
+    }
+    if (p.x < -1400 || p.x > 13400) pessoas.splice(i,1);
+  }
+  motor.setPessoas(pessoas.map(function(p){ return {id:p.id, x:p.x, v:p.v}; }));
+}
+
+function posicionarPessoas(){
+  // A tela cobre 2.050 mm de altura. Uma pessoa de 1.750 mm ocupa 85% dela -
+  // fixar a altura em px faria a figura mudar de tamanho a cada viewport.
+  var altPessoa = (parede.clientHeight || 200) * (1750 / ALT_MM);
+  poolEl.forEach(function(el,i){
+    var p = pessoas[i];
+    if (!p){ el.style.display='none'; return; }
+    el.style.display = 'block';
+    el.style.height = altPessoa + 'px';
+    el.style.width = (altPessoa * 64/206) + 'px';
+    el.style.marginLeft = (-altPessoa * 32/206) + 'px';
+    var frac = p.x / C.comprimento;               // 0..1 ao longo da parede
+    var px = frac * (parede.clientWidth || 1);
+    // ~900 mm à frente da parede, dentro do mesmo espaço 3D: a perspectiva
+    // da figura sai de graça, junto com a da parede
+    var z = (parede.clientWidth || 1) / C.comprimento * 900;
+    el.style.transform = 'translateX(' + px + 'px) translateZ(' + z + 'px)';
+    el.classList.toggle('andando', Math.abs(p.v) > 60);
+  });
+}
+var parede = document.getElementById('parede');
+
+/* ---------------------------------------------------------------------------
+   Máquina de estados na interface
+--------------------------------------------------------------------------- */
+var DESCRICAO = {
+  REPOUSO:     ['Repouso','Corredor vazio. A parede respira devagar.','Ninguém detectado. Trilhas em 7,5% de brilho, um pacote solitário a cada três segundos.'],
+  DESPERTAR:   ['Despertar','Alguém entrou. A energia varre o corredor.','Uma frente de luz parte da entrada usada a 6,5 m/s e energiza as trilhas. Cada peça impressa acende na ordem em que a frente passa por ela.'],
+  ACOMPANHAR:  ['Acompanhar','A luz caminha junto, 70 cm à frente.','O halo segue a posição devolvida pelo radar. Andar mais rápido acelera os pacotes de dados nas trilhas.'],
+  PERMANENCIA: ['Permanência','Parou. A parede processa ali.','Detectada imobilidade por mais de 2,2 s: os pacotes convergem para o processador central e a assinatura pulsa.'],
+  ADORMECER:   ['Adormecer','Esvaziou. A energia escoa pelas pontas.','Doze segundos sem ninguém. A energia extra drena do centro para as extremidades, sem apagão — o piso de repouso nunca é drenado.'],
+  SHOW:        ['Modo evento','Coreografia manual para visitas.','Sequência completa acionada pelo painel, independente dos sensores.']
+};
+var ORDEM = ['REPOUSO','DESPERTAR','ACOMPANHAR','PERMANENCIA','ADORMECER'];
+var cadeia = document.getElementById('cadeia');
+ORDEM.forEach(function(k){
+  var d = document.createElement('div');
+  d.className = 'passo'; d.dataset.estado = k;
+  d.innerHTML = '<div class="n">'+DESCRICAO[k][0]+'</div><div class="c">'+DESCRICAO[k][1]+'</div>';
+  cadeia.appendChild(d);
+});
+var passos = cadeia.querySelectorAll('.passo');
+
+var fichasEstados = document.getElementById('fichasEstados');
+ORDEM.forEach(function(k,i){
+  var f = document.createElement('div');
+  f.className = 'ficha';
+  f.innerHTML = '<div class="k">Estado '+(i+1)+'</div><div class="v" style="font-size:19px">'+
+                DESCRICAO[k][0]+'</div><div class="d">'+DESCRICAO[k][2]+'</div>';
+  fichasEstados.appendChild(f);
+});
+
+/* ---------------------------------------------------------------------------
+   Telemetria
+--------------------------------------------------------------------------- */
+var el = function(id){ return document.getElementById(id); };
+var hist = new Float32Array(150); var hp = 0;
+var gCanvas = el('grafico'), gctx = gCanvas.getContext('2d');
+function desenharGrafico(){
+  var w = gCanvas.clientWidth, h = 44;
+  if (w < 8) return;
+  if (gCanvas.width !== w*2){ gCanvas.width = w*2; gCanvas.height = h*2; }
+  gctx.setTransform(2,0,0,2,0,0);
+  gctx.clearRect(0,0,w,h);
+  var teto = 1440;
+  gctx.strokeStyle = '#28333a'; gctx.lineWidth = 1;
+  gctx.beginPath(); gctx.moveTo(0,h-0.5); gctx.lineTo(w,h-0.5); gctx.stroke();
+  gctx.beginPath();
+  for (var i=0;i<hist.length;i++){
+    var v = hist[(hp+i)%hist.length];
+    var x = i/(hist.length-1)*w, y = h - (v/teto)*h;
+    if (i) gctx.lineTo(x,y); else gctx.moveTo(x,y);
+  }
+  gctx.strokeStyle = '#00e6c8'; gctx.lineWidth = 1.4; gctx.stroke();
+  gctx.lineTo(w,h); gctx.lineTo(0,h); gctx.closePath();
+  gctx.fillStyle = 'rgba(0,230,200,.10)'; gctx.fill();
+}
+
+function atualizarPainel(t, fps){
+  var nome = DESCRICAO[t.estado];
+  el('hudNome').textContent = nome[0];
+  el('hudFrase').textContent = nome[1];
+  el('hudLuz').style.background = t.estado==='REPOUSO' ? '#3d4a52' : '#00e6c8';
+  el('hudLuz').style.boxShadow = t.estado==='REPOUSO' ? 'none' : '0 0 12px #00e6c8';
+  for (var i=0;i<passos.length;i++) passos[i].classList.toggle('on', passos[i].dataset.estado===t.estado);
+  el('tPessoas').textContent = t.pessoas;
+  el('tPacotes').textContent = t.pacotes;
+  el('tCorrente').innerHTML = t.correnteA.toFixed(1) + ' <small>A</small>';
+  el('tPotencia').innerHTML = Math.round(t.consumoW) + ' <small>W</small>';
+  var ablOn = t.abl < 0.999;
+  el('boxAbl').classList.toggle('aviso', ablOn);
+  el('tAbl').textContent = ablOn ? ('cortando ' + Math.round((1-t.abl)*100) + '%') : 'inativo';
+  el('tFps').innerHTML = Math.round(fps) + ' <small>fps</small>';
+}
+
+/* ---------------------------------------------------------------------------
+   Laço principal
+--------------------------------------------------------------------------- */
+var ultimo = performance.now(), acumFps = 60, contaGraf = 0;
+function laco(agora){
+  var dt = Math.min(60, agora - ultimo); ultimo = agora;
+  acumFps += (1000/Math.max(1,dt) - acumFps) * 0.06;
+
+  moverPessoas(dt, agora);
+  var rgb = motor.passo(dt);
+  pintarEmissivo(rgb);
+  compor();
+  posicionarPessoas();
+
+  var t = motor.telemetria();
+  atualizarPainel(t, acumFps);
+  if (++contaGraf % 4 === 0){
+    hist[hp] = t.consumoW; hp = (hp+1) % hist.length;
+    desenharGrafico();
+  }
+  requestAnimationFrame(laco);
+}
+
+/* ---------------------------------------------------------------------------
+   Controles
+--------------------------------------------------------------------------- */
+el('bEsq').addEventListener('click', function(){ entrar(+1); });
+el('bDir').addEventListener('click', function(){ entrar(-1); });
+el('bDois').addEventListener('click', function(){ pessoas.length = 0; entrar(+1); entrar(-1); });
+el('bLimpa').addEventListener('click', function(){ pessoas.length = 0; motor.setPessoas([]); });
+el('bParar').addEventListener('click', function(){
+  pararNaMarca = !pararNaMarca; this.classList.toggle('ativo', pararNaMarca);
+});
+el('sVel').addEventListener('input', function(){
+  velocidade = parseFloat(this.value)*1000;
+  el('oVel').textContent = parseFloat(this.value).toFixed(1).replace('.',',') + ' m/s';
+});
+el('sBrilho').addEventListener('input', function(){
+  motor.cfg.brilhoMestre = parseFloat(this.value);
+  el('oBrilho').textContent = Math.round(this.value*100) + '%';
+});
+
+/* ---------------------------------------------------------------------------
+   Ficha técnica e cabeçalho, calculados a partir do layout real
+--------------------------------------------------------------------------- */
+var tot = EN_MAPA.totais;
+var nStrands = Object.keys(EN_MAPA.strands).length;
+el('mPixels').textContent = tot.qtdPixels.toLocaleString('pt-BR');
+el('mSaidas').textContent = nStrands;
+
+var LINHAS = [
+  ['Extensão tratada','12,00 m','parede única, faixa gráfica de 1,85 m de altura'],
+  ['Pixels endereçáveis', tot.qtdPixels.toLocaleString('pt-BR'), 'WS2815 12 V, 60 LED/m, linha de dados com backup'],
+  ['Fita instalada', tot.metrosFita.toFixed(1).replace('.',',') + ' m', 'embutida em canaleta usinada de 14 × 14 mm'],
+  ['Pontos de emenda', String(tot.qtdCantos), 'corte + furo passante + jumper de 3 vias por trás do painel'],
+  ['Saídas de dados', String(nStrands), 'máx. ' + FICHA.maiorStrand + ' px por saída — teto de ' + FICHA.tetoFps + ' quadros por segundo'],
+  ['Controladores','2 × ESP32 com Ethernet','recebem sACN do engine; Wi-Fi não sustenta a sincronia'],
+  ['Fontes', FICHA.qtdFontes + ' × ' + FICHA.potFonte + ' W / 12 V','uma por zona de 3 m, com limitador de ' + FICHA.ablPorZona + ' A por zona'],
+  ['Pico com ABL', FICHA.picoW.toLocaleString('pt-BR') + ' W','consumo na rede 220 V: ' + FICHA.redeA + ' A — circuito exclusivo, curva C'],
+  ['Repouso','≈ ' + FICHA.repousoW + ' W','estado dominante em horas de uso; controlado pela agenda de brilho'],
+  ['Sensores','2 × radar mmWave LD2450','posição de até 3 pessoas, alcance de 6 m cada']
+];
+var tb = document.querySelector('#tabelaFicha tbody');
+LINHAS.forEach(function(l){
+  var tr = document.createElement('tr');
+  tr.innerHTML = '<th style="width:24%">'+l[0]+'</th><td class="n" style="width:20%">'+l[1]+'</td><td>'+l[2]+'</td>';
+  tb.appendChild(tr);
+});
+
+document.getElementById('caixaElevacao').innerHTML = ELEVACAO_SVG;
+
+/* ------------------------------------------------------------------- start */
+function iniciar(){
+  desenharMateria();
+  desenharGrafico();
+  requestAnimationFrame(laco);
+}
+// o letreiro e desenhado no canvas: sem a fonte pronta, sai no fallback
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(iniciar);
+else iniciar();
+// abre com uma passagem, para a página já mostrar o comportamento
+if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  setTimeout(function(){ entrar(+1); }, 1200);
+}
+})();
+</script>
