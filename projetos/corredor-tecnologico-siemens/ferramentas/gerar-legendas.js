@@ -49,8 +49,11 @@ const ESTILO = `
           text-shadow:0 2px 8px rgba(0,0,0,.9)}
   .cab .s b{color:#00c8b4;font-weight:600}
 
-  .marca{position:absolute;right:34px;bottom:30px;text-align:right;
-         display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+  /* Ancorado pelo TOPO, nunca por bottom: o headless novo do Chromium desconta
+     a altura da janela do viewport, entao o que e posicionado a partir da base
+     e cortado na captura. O que sai do topo cai no lugar certo. */
+  .marca{position:absolute;right:34px;top:510px;height:180px;text-align:right;
+         display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:7px}
   .marca .logo{height:40px;width:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))}
   .marca .nome{font:600 17px/1 'Barlow Condensed',sans-serif;letter-spacing:.19em;
                text-transform:uppercase;color:rgba(255,255,255,.86);
@@ -58,8 +61,9 @@ const ESTILO = `
   .marca .ass{font:400 10.5px/1 Archivo,sans-serif;letter-spacing:.06em;
               color:rgba(255,255,255,.5);text-shadow:0 2px 8px rgba(0,0,0,.95)}
 
-  .leg{position:absolute;left:34px;bottom:30px;max-width:640px}
-  .leg .scrim{position:absolute;left:-34px;right:-620px;bottom:-30px;top:-34px;
+  .leg{position:absolute;left:34px;top:550px;height:140px;width:660px;
+       display:flex;flex-direction:column;justify-content:flex-end}
+  .leg .scrim{position:absolute;left:-34px;right:-620px;bottom:-30px;top:-26px;
               background:linear-gradient(90deg,rgba(3,6,7,.80),rgba(3,6,7,.35) 60%,transparent);
               z-index:-1}
   .leg .n{font:700 40px/1 'Barlow Condensed',sans-serif;letter-spacing:.09em;
@@ -78,7 +82,10 @@ function capturar(nome, corpo) {
     '--headless', '--disable-gpu', '--no-sandbox', '--hide-scrollbars',
     '--default-background-color=00000000', '--force-device-scale-factor=1',
     '--virtual-time-budget=5000',
-    '--screenshot=' + path.join(saida, nome), '--window-size=' + L + ',' + A,
+    // O headless novo desconta ~88 px de chrome da altura da janela: com
+    // --window-size=1280,720 o viewport e 632 e tudo abaixo disso sai em branco
+    // no PNG. Captura com folga; a sobra e recortada pelo overlay do ffmpeg.
+    '--screenshot=' + path.join(saida, nome), '--window-size=' + L + ',' + (A + 96),
     'file://' + pag
   ], { stdio: 'ignore' });
 }
