@@ -46,6 +46,7 @@ let svg = ler('desenhos/elevacao-tecnica.svg')
 // ---- montagem ---------------------------------------------------------------
 let html = ler('simulador/template.html');
 html = html.replace('/*INJETAR_LAYOUT*/', () => ler('sistema/layout.js'));
+html = html.replace('/*INJETAR_MATERIAL*/', () => ler('sistema/material.js'));
 html = html.replace('/*INJETAR_ENGINE*/', () =>
   ler('sistema/engine.js') +
   '\nvar FICHA = ' + JSON.stringify(FICHA) + ';' +

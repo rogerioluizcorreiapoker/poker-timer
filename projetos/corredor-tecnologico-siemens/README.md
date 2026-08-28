@@ -67,3 +67,23 @@ node ferramentas/build-simulador.js   # -> simulador/index.html
 
 Sem dependências: Node puro. `layout.js` valida a própria geometria (regra
 0°/90°/45°) e o build falha se algum marcador de injeção não for substituído.
+
+## Vídeo de apresentação
+
+```bash
+node ferramentas/gerar-textura.js                    # -> desenhos/material.png
+node ferramentas/render-video.js --mp4 base.mp4      # render 3D, ~6 min
+node ferramentas/gerar-legendas.js                   # legendas + marca d'água
+node ferramentas/montar-video.js base.mp4 final.mp4  # montagem, segundos
+```
+
+Câmera 3D percorrendo o corredor em quatro tomadas, com a parede rodando o
+**mesmo `engine.js`** do simulador e da instalação. Raytracer de planos em JS
+puro — sem dependência de motor gráfico.
+
+A marca d'água sai de `ferramentas/marca-dagua.json`. Trocar o logo custa
+segundos: só a montagem é refeita, o render não.
+
+```bash
+node ferramentas/render-video.js --em 14 > q.raw     # um quadro, para ajuste
+```
