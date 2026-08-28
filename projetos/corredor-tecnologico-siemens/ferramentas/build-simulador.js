@@ -44,7 +44,13 @@ let svg = ler('desenhos/elevacao-tecnica.svg')
   .replace(/(<svg[^>]*?)\swidth="[^"]*"\sheight="[^"]*"/, '$1');
 
 // ---- montagem ---------------------------------------------------------------
+// A marca entra embutida em base64: o artifact e um arquivo unico, nao pode
+// depender de imagem externa.
+const logo = 'data:image/png;base64,' +
+  fs.readFileSync(path.join(raiz, 'marca/nexlayer3d-web.png')).toString('base64');
+
 let html = ler('simulador/template.html');
+html = html.replace('/*INJETAR_LOGO*/', () => logo);
 html = html.replace('/*INJETAR_LAYOUT*/', () => ler('sistema/layout.js'));
 html = html.replace('/*INJETAR_MATERIAL*/', () => ler('sistema/material.js'));
 html = html.replace('/*INJETAR_ENGINE*/', () =>

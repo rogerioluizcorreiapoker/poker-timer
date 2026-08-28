@@ -1,0 +1,341 @@
+<title>Proposta Corredor Siemens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;700&display=swap">
+
+<style>
+/* ===========================================================================
+   Documento comercial. Mundo visual oposto ao do simulador de propósito: lá é
+   a sala escura com a parede acesa, aqui é papel. Os dois compartilham a
+   tipografia e o petrol da marca, então lêem como o mesmo estúdio.
+   =========================================================================== */
+:root{
+  --papel:#fafcfc; --carta:#ffffff; --tinta:#0f171b; --fraca:#566a72;
+  --apagada:#8b9ba1; --fio:#dbe5e7; --petrol:#10767f; --veu:#e8f3f4;
+  --atencao:#a8621a; --atencao-veu:#fdf3e8;
+  --cond:'Barlow Condensed','Archivo Narrow',sans-serif;
+  --texto:'Archivo',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --papel:#0c1114; --carta:#131c20; --tinta:#d6e1e4; --fraca:#8b9da4;
+    --apagada:#6b7d84; --fio:#223138; --petrol:#35b0ba;
+    --veu:#0f272b; --atencao:#d89a52; --atencao-veu:#241a0f;
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#0c1114; --carta:#131c20; --tinta:#d6e1e4; --fraca:#8b9da4;
+  --apagada:#6b7d84; --fio:#223138; --petrol:#35b0ba;
+  --veu:#0f272b; --atencao:#d89a52; --atencao-veu:#241a0f;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--papel); color:var(--tinta);
+  font-family:var(--texto); font-size:15.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0; text-wrap:balance}
+a{color:var(--petrol)}
+.mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+.folha{max-width:900px; margin:0 auto; padding:0 26px 72px}
+
+/* ------------------------------------------------------------- cabeçalho */
+.topo{border-bottom:2px solid var(--tinta); padding:30px 0 20px; margin-bottom:38px;
+  display:flex; align-items:flex-end; gap:24px; flex-wrap:wrap}
+.topo img{height:46px; width:auto}
+/* O wordmark e quase preto no original. Sobre papel usamos a tinta; sobre
+   fundo escuro, a versao clara. Uma so versao sumiria em um dos dois temas.
+   A visibilidade e controlada SO por estas regras - deixar um display:block
+   em '.topo img' venceria por especificidade e os dois logos apareceriam. */
+img.selo-tinta{display:block}
+img.selo-claro{display:none}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) img.selo-tinta{display:none}
+  :root:not([data-theme="light"]) img.selo-claro{display:block}
+}
+:root[data-theme="dark"] img.selo-tinta{display:none}
+:root[data-theme="dark"] img.selo-claro{display:block}
+.topo .quem{flex:1; min-width:200px}
+.topo .rot{font-family:var(--cond); font-weight:600; font-size:12px;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--petrol)}
+.topo .ref{font-family:var(--mono); font-size:11.5px; color:var(--apagada); text-align:right}
+
+h1{font-family:var(--cond); font-weight:700; font-size:clamp(34px,5.5vw,52px);
+  line-height:1.02; letter-spacing:.01em; text-transform:uppercase; margin-bottom:10px}
+.subtitulo{font-size:18px; color:var(--fraca); max-width:60ch; margin-bottom:30px}
+
+/* ----------------------------------------------------------------- números */
+.numeros{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:1px; background:var(--fio); border:1px solid var(--fio); margin-bottom:44px}
+.numeros div{background:var(--carta); padding:15px 17px}
+.numeros .v{font-family:var(--mono); font-weight:700; font-size:23px; color:var(--petrol)}
+.numeros .k{font-family:var(--cond); font-weight:500; font-size:11.5px;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--apagada); margin-top:3px}
+
+/* ------------------------------------------------------------------ seções */
+section{margin-bottom:46px}
+.eyebrow{font-family:var(--cond); font-weight:600; font-size:12px; letter-spacing:.19em;
+  text-transform:uppercase; color:var(--petrol); display:block; margin-bottom:7px}
+h2{font-family:var(--cond); font-weight:700; font-size:27px; letter-spacing:.02em;
+  text-transform:uppercase; margin-bottom:14px}
+p{max-width:70ch; margin:0 0 15px}
+.fraca{color:var(--fraca)}
+
+/* ------------------------------------------------------------------- provas */
+.provas{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px}
+.prova{border:1px solid var(--fio); background:var(--carta); padding:19px 21px;
+  text-decoration:none; color:inherit; display:block; transition:border-color .15s}
+.prova:hover{border-color:var(--petrol)}
+.prova .t{font-family:var(--cond); font-weight:700; font-size:19px; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--petrol)}
+.prova .d{font-size:14px; color:var(--fraca); margin-top:5px}
+
+/* ------------------------------------------------------------------ escopo */
+.escopo{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--fio);
+  border:1px solid var(--fio)}
+.escopo > div{background:var(--carta); padding:20px 22px}
+.escopo h3{font-family:var(--cond); font-weight:700; font-size:17px; letter-spacing:.09em;
+  text-transform:uppercase; margin-bottom:12px}
+.escopo .nosso h3{color:var(--petrol)}
+.escopo ul{margin:0; padding-left:17px}
+.escopo li{margin-bottom:8px; font-size:14.5px}
+.escopo li::marker{color:var(--apagada)}
+
+/* ------------------------------------------------------------------ tabelas */
+.rolagem{overflow-x:auto; border:1px solid var(--fio); background:var(--carta)}
+table{width:100%; border-collapse:collapse; font-size:14.5px; min-width:440px}
+th,td{text-align:left; padding:10px 16px; border-bottom:1px solid var(--fio)}
+th{font-family:var(--cond); font-weight:600; font-size:11.5px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--fraca); white-space:nowrap}
+td.n{font-family:var(--mono); font-variant-numeric:tabular-nums; white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+
+/* ------------------------------------------------------------------- preço */
+.preco{border:1px solid var(--fio); background:var(--carta); padding:24px 26px}
+.preco .linha{display:flex; align-items:baseline; gap:16px; flex-wrap:wrap;
+  padding-bottom:16px; border-bottom:1px solid var(--fio); margin-bottom:16px}
+.preco .rotulo{font-family:var(--cond); font-weight:600; font-size:14px;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--fraca)}
+.preco .valor{font-family:var(--mono); font-weight:700; font-size:30px;
+  color:var(--atencao); border-bottom:2px dashed var(--atencao); padding:0 10px 2px}
+.preco .aviso{font-size:12.5px; color:var(--atencao); font-style:italic}
+
+/* ------------------------------------------------------------ modalidades */
+.modos{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:1px;
+  background:var(--fio); border:1px solid var(--fio)}
+.modo{background:var(--carta); padding:20px 22px; display:flex; flex-direction:column}
+.modo.rec{background:var(--veu)}
+.modo .letra{font-family:var(--mono); font-weight:700; font-size:12px; color:var(--apagada)}
+.modo.rec .letra{color:var(--petrol)}
+.modo h3{font-family:var(--cond); font-weight:700; font-size:19px; letter-spacing:.05em;
+  text-transform:uppercase; margin:5px 0 9px}
+.modo p{font-size:14px; margin-bottom:11px; flex:1}
+.modo .tag{font-family:var(--cond); font-weight:600; font-size:11px; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--petrol)}
+
+/* ------------------------------------------------------------------- listas */
+.checklist{list-style:none; padding:0; margin:0; max-width:70ch}
+.checklist li{padding:11px 0 11px 26px; border-bottom:1px solid var(--fio); position:relative;
+  font-size:14.5px}
+.checklist li:last-child{border-bottom:0}
+.checklist li::before{content:''; position:absolute; left:2px; top:19px; width:9px; height:9px;
+  border:2px solid var(--petrol)}
+
+footer{border-top:1px solid var(--fio); margin-top:16px; padding-top:22px;
+  display:flex; gap:22px; flex-wrap:wrap; align-items:center;
+  font-size:12.5px; color:var(--apagada)}
+footer img{height:26px; width:auto; opacity:.75}
+
+@media (max-width:640px){ .escopo{grid-template-columns:1fr} }
+</style>
+
+<div class="folha">
+
+  <div class="topo">
+    <img class="selo-tinta" src="/*INJETAR_LOGO_TINTA*/" alt="NexLayer3D">
+    <img class="selo-claro" src="/*INJETAR_LOGO_CLARO*/" alt="NexLayer3D">
+    <div class="quem">
+      <span class="rot">Proposta de fornecimento</span>
+    </div>
+    <div class="ref">REV 00<br>validade 30 dias</div>
+  </div>
+
+  <h1>Corredor Tecnológico<br>Siemens</h1>
+  <p class="subtitulo">Parede cinética de 12 metros em LED endereçável embutido, com componentes
+  eletrônicos impressos em 3D, que reage à posição das pessoas que atravessam o corredor.</p>
+
+  <div class="numeros">
+    <div><div class="v">12,00 m</div><div class="k">parede tratada</div></div>
+    <div><div class="v">6.927</div><div class="k">pixels endereçáveis</div></div>
+    <div><div class="v">6</div><div class="k">estados de comportamento</div></div>
+    <div><div class="v">8</div><div class="k">semanas até a entrega</div></div>
+  </div>
+
+  <section>
+    <span class="eyebrow">Veja funcionando antes de decidir</span>
+    <h2>O projeto já está simulado</h2>
+    <p>O comportamento não está descrito no papel: está rodando. A simulação abaixo executa
+    <strong>o mesmo motor de animação que vai rodar na parede</strong> — o que for aprovado na tela
+    é literalmente o que fica instalado.</p>
+    <div class="provas">
+      <a class="prova" href="__LINK_SIMULADOR__" target="_blank" rel="noopener">
+        <div class="t">Simulação interativa</div>
+        <div class="d">Faça uma pessoa entrar pela esquerda ou pela direita e veja a parede reagir,
+        com a telemetria de consumo ao vivo.</div>
+      </a>
+      <div class="prova">
+        <div class="t">Vídeo · 31 s</div>
+        <div class="d">Câmera percorrendo o corredor em 3D, mostrando os seis estados.
+        Enviado junto com esta proposta.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Fronteira de responsabilidade</span>
+    <h2>Quem entrega o quê</h2>
+    <p>Escopo fechado dos dois lados. É a parte que evita discussão no meio da obra.</p>
+    <div class="escopo">
+      <div class="nosso">
+        <h3>NexLayer3D entrega</h3>
+        <ul>
+          <li>Projeto executivo, elevação técnica e lista de materiais</li>
+          <li>Painéis em MDF usinados, pintados e instalados</li>
+          <li>17 peças de componentes impressas em 3D, acabadas e pintadas</li>
+          <li>114,7 m de fita WS2815 12 V, difusores e perfis</li>
+          <li>4 fontes, 2 quadros elétricos e todo o cabeamento interno</li>
+          <li>2 controladores, engine de animação e 2 radares mmWave</li>
+          <li>Programação dos 6 estados e da agenda de funcionamento</li>
+          <li>Comissionamento, calibração e 2 visitas de ajuste fino</li>
+          <li>Manual de operação e treinamento da equipe</li>
+          <li>Reserva técnica: fita, 1 controlador, 1 radar, 1 fonte</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Fica com o parceiro</h3>
+        <ul>
+          <li>Interface, aprovações e cronograma com o cliente final</li>
+          <li>Obra civil, forro, piso e pintura do entorno</li>
+          <li>Ponto de energia 220 V até o quadro — circuito exclusivo, 16 A curva C</li>
+          <li>Liberação de acesso ao prédio e horários de trabalho</li>
+          <li>Andaime ou plataforma elevatória, se o acesso exigir</li>
+          <li>ART e projeto elétrico assinado, se a edificação exigir</li>
+          <li>Arquivo vetorial oficial da marca do cliente final</li>
+          <li>Definição da exigência de reação ao fogo do acabamento</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Prazo</span>
+    <h2>Oito semanas</h2>
+    <p>Contadas da aprovação e do sinal. O caminho crítico é a impressão 3D (130 a 160 horas de
+    máquina, começa no dia 1) e a bancada — cada painel é montado e testado na oficina antes de subir.</p>
+    <div class="rolagem">
+      <table>
+        <thead><tr><th>Semana</th><th>Frente</th></tr></thead>
+        <tbody>
+          <tr><td class="n">1</td><td>Medição no local, aprovação, cotação e compra</td></tr>
+          <tr><td class="n">2</td><td>Chegada de material · início da impressão 3D · usinagem CNC</td></tr>
+          <tr><td class="n">3</td><td>Usinagem, furação dos 111 vértices e pintura dos painéis</td></tr>
+          <tr><td class="n">4</td><td>Acabamento das peças impressas · início da bancada</td></tr>
+          <tr><td class="n">5</td><td>Fita, emendas e teste painel a painel</td></tr>
+          <tr><td class="n">6</td><td>Instalação: estrutura, painéis e quadros</td></tr>
+          <tr><td class="n">7</td><td>Elétrica, rede, comissionamento e calibração dos radares</td></tr>
+          <tr><td class="n">8</td><td>Ajuste fino, agenda, entrega e treinamento</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Investimento</span>
+    <h2>Condições</h2>
+    <div class="preco">
+      <div class="linha">
+        <span class="rotulo">Fornecimento completo</span>
+        <span class="valor">R$ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span class="aviso">valor a preencher antes do envio</span>
+      </div>
+      <div class="rolagem" style="border:0">
+        <table>
+          <tbody>
+            <tr><th style="width:34%">Pagamento</th><td>30% na assinatura · 40% na entrada em bancada · 30% na entrega</td></tr>
+            <tr><th>Incluso</th><td>Todo o escopo NexLayer3D descrito acima, com material, mão de obra e comissionamento</td></tr>
+            <tr><th>Não incluso</th><td>Obra civil, ponto de energia, andaimes, taxas de acesso, ART e impostos sobre o faturamento</td></tr>
+            <tr><th>Reajuste</th><td>Fita LED e fontes são importadas. Valor sujeito a recotação se a compra ocorrer mais de 30 dias após o aceite</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">O ponto que precisa ser decidido junto</span>
+    <h2>Como a tecnologia é entregue</h2>
+    <p>A instalação é feita de duas coisas: a parte física, que fica no prédio, e o
+    <strong>motor de animação</strong> — a máquina de estados, a fusão dos radares e o comportamento.
+    A segunda é o que faz a parede reagir, e é onde está a engenharia. As três modalidades abaixo
+    mudam o preço e mudam o que acontece no próximo corredor.</p>
+    <div class="modos">
+      <div class="modo rec">
+        <span class="letra">MODALIDADE A</span>
+        <h3>Chave na mão</h3>
+        <p>Entregamos a instalação funcionando, com licença de uso perpétua para este corredor.
+        O motor de animação continua sendo nosso. Ajustes de comportamento no primeiro ano estão inclusos.</p>
+        <span class="tag">recomendada</span>
+      </div>
+      <div class="modo">
+        <span class="letra">MODALIDADE B</span>
+        <h3>Chave na mão + manutenção</h3>
+        <p>A modalidade A mais contrato anual: visitas programadas, ajustes de comportamento,
+        atualização do engine e atendimento prioritário em caso de falha.</p>
+        <span class="tag">acréscimo anual</span>
+      </div>
+      <div class="modo">
+        <span class="letra">MODALIDADE C</span>
+        <h3>Transferência de tecnologia</h3>
+        <p>Código-fonte do engine e do firmware, documentação completa e treinamento da sua equipe.
+        Você passa a poder repetir e adaptar o sistema sem nós.</p>
+        <span class="tag">valor à parte</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Depois da entrega</span>
+    <h2>Garantia e suporte</h2>
+    <div class="rolagem">
+      <table>
+        <tbody>
+          <tr><th style="width:34%">Garantia</th><td class="n">12 meses</td></tr>
+          <tr><th>Cobertura</th><td>Fita, fontes, controladores, sensores, marcenaria e programação</td></tr>
+          <tr><th>Reserva técnica</th><td>Entregue no ato: fita, 1 controlador, 1 radar e 1 fonte</td></tr>
+          <tr><th>Manutenção preventiva</th><td>Limpeza dos difusores a cada 3 meses · aperto de bornes e medição de corrente a cada 6</td></tr>
+          <tr><th>Falha mais provável</th><td>Emenda de jumper por fadiga térmica. Todo painel é removível por cleat francês, sem quebrar acabamento</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <span class="eyebrow">Para fechar</span>
+    <h2>O que precisamos de você</h2>
+    <ul class="checklist">
+      <li>Autorização para medição no local — o projeto assume 12,00 m exatos e pé-direito padrão</li>
+      <li>Confirmação da exigência de reação ao fogo do acabamento junto à segurança da edificação. Pode mudar substrato, custo e prazo</li>
+      <li>Arquivo vetorial oficial da marca do cliente final, com a regra de zona de proteção</li>
+      <li>Definição da modalidade de entrega da tecnologia (A, B ou C)</li>
+      <li>Confirmação de que o sensoriamento por radar — que não capta imagem — está aprovado pela área de compliance do cliente final</li>
+    </ul>
+  </section>
+
+  <footer>
+    <img class="selo-tinta" src="/*INJETAR_LOGO_TINTA*/" alt="NexLayer3D">
+    <img class="selo-claro" src="/*INJETAR_LOGO_CLARO*/" alt="NexLayer3D">
+    <span>Projeto, engenharia e execução · proposta rev. 00</span>
+    <span>Todos os números desta proposta são calculados a partir do modelo do projeto.</span>
+  </footer>
+
+</div>

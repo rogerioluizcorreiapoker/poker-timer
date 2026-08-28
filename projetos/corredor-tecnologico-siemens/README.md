@@ -37,6 +37,7 @@ ninguém, acompanhando quem caminha quando há.
 | [`docs/05-lista-de-materiais.md`](docs/05-lista-de-materiais.md) | BOM completo com estimativa de custo. |
 | [`docs/06-montagem-e-comissionamento.md`](docs/06-montagem-e-comissionamento.md) | Sequência de obra, cronograma, checklist de entrega. |
 | [`docs/07-premissas-e-pendencias.md`](docs/07-premissas-e-pendencias.md) | O que assumimos e o que precisa de resposta do cliente. |
+| [`docs/08-estrategia-comercial.md`](docs/08-estrategia-comercial.md) | **Uso interno.** Precificação, modalidades de entrega da tecnologia e negociação com o parceiro. Não enviar junto com a proposta. |
 
 ## O código é o projeto
 
@@ -49,7 +50,9 @@ sistema/eletrica.js    topologia elétrica derivada da geometria
 sistema/engine.js      motor de animação — máquina de estados e efeitos
 ferramentas/           geradores: elevação técnica (SVG) e simulador (HTML)
 firmware/              o que roda na parede
-simulador/index.html   simulação para apresentação ao cliente
+simulador/index.html   simulação para apresentação
+proposta/index.html    proposta comercial dirigida ao parceiro integrador
+marca/                 marca NexLayer3D nas versões clara e tinta
 desenhos/              saída para marcenaria e obra
 ```
 

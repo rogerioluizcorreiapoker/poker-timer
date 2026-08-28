@@ -58,3 +58,55 @@ function decodificar(buf) {
 }
 
 module.exports = { decodificar };
+
+/* ---------------------------------------------------------------------------
+ * Codificador PNG (RGBA, 8 bits, sem filtro). O suficiente para gravar os
+ * recortes de marca sem trazer dependencia de imagem para o projeto.
+ * ------------------------------------------------------------------------- */
+const TABELA_CRC = (() => {
+  const t = new Int32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c;
+  }
+  return t;
+})();
+
+function crc32(buf) {
+  let c = 0xffffffff;
+  for (let i = 0; i < buf.length; i++) c = TABELA_CRC[(c ^ buf[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function bloco(nome, dados) {
+  const cab = Buffer.alloc(8);
+  cab.writeUInt32BE(dados.length, 0);
+  cab.write(nome, 4, 4, 'ascii');
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(Buffer.concat([Buffer.from(nome, 'ascii'), dados])), 0);
+  return Buffer.concat([cab, dados, crc]);
+}
+
+/* rgba: Buffer com largura*altura*4 bytes */
+function codificar(largura, altura, rgba) {
+  const passo = largura * 4;
+  const bruto = Buffer.alloc(altura * (passo + 1));
+  for (let y = 0; y < altura; y++) {
+    bruto[y * (passo + 1)] = 0;                       // filtro None
+    rgba.copy(bruto, y * (passo + 1) + 1, y * passo, (y + 1) * passo);
+  }
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(largura, 0);
+  ihdr.writeUInt32BE(altura, 4);
+  ihdr[8] = 8;    // profundidade
+  ihdr[9] = 6;    // RGBA
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    bloco('IHDR', ihdr),
+    bloco('IDAT', zlib.deflateSync(bruto, { level: 9 })),
+    bloco('IEND', Buffer.alloc(0))
+  ]);
+}
+
+module.exports.codificar = codificar;

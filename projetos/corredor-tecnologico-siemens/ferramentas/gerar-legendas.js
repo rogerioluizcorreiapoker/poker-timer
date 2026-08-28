@@ -54,7 +54,7 @@ const ESTILO = `
      e cortado na captura. O que sai do topo cai no lugar certo. */
   .marca{position:absolute;right:34px;top:510px;height:180px;text-align:right;
          display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-end;gap:7px}
-  .marca .logo{height:40px;width:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))}
+  .marca .logo{height:56px;width:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,.9))}
   .marca .nome{font:600 17px/1 'Barlow Condensed',sans-serif;letter-spacing:.19em;
                text-transform:uppercase;color:rgba(255,255,255,.86);
                text-shadow:0 2px 8px rgba(0,0,0,.95)}
@@ -98,7 +98,7 @@ capturar('fixo.png', `
   </div>
   <div class="marca">
     ${logoTag}
-    <div class="nome">${MARCA.empresa}</div>
+    ${logoTag ? '' : '<div class="nome">' + MARCA.empresa + '</div>'}
     <div class="ass">${MARCA.assinatura}${MARCA.contato ? ' · ' + MARCA.contato : ''}</div>
   </div>`);
 
