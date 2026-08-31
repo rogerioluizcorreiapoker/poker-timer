@@ -91,18 +91,29 @@ segundos: só a montagem é refeita, o render não.
 node ferramentas/render-video.js --em 14 > q.raw     # um quadro, para ajuste
 ```
 
-## Orçamento de material (PDF de uma página)
+## Orçamento (PDF de uma página)
 
 ```bash
 node ferramentas/baixar-fontes.js     # 1x — embute as fontes do projeto
-node ferramentas/build-orcamento.js   # -> orcamento/NexLayer3D-orcamento-material.pdf
+node ferramentas/build-orcamento.js   # -> orcamento/NexLayer3D-orcamento.pdf
 ```
 
-Agrupado por **função**, não por componente: o documento vai para um parceiro
-que subcontrata, então descreve o que cada sistema faz sem entregar modelo de
-placa, arquitetura ou o caminho para refazer o sistema. Os valores saem de
-`sistema/orcamento.js`, que reagrupa a lista de materiais e **confere a soma
-contra `docs/05`** — se divergir, o build falha.
+Material e execução agrupados por **função**, não por componente: o documento
+vai para um parceiro que subcontrata, então descreve o que cada bloco faz sem
+entregar modelo de placa, arquitetura ou o caminho para refazer o sistema.
 
-O build também conta as páginas do PDF gerado: o documento tem que fechar em
-uma folha.
+`sistema/orcamento.js` é a fonte do preço. Duas alavancas, e só elas:
+
+```js
+var MARGEM = { material: 0.15, servico: 0.45 };
+var FITA   = { rolos: 26, precoRolo: 200 };
+```
+
+Margem baixa no material é deliberada: o parceiro trabalha com LED e sabe
+quanto custa um rolo de fita. A margem mora na execução, que ele não tem como
+comparar. O módulo **confere a soma contra `docs/05`** e o build **conta as
+páginas do PDF** — se qualquer um dos dois divergir, o build falha em vez de
+gerar documento errado.
+
+O PDF do orçamento e a proposta puxam o preço do mesmo módulo, então não há
+como sair valor diferente em cada um.

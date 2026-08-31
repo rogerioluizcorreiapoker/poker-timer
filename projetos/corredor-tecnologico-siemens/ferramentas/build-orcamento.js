@@ -38,23 +38,23 @@ const html = `<!doctype html>
   }
   html,body{margin:0; padding:0; background:#fff}
   body{width:210mm; min-height:297mm; padding:12mm 16mm 10mm;
-       font-family:var(--texto); font-size:9pt; line-height:1.45; color:var(--tinta)}
+       font-family:var(--texto); font-size:8.6pt; line-height:1.4; color:var(--tinta)}
   h1,h2{margin:0}
   .mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
 
   .topo{display:flex; align-items:flex-end; justify-content:space-between; gap:14mm;
         border-bottom:1.6pt solid var(--tinta); padding-bottom:4mm}
-  .topo img{height:13mm; width:auto; display:block}
+  .topo img{height:11.5mm; width:auto; display:block}
   .topo .dir{text-align:right}
   .topo .tipo{font-family:var(--cond); font-weight:700; font-size:14pt; letter-spacing:.12em;
               text-transform:uppercase; line-height:1}
   .topo .ref{font-family:var(--mono); font-size:7pt; color:var(--apagada); margin-top:1.5mm}
 
-  h1{font-family:var(--cond); font-weight:700; font-size:22pt; letter-spacing:.01em;
-     text-transform:uppercase; margin:3.5mm 0 1mm; line-height:1.05}
-  .linha-obra{font-size:9.2pt; color:var(--fraca); margin-bottom:3mm}
+  h1{font-family:var(--cond); font-weight:700; font-size:20pt; letter-spacing:.01em;
+     text-transform:uppercase; margin:3mm 0 3mm; line-height:1.05}
+  .linha-obra{font-size:9pt; color:var(--fraca); margin-bottom:2.6mm}
 
-  .aviso{border:1pt solid var(--petrol); background:var(--veu); padding:2.6mm 4mm;
+  .aviso{border:1pt solid var(--petrol); background:var(--veu); padding:2.3mm 4mm;
          margin-bottom:3.5mm; display:flex; gap:4mm; align-items:baseline}
   .aviso .marcador{font-family:var(--cond); font-weight:700; font-size:8pt; letter-spacing:.14em;
          text-transform:uppercase; color:var(--petrol); white-space:nowrap}
@@ -63,15 +63,19 @@ const html = `<!doctype html>
   h2{font-family:var(--cond); font-weight:700; font-size:11pt; letter-spacing:.14em;
      text-transform:uppercase; color:var(--petrol); margin:0 0 2.5mm;
      padding-bottom:1.2mm; border-bottom:.6pt solid var(--fio)}
-  section{margin-bottom:3mm}
+  section{margin-bottom:2.2mm}
 
   table{width:100%; border-collapse:collapse}
-  td,th{padding:1.5mm 0; vertical-align:top; border-bottom:.5pt solid var(--fio)}
-  .g-nome{font-weight:600; font-size:9.2pt}
-  .g-desc{font-size:7.6pt; color:var(--fraca); line-height:1.4; margin-top:.4mm}
+  td,th{padding:1.2mm 0; vertical-align:top; border-bottom:.5pt solid var(--fio)}
+  .g-nome{font-weight:600; font-size:8.9pt}
+  .g-desc{font-size:7.2pt; color:var(--fraca); line-height:1.32; margin-top:.3mm}
   .g-valor{font-family:var(--mono); font-weight:700; font-size:10pt; text-align:right;
-           white-space:nowrap; width:30mm}
-  tr.total td{border-bottom:none; border-top:1.4pt solid var(--tinta); padding-top:3mm}
+           white-space:nowrap; width:28mm}
+  tr.sub td{border-top:.8pt solid var(--fio); border-bottom:none; padding-top:2mm}
+  tr.sub .g-nome{font-family:var(--cond); font-weight:600; font-size:9.5pt;
+                 letter-spacing:.1em; text-transform:uppercase; color:var(--fraca)}
+  tr.sub .g-valor{font-size:10.5pt; color:var(--fraca)}
+  tr.total td{border-bottom:none; border-top:1.4pt solid var(--tinta); padding-top:2.6mm}
   tr.total .g-nome{font-family:var(--cond); font-weight:700; font-size:12pt;
                    letter-spacing:.08em; text-transform:uppercase}
   tr.total .g-valor{font-size:15pt; color:var(--petrol)}
@@ -84,10 +88,16 @@ const html = `<!doctype html>
                       letter-spacing:.08em; text-transform:uppercase}
   .prazo tr.total .sem{font-weight:700; font-size:12.5pt; color:var(--petrol)}
 
-  ul.fora{margin:0; padding-left:4.5mm; columns:2; column-gap:8mm}
-  ul.fora li{font-size:8.4pt; color:var(--fraca); margin-bottom:1.2mm;
-             break-inside:avoid; padding-left:1mm}
-  ul.fora li::marker{color:var(--petrol)}
+  p.fora{margin:0; font-size:8.4pt; color:var(--fraca); line-height:1.5}
+
+  .faixa-prazo{display:flex; gap:0; border:.6pt solid var(--fio)}
+  .etapa{flex:1; padding:2.4mm 3mm; border-right:.6pt solid var(--fio)}
+  .etapa:last-child{border-right:none}
+  .etapa.fim{background:var(--veu); flex:0 0 30mm}
+  .etapa .n{font-family:var(--mono); font-weight:700; font-size:13pt; line-height:1;
+            color:var(--tinta)}
+  .etapa.fim .n{color:var(--petrol)}
+  .etapa .l{font-size:7.2pt; color:var(--fraca); line-height:1.3; margin-top:1mm}
 
   footer{border-top:.6pt solid var(--fio); padding-top:3mm; margin-top:auto;
          display:flex; justify-content:space-between; gap:8mm;
@@ -99,69 +109,80 @@ const html = `<!doctype html>
   <div class="topo">
     <img src="${logo}" alt="NexLayer3D">
     <div class="dir">
-      <div class="tipo">Estimativa de material</div>
+      <div class="tipo">Orçamento</div>
       <div class="ref">REV 00 · ${hoje} · validade 30 dias</div>
     </div>
   </div>
 
   <h1>Corredor Tecnológico</h1>
-  <div class="linha-obra">Parede cinética de 12,00 m em LED endereçável embutido, com componentes
-  em relevo impressos em 3D e reação automática à passagem de pessoas.</div>
 
   <div class="aviso">
-    <span class="marcador">Somente material</span>
-    <p>Este documento cobre <strong>o custo de material</strong>. Mão de obra, engenharia,
-    programação e instalação são orçadas à parte, em documento próprio.</p>
+    <span class="marcador">Preço fechado</span>
+    <p>Parede cinética de 12,00 m em LED endereçável embutido, com componentes em relevo
+    impressos em 3D e reação automática à passagem de pessoas. Inclui
+    <strong>material, execução e engenharia</strong>, do projeto executivo ao comissionamento
+    com o corredor em uso.</p>
   </div>
 
   <section>
     <h2>Material por sistema</h2>
     <table>
       <tbody>
-        ${r.grupos.map((g) => `<tr>
+        ${r.material.map((g) => `<tr>
           <td><div class="g-nome">${g.nome}</div><div class="g-desc">${g.descricao}</div></td>
-          <td class="g-valor">${brl(g.valor)}</td>
+          <td class="g-valor">${brl(g.preco)}</td>
         </tr>`).join('\n        ')}
+        <tr class="sub"><td class="g-nome">Subtotal de material</td>
+          <td class="g-valor">${brl(r.subtotalMaterial)}</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Execução e engenharia</h2>
+    <table>
+      <tbody>
+        ${r.servico.map((g) => `<tr>
+          <td><div class="g-nome">${g.nome}</div><div class="g-desc">${g.descricao}</div></td>
+          <td class="g-valor">${brl(g.preco)}</td>
+        </tr>`).join('\n        ')}
+        <tr class="sub"><td class="g-nome">Subtotal de execução</td>
+          <td class="g-valor">${brl(r.subtotalServico)}</td></tr>
         <tr class="total">
-          <td class="g-nome">Total estimado</td>
-          <td class="g-valor">${brl(r.total)}</td>
+          <td class="g-nome">Total</td>
+          <td class="g-valor">${brl(r.preco)}</td>
         </tr>
       </tbody>
     </table>
-    <div class="nota-total">margem de ±${r.tolerancia}% até o fechamento da cotação ·
+    <div class="nota-total">valores sujeitos a recotação após a validade ·
     itens importados sujeitos a variação cambial</div>
   </section>
 
   <section>
     <h2>Tempo de execução</h2>
-    <table class="prazo">
-      <tbody>
-        ${r.prazo.map((p) => `<tr><td class="et">${p[0]}</td>
-          <td class="sem">${p[1]} ${p[1] === 1 ? 'semana' : 'semanas'}</td></tr>`).join('\n        ')}
-        <tr class="total"><td class="et">Prazo total</td>
-          <td class="sem">${r.semanas} semanas</td></tr>
-      </tbody>
-    </table>
+    <div class="faixa-prazo">
+      ${r.prazo.map((p) => `<div class="etapa">
+        <div class="n">${p[1]}</div><div class="l">${p[0]}</div></div>`).join('')}
+      <div class="etapa fim"><div class="n">${r.semanas}</div><div class="l">semanas no total</div></div>
+    </div>
   </section>
 
   <section>
-    <h2>Não incluso nesta estimativa</h2>
-    <ul class="fora">
-      ${r.fora.map((f) => `<li>${f}</li>`).join('\n      ')}
-    </ul>
+    <h2>Não incluso</h2>
+    <p class="fora">${r.fora.join(' · ')}.</p>
   </section>
 
   <footer>
     <span><strong style="color:var(--fraca)">NexLayer3D</strong> · projeto, engenharia e execução</span>
-    <span>Estimativa preliminar · não constitui proposta comercial</span>
+    <span>Sujeito a medição no local · pagamento 30% assinatura · 40% bancada · 30% entrega</span>
   </footer>
 
 </div></body></html>`;
 
-const destHtml = path.join(raiz, 'orcamento', 'orcamento-material.html');
+const destHtml = path.join(raiz, 'orcamento', 'orcamento.html');
 fs.writeFileSync(destHtml, html);
 
-const destPdf = path.join(raiz, 'orcamento', 'NexLayer3D-orcamento-material.pdf');
+const destPdf = path.join(raiz, 'orcamento', 'NexLayer3D-orcamento.pdf');
 execFileSync(process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', [
   '--headless', '--disable-gpu', '--no-sandbox', '--no-pdf-header-footer',
   '--virtual-time-budget=6000', '--print-to-pdf=' + destPdf, 'file://' + destHtml
@@ -184,4 +205,5 @@ const paginas = (Buffer.concat(pedacos).toString('latin1').match(/\/Type\s*\/Pag
 console.log('OK ->', destPdf);
 console.log('    páginas:', paginas, paginas === 1 ? '' : '<-- ATENÇÃO: deveria ser 1');
 console.log('   ', (fs.statSync(destPdf).size / 1024).toFixed(0), 'kB');
-console.log('    total de material:', brl(r.total), '| prazo:', r.semanas, 'semanas');
+console.log('    preço:', brl(r.preco), '| custo:', brl(Math.round(r.custo)),
+            '| margem efetiva:', r.margemEfetiva + '%', '| prazo:', r.semanas, 'semanas');

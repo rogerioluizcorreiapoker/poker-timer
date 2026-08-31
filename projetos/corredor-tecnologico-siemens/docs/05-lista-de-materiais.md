@@ -9,7 +9,7 @@
 
 | Item | Qtd | Obs. | Custo estim. |
 |---|---|---|---|
-| Fita WS2815 12 V, 60 LED/m, IP30 | 132 m | 114,7 m + 15% de perda de corte e reserva | 8.000 – 11.000 |
+| Fita WS2815 12 V, 60 LED/m, IP30 | 26 rolos de 5 m | 114,7 m de trilha + 3,9 m de perda de corte + 5,7 m de sobra de rolo + 5 m de reserva. A R$ 200/rolo | 5.200 |
 | Fonte Mean Well LRS-450-12 | 4 | uma por zona de 3 m | 1.600 – 2.200 |
 | Controlador ESP32 + Ethernet (WT32-ETH01) | 2 | + 1 reserva recomendada | 400 – 700 |
 | Placa de saída: 74AHCT125, bornes, fusível, resistores | 2 | 13 saídas no total | 500 – 800 |
@@ -59,9 +59,9 @@
 
 | | Piso | Teto |
 |---|---|---|
-| Materiais | 30.650 | 47.900 |
+| Materiais | 27.850 | 42.100 |
 | Mão de obra e serviços | 28.000 | 43.500 |
-| **Custo direto** | **58.650** | **91.400** |
+| **Custo direto** | **55.850** | **85.600** |
 
 **Não incluso:** margem/BDI, impostos, frete de importação, andaimes ou
 plataforma elevatória, taxas de acesso à edificação, ART, obra civil, ponto de
@@ -69,9 +69,15 @@ energia até o quadro.
 
 ## Itens que mais movem o orçamento
 
-1. **Fita LED (132 m)** — maior item isolado, e o mais sensível a câmbio.
-   Cotar cedo e comprar de uma vez: lote diferente pode ter tom de branco/verde
-   levemente diferente, e a diferença aparece numa parede de 12 m contínua.
+1. **Fita LED (26 rolos)** — a R$ 200 o rolo de 5 m, dá R$ 5.200. Comprar de
+   uma vez: lote diferente pode ter tom levemente diferente, e a diferença
+   aparece numa parede de 12 m contínua.
+   **Atenção ao tipo:** R$ 200/rolo é preço de fita endereçável comum de 5 V.
+   A de 12 V com linha de dados de backup — que o projeto especifica em
+   `docs/02` — costuma custar mais. A de 5 V exige injeção de energia a cada
+   1,5 m em vez de 4 a 5 m, o que devolve parte da economia em cabo e mão de
+   obra, e um LED queimado apaga o resto da trilha. Confirmar qual está
+   cotada antes de fechar.
 2. **Usinagem CNC + 111 emendas** — o custo do desenho ser denso. Reduzir o
    número de cantos reduz mão de obra direta; vale revisar se houver aperto.
 3. **Reação ao fogo do MDF** — item aberto que pode empurrar o substrato para

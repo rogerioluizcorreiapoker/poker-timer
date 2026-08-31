@@ -24,26 +24,44 @@ Custo direto apurado em `05-lista-de-materiais.md`:
 
 | | |
 |---|---|
-| Materiais | R$ 30.650 – 47.900 |
+| Materiais | R$ 27.850 – 42.100 |
 | Mão de obra e serviços | R$ 28.000 – 43.500 |
-| **Custo direto** | **R$ 58.650 – 91.400** |
+| **Custo direto** | **R$ 55.850 – 85.600** · ponto médio R$ 70.725 |
 
-O que empurra a margem para cima neste trabalho:
+### As duas margens, e por que são diferentes
 
-- **Não é catálogo.** O layout, o engine e a máquina de estados são projeto
-  original. Está sendo vendida engenharia, não montagem.
-- **Risco de obra em prédio corporativo:** janela de trabalho restrita,
-  liberação de acesso, retrabalho se a medição divergir.
-- **111 emendas** de mão de obra intensiva, com pouca margem para acelerar.
-- **Câmbio:** fita e fontes importadas, e a compra acontece semanas depois do
-  aceite.
+`sistema/orcamento.js` aplica duas taxas, e essa separação é a decisão
+comercial mais importante do orçamento:
 
-Margem típica nesse tipo de fornecimento fica entre **40% e 70%** sobre o custo
-direto, o que coloca o preço entre **R$ 82 mil e R$ 155 mil**. A faixa é larga
-porque o custo ainda depende de cotação — fechar a cotação antes de mandar o
-número reduz muito essa incerteza.
+| | Margem | Por quê |
+|---|---|---|
+| **Material** | 15% | O parceiro trabalha com LED. Ele sabe quanto custa um rolo de fita. Material inflado queima credibilidade no único item que ele consegue conferir sozinho. |
+| **Execução e engenharia** | 45% | É onde está o trabalho, e ele não tem base de comparação. Projeto executivo, programação do comportamento e as emendas não têm tabela de preço. |
 
-**Três regras para a conversa:**
+Resultado: **R$ 92.250**, margem efetiva de 30% sobre o custo.
+
+Trocar as taxas é uma linha em `sistema/orcamento.js` — o PDF e a proposta
+puxam o número do mesmo módulo, então não há risco de sair valor diferente em
+cada documento.
+
+### Correção importante da fita
+
+A primeira versão do orçamento estimou a fita LED em R$ 8.000 a 11.000. A preço
+real de mercado — **R$ 200 o rolo de 5 m** — os 26 rolos dão **R$ 5.200**. O
+erro era de 55% a 110% para cima, justamente no item que o parceiro sabe
+conferir de cabeça.
+
+Fica o aprendizado: **todo item que o interlocutor compra no dia a dia precisa
+de preço cotado, não estimado.** Um número inflado ali contamina a confiança no
+resto do orçamento, onde ele não tem como conferir.
+
+**Ponto em aberto:** R$ 200/rolo é preço de fita endereçável comum de 5 V. A de
+12 V com linha de dados de backup, que `docs/02` especifica, custa mais. A de
+5 V exige injeção de energia a cada 1,5 m em vez de 4 a 5 m — parte da economia
+volta em cabo e mão de obra — e um LED queimado apaga o resto da trilha.
+Confirmar qual está cotada antes de fechar o número.
+
+### Três regras para a conversa
 
 1. **Mande um número, não uma faixa.** Faixa em proposta é convite para o
    parceiro negociar a partir do piso.
@@ -112,8 +130,9 @@ parceiro não fica sem material para levar ao cliente dele.
 
 ## Antes de mandar a proposta
 
-- [ ] Preencher o valor (o campo está marcado no documento)
-- [ ] Fechar cotação de fita e fontes, para o número não nascer velho
+- [x] Valor definido: R$ 92.250 (margem 15% material / 45% execução)
+- [ ] Confirmar o TIPO da fita a R$ 200/rolo — 5 V ou 12 V com backup muda o projeto elétrico
+- [ ] Fechar cotação das fontes, para o número não nascer velho
 - [ ] Decidir a política de modalidade C
 - [ ] Conferir se o prazo de 8 semanas cabe no cronograma que ele já assumiu
       com a Siemens — se não couber, é melhor saber agora
