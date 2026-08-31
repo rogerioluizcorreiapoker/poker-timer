@@ -90,3 +90,19 @@ segundos: só a montagem é refeita, o render não.
 ```bash
 node ferramentas/render-video.js --em 14 > q.raw     # um quadro, para ajuste
 ```
+
+## Orçamento de material (PDF de uma página)
+
+```bash
+node ferramentas/baixar-fontes.js     # 1x — embute as fontes do projeto
+node ferramentas/build-orcamento.js   # -> orcamento/NexLayer3D-orcamento-material.pdf
+```
+
+Agrupado por **função**, não por componente: o documento vai para um parceiro
+que subcontrata, então descreve o que cada sistema faz sem entregar modelo de
+placa, arquitetura ou o caminho para refazer o sistema. Os valores saem de
+`sistema/orcamento.js`, que reagrupa a lista de materiais e **confere a soma
+contra `docs/05`** — se divergir, o build falha.
+
+O build também conta as páginas do PDF gerado: o documento tem que fechar em
+uma folha.

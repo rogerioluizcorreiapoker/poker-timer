@@ -1,0 +1,187 @@
+/* Gera orcamento/orcamento-material.html e o PDF de uma pagina.
+ *
+ * Documento enxuto para o parceiro integrador: custo de material agrupado por
+ * FUNCAO, prazo de execucao, e o que fica de fora. Sem modelo de componente,
+ * sem arquitetura, sem o caminho para refazer o sistema.
+ */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const { execFileSync } = require('child_process');
+const ORCAMENTO = require('../sistema/orcamento.js');
+
+const raiz = path.join(__dirname, '..');
+const r = ORCAMENTO.calcular();
+const brl = (v) => 'R$ ' + v.toLocaleString('pt-BR');
+
+const logo = 'data:image/png;base64,' +
+  fs.readFileSync(path.join(raiz, 'marca/nexlayer3d-tinta-web.png')).toString('base64');
+
+const hoje = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+/* Fontes embutidas em vez do link do Google: o Chromium headless deste
+ * ambiente nao busca a fonte na hora de imprimir, cai no fallback (mais
+ * largo) e o documento estoura de uma para tres paginas. */
+const fontes = fs.readFileSync(path.join(raiz, 'marca/fontes-embutidas.css'), 'utf8');
+
+const html = `<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<style>${fontes}</style>
+<style>
+  @page { size: A4; margin: 0; }
+  *{box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact}
+  :root{
+    --tinta:#101a1e; --fraca:#56666d; --apagada:#8a9aa0;
+    --fio:#d9e2e4; --petrol:#10767f; --veu:#eef6f6;
+    --cond:'Barlow Condensed',sans-serif; --texto:'Archivo',sans-serif;
+    --mono:'JetBrains Mono',monospace;
+  }
+  html,body{margin:0; padding:0; background:#fff}
+  body{width:210mm; min-height:297mm; padding:12mm 16mm 10mm;
+       font-family:var(--texto); font-size:9pt; line-height:1.45; color:var(--tinta)}
+  h1,h2{margin:0}
+  .mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+
+  .topo{display:flex; align-items:flex-end; justify-content:space-between; gap:14mm;
+        border-bottom:1.6pt solid var(--tinta); padding-bottom:4mm}
+  .topo img{height:13mm; width:auto; display:block}
+  .topo .dir{text-align:right}
+  .topo .tipo{font-family:var(--cond); font-weight:700; font-size:14pt; letter-spacing:.12em;
+              text-transform:uppercase; line-height:1}
+  .topo .ref{font-family:var(--mono); font-size:7pt; color:var(--apagada); margin-top:1.5mm}
+
+  h1{font-family:var(--cond); font-weight:700; font-size:22pt; letter-spacing:.01em;
+     text-transform:uppercase; margin:3.5mm 0 1mm; line-height:1.05}
+  .linha-obra{font-size:9.2pt; color:var(--fraca); margin-bottom:3mm}
+
+  .aviso{border:1pt solid var(--petrol); background:var(--veu); padding:2.6mm 4mm;
+         margin-bottom:3.5mm; display:flex; gap:4mm; align-items:baseline}
+  .aviso .marcador{font-family:var(--cond); font-weight:700; font-size:8pt; letter-spacing:.14em;
+         text-transform:uppercase; color:var(--petrol); white-space:nowrap}
+  .aviso p{margin:0; font-size:8.6pt; color:var(--tinta)}
+
+  h2{font-family:var(--cond); font-weight:700; font-size:11pt; letter-spacing:.14em;
+     text-transform:uppercase; color:var(--petrol); margin:0 0 2.5mm;
+     padding-bottom:1.2mm; border-bottom:.6pt solid var(--fio)}
+  section{margin-bottom:3mm}
+
+  table{width:100%; border-collapse:collapse}
+  td,th{padding:1.5mm 0; vertical-align:top; border-bottom:.5pt solid var(--fio)}
+  .g-nome{font-weight:600; font-size:9.2pt}
+  .g-desc{font-size:7.6pt; color:var(--fraca); line-height:1.4; margin-top:.4mm}
+  .g-valor{font-family:var(--mono); font-weight:700; font-size:10pt; text-align:right;
+           white-space:nowrap; width:30mm}
+  tr.total td{border-bottom:none; border-top:1.4pt solid var(--tinta); padding-top:3mm}
+  tr.total .g-nome{font-family:var(--cond); font-weight:700; font-size:12pt;
+                   letter-spacing:.08em; text-transform:uppercase}
+  tr.total .g-valor{font-size:15pt; color:var(--petrol)}
+  .nota-total{font-size:7.8pt; color:var(--fraca); margin-top:1.5mm; text-align:right}
+
+  .prazo td{padding:1.2mm 0}
+  .prazo .et{font-size:9pt}
+  .prazo .sem{font-family:var(--mono); text-align:right; width:26mm; font-size:9pt}
+  .prazo tr.total .et{font-family:var(--cond); font-weight:700; font-size:11.5pt;
+                      letter-spacing:.08em; text-transform:uppercase}
+  .prazo tr.total .sem{font-weight:700; font-size:12.5pt; color:var(--petrol)}
+
+  ul.fora{margin:0; padding-left:4.5mm; columns:2; column-gap:8mm}
+  ul.fora li{font-size:8.4pt; color:var(--fraca); margin-bottom:1.2mm;
+             break-inside:avoid; padding-left:1mm}
+  ul.fora li::marker{color:var(--petrol)}
+
+  footer{border-top:.6pt solid var(--fio); padding-top:3mm; margin-top:auto;
+         display:flex; justify-content:space-between; gap:8mm;
+         font-size:7.6pt; color:var(--apagada)}
+  .envoltorio{min-height:calc(297mm - 22mm); display:flex; flex-direction:column}
+</style></head>
+<body><div class="envoltorio">
+
+  <div class="topo">
+    <img src="${logo}" alt="NexLayer3D">
+    <div class="dir">
+      <div class="tipo">Estimativa de material</div>
+      <div class="ref">REV 00 · ${hoje} · validade 30 dias</div>
+    </div>
+  </div>
+
+  <h1>Corredor Tecnológico</h1>
+  <div class="linha-obra">Parede cinética de 12,00 m em LED endereçável embutido, com componentes
+  em relevo impressos em 3D e reação automática à passagem de pessoas.</div>
+
+  <div class="aviso">
+    <span class="marcador">Somente material</span>
+    <p>Este documento cobre <strong>o custo de material</strong>. Mão de obra, engenharia,
+    programação e instalação são orçadas à parte, em documento próprio.</p>
+  </div>
+
+  <section>
+    <h2>Material por sistema</h2>
+    <table>
+      <tbody>
+        ${r.grupos.map((g) => `<tr>
+          <td><div class="g-nome">${g.nome}</div><div class="g-desc">${g.descricao}</div></td>
+          <td class="g-valor">${brl(g.valor)}</td>
+        </tr>`).join('\n        ')}
+        <tr class="total">
+          <td class="g-nome">Total estimado</td>
+          <td class="g-valor">${brl(r.total)}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="nota-total">margem de ±${r.tolerancia}% até o fechamento da cotação ·
+    itens importados sujeitos a variação cambial</div>
+  </section>
+
+  <section>
+    <h2>Tempo de execução</h2>
+    <table class="prazo">
+      <tbody>
+        ${r.prazo.map((p) => `<tr><td class="et">${p[0]}</td>
+          <td class="sem">${p[1]} ${p[1] === 1 ? 'semana' : 'semanas'}</td></tr>`).join('\n        ')}
+        <tr class="total"><td class="et">Prazo total</td>
+          <td class="sem">${r.semanas} semanas</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Não incluso nesta estimativa</h2>
+    <ul class="fora">
+      ${r.fora.map((f) => `<li>${f}</li>`).join('\n      ')}
+    </ul>
+  </section>
+
+  <footer>
+    <span><strong style="color:var(--fraca)">NexLayer3D</strong> · projeto, engenharia e execução</span>
+    <span>Estimativa preliminar · não constitui proposta comercial</span>
+  </footer>
+
+</div></body></html>`;
+
+const destHtml = path.join(raiz, 'orcamento', 'orcamento-material.html');
+fs.writeFileSync(destHtml, html);
+
+const destPdf = path.join(raiz, 'orcamento', 'NexLayer3D-orcamento-material.pdf');
+execFileSync(process.env.CHROME || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', [
+  '--headless', '--disable-gpu', '--no-sandbox', '--no-pdf-header-footer',
+  '--virtual-time-budget=6000', '--print-to-pdf=' + destPdf, 'file://' + destHtml
+], { stdio: 'ignore' });
+
+// Conta as paginas do PDF gerado. O documento tem que fechar em uma folha -
+// se o conteudo crescer, isso aqui avisa em vez de deixar passar batido.
+const zlib = require('zlib');
+const bruto = fs.readFileSync(destPdf);
+const pedacos = [bruto];
+const re = /stream\r?\n/g;
+let m;
+while ((m = re.exec(bruto.toString('latin1'))) !== null) {
+  const ini = m.index + m[0].length;
+  const fim = bruto.indexOf('endstream', ini);
+  if (fim > 0) { try { pedacos.push(zlib.inflateSync(bruto.subarray(ini, fim))); } catch (e) { /* nao inflavel */ } }
+}
+const paginas = (Buffer.concat(pedacos).toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+
+console.log('OK ->', destPdf);
+console.log('    páginas:', paginas, paginas === 1 ? '' : '<-- ATENÇÃO: deveria ser 1');
+console.log('   ', (fs.statSync(destPdf).size / 1024).toFixed(0), 'kB');
+console.log('    total de material:', brl(r.total), '| prazo:', r.semanas, 'semanas');
