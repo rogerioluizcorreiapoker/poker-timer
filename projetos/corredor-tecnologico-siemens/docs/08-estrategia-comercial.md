@@ -75,6 +75,69 @@ Confirmar qual está cotada antes de fechar o número.
    Cada uma delas tira custo real. Baixar o preço sem tirar escopo só tira
    margem.
 
+## O teto de R$ 20 mil
+
+O parceiro informou que o cliente final paga **até uns R$ 20 mil**. O projeto
+desenhado não cabe, e vale ser específico sobre o quanto: **só o material, no
+piso da faixa, já é R$ 27.850** — sem mão de obra, sem margem, sem imposto.
+
+`sistema/cenarios.js` responde a pergunta certa — *o que cabe em R$ 20 mil?* —
+derivando o custo de cada versão a partir de taxas unitárias tiradas de
+`docs/05`. Mudar o tamanho do escopo recalcula fita, canaleta, fonte, emenda,
+cabo e mão de obra de uma vez.
+
+| | Completo | Reduzido | Essencial |
+|---|---|---|---|
+| Linha de luz | 114,7 m | 60 m | 16 m |
+| Peças em relevo | 17 | 8 | 2 |
+| Substrato | painéis de MDF usinados | parede pintada | parede pintada |
+| Prazo | 8 semanas | 5 semanas | 3 semanas |
+| Custo | R$ 70.725 | R$ 29.998 | R$ 14.739 |
+| **Preço** | **R$ 92.250** | **R$ 39.500** | **R$ 19.500** |
+| Margem | R$ 21.525 | R$ 9.502 | R$ 4.761 |
+
+O modelo de taxas unitárias chega a R$ 90.000 para o cenário completo, contra
+R$ 92.250 do orçamento detalhado item a item — 2,5% de diferença. Isso valida
+as taxas usadas nos outros dois cenários.
+
+### O que preservar quando corta
+
+A tentação é cortar o sensoriamento, que parece caro. É o corte errado.
+
+O sensor de posição custa cerca de R$ 850 a mais que um sensor de presença
+comum, e é **o único item que sustenta o efeito que vende o projeto**: sem ele
+a parede acende quando alguém entra, mas a luz não acompanha quem caminha. Com
+16 m de trilha concentrados no rodapé corrido, o efeito de a luz andar junto ao
+longo dos 12 m continua acontecendo — o que se perde é a densidade do desenho,
+não o comportamento.
+
+Ordem de corte, do menos ao mais doloroso:
+
+1. densidade da malha (menos trilha, menos emenda, menos fonte);
+2. painéis de MDF usinados → parede preparada e pintada com perfil de superfície;
+3. número de peças em relevo;
+4. letreiro em acrílico → vinil recortado;
+5. **sensor de posição — só em último caso.** Sem ele sobra uma parede acesa.
+
+### Duas perguntas antes de aceitar
+
+**1. Os R$ 20 mil são para a NexLayer3D, ou é o orçamento do cliente final?**
+Se o parceiro tira a margem dele desses R$ 20 mil, sobram talvez R$ 14 mil —
+abaixo do custo do Essencial, que é R$ 14.739. Nesse caso não há negócio, e é
+melhor descobrir isso agora.
+
+**2. Vale três semanas por R$ 4.761 de margem?**
+Isoladamente, não. Como porta de entrada em um cliente que costuma repetir esse
+tipo de instalação, talvez — mas então a modalidade de entrega da tecnologia
+(seção seguinte) passa a ser a parte importante do contrato, não o preço.
+
+### O risco de vender o Essencial com o vídeo do Completo
+
+O vídeo e a simulação mostram 114,7 m de trilha, 17 peças e canaleta usinada. O
+Essencial tem 16 m e nenhum painel. Fechar R$ 19.500 mostrando o material do
+Completo é receita para desgaste na entrega. Se o caminho for o Essencial,
+vale refazer a simulação na densidade certa antes de assinar.
+
 ## A decisão que vale mais que o preço
 
 O parceiro vai perguntar se "entrega tudo". Vale separar o que está sendo

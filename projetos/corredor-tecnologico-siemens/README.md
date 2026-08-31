@@ -37,7 +37,7 @@ ninguém, acompanhando quem caminha quando há.
 | [`docs/05-lista-de-materiais.md`](docs/05-lista-de-materiais.md) | BOM completo com estimativa de custo. |
 | [`docs/06-montagem-e-comissionamento.md`](docs/06-montagem-e-comissionamento.md) | Sequência de obra, cronograma, checklist de entrega. |
 | [`docs/07-premissas-e-pendencias.md`](docs/07-premissas-e-pendencias.md) | O que assumimos e o que precisa de resposta do cliente. |
-| [`docs/08-estrategia-comercial.md`](docs/08-estrategia-comercial.md) | **Uso interno.** Precificação, modalidades de entrega da tecnologia e negociação com o parceiro. Não enviar junto com a proposta. |
+| [`docs/08-estrategia-comercial.md`](docs/08-estrategia-comercial.md) | **Uso interno.** Precificação, o teto de R$ 20 mil, modalidades de entrega da tecnologia e negociação. Não enviar junto com a proposta. |
 
 ## O código é o projeto
 
@@ -96,7 +96,13 @@ node ferramentas/render-video.js --em 14 > q.raw     # um quadro, para ajuste
 ```bash
 node ferramentas/baixar-fontes.js     # 1x — embute as fontes do projeto
 node ferramentas/build-orcamento.js   # -> orcamento/NexLayer3D-orcamento.pdf
+node ferramentas/build-cenarios.js    # -> cenarios/NexLayer3D-niveis-de-escopo.pdf
 ```
+
+`sistema/cenarios.js` deriva o custo de cada versão a partir de taxas unitárias
+tiradas de `docs/05`, então mudar o tamanho do escopo recalcula fita, canaleta,
+fonte, emenda, cabo e mão de obra de uma vez. Para o cenário completo o modelo
+chega a 2,5% do orçamento detalhado — é o que valida as taxas.
 
 Material e execução agrupados por **função**, não por componente: o documento
 vai para um parceiro que subcontrata, então descreve o que cada bloco faz sem
