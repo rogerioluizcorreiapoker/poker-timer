@@ -17,6 +17,7 @@
     --hv: #ffae2b;   /* alta tensão (transmissão) */
     --dv: #33e07a;   /* distribuição */
   }
+  :root { color-scheme: dark; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; }
   body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--text); background: #1c1d20; }
@@ -33,6 +34,7 @@
   #title .bar { width: 70px; height: 2px; background: var(--red); margin: 8px auto; }
   #title .sub { font-size: 14px; letter-spacing: .28em; text-transform: uppercase; color: #dfe2e7; }
   #title .sub2 { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  #title .by { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
 
   #slogan {
     position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); text-align: center; pointer-events: none;
@@ -119,7 +121,8 @@
 <div id="loading">Montando a maquete…</div>
 
 <div id="title">
-  <h1><span class="r">Honda</span> <span class="w">Energy</span></h1>
+  <div class="by">Proposta de conceito • NexLayer3D</div>
+  <h1><span class="w">Maquete</span> <span class="r">Honda</span> <span class="w">Energy</span></h1>
   <div class="bar"></div>
   <div class="sub">Maquete interativa • 2 × 1 m</div>
   <div class="sub2">10 aerogeradores: 9 de 9 cm + 1 de 11 cm</div>
@@ -149,7 +152,7 @@
   <div id="stepList"></div>
 </div>
 
-<div id="slogan">Energia que impulsiona o <b>futuro mais sustentável</b><small>Conceito preliminar • tensões, norte e dados das placas a validar</small></div>
+<div id="slogan">Energia que impulsiona o <b>futuro mais sustentável</b><small>Conceito preliminar NexLayer3D • tensões, norte e dados das placas a validar</small></div>
 
 <div id="controls" class="panel">
   <button id="bOverview">Vista geral</button>
