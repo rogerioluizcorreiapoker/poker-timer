@@ -5,46 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maquete Honda Energy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@300;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #161719;
-    --panel: rgba(18,19,22,.82);
+    --panel: rgba(18,19,22,.8);
     --line: rgba(255,255,255,.12);
     --text: #eef0f3;
     --muted: #9aa1ab;
     --red: #e3141c;
     --mv: #3aa8ff;   /* média tensão (geração) */
-    --hv: #ffae2b;   /* alta tensão (elevada) */
-    --dv: #33e07a;   /* distribuição (rebaixada) */
+    --hv: #ffae2b;   /* alta tensão (transmissão) */
+    --dv: #33e07a;   /* distribuição */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; }
-  body {
-    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    color: var(--text);
-    background: radial-gradient(ellipse at 50% 35%, #3a3b3f 0%, #232427 45%, #111214 100%);
-  }
+  body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color: var(--text); background: #1c1d20; }
   #scene { position: fixed; inset: 0; }
   .panel {
-    background: var(--panel);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 10px 34px rgba(0,0,0,.35);
+    background: var(--panel); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 10px 34px rgba(0,0,0,.35);
   }
 
-  /* Title */
   #title { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; }
-  #title h1 { margin: 0; font-family: Montserrat, Inter, sans-serif; font-size: 40px; font-weight: 800; letter-spacing: -.01em; line-height: 1; }
+  #title h1 { margin: 0; font-family: Montserrat, Inter, sans-serif; font-size: 40px; font-weight: 800; line-height: 1; }
   #title h1 .r { color: var(--red); }
   #title h1 .w { color: #e9eaee; }
-  #title .bar { width: 70px; height: 2px; background: var(--red); margin: 8px auto 8px; }
+  #title .bar { width: 70px; height: 2px; background: var(--red); margin: 8px auto; }
   #title .sub { font-size: 14px; letter-spacing: .28em; text-transform: uppercase; color: #dfe2e7; }
   #title .sub2 { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-  /* Legend / explanation */
+  #slogan {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); text-align: center; pointer-events: none;
+    font-family: Montserrat, Inter, sans-serif; font-weight: 300; font-size: 22px; letter-spacing: .02em; color: #f1f2f4; white-space: nowrap;
+    text-shadow: 0 2px 14px rgba(0,0,0,.6);
+  }
+  #slogan b { font-weight: 700; color: var(--dv); }
+  #slogan small { display: block; font-family: Inter, sans-serif; font-size: 10.5px; letter-spacing: .14em; color: var(--muted); margin-top: 6px; text-transform: uppercase; }
+
   #legend { position: fixed; left: 16px; top: 16px; width: 290px; padding: 14px 16px; }
   #legend h2, #steps h2 { margin: 0 0 10px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
   .lg { display: grid; grid-template-columns: 14px 1fr auto; gap: 4px 10px; align-items: center; margin-bottom: 9px; }
@@ -60,32 +57,22 @@
   .explain { font-size: 11.5px; color: var(--muted); line-height: 1.45; margin: 10px 0 0; }
   .explain b { color: var(--text); }
 
-  /* Steps */
-  #steps { position: fixed; top: 16px; right: 16px; width: 270px; padding: 14px; max-height: calc(100% - 100px); overflow: auto; }
+  #steps { position: fixed; top: 16px; right: 16px; width: 270px; padding: 14px; max-height: calc(100% - 110px); overflow: auto; }
   .step {
     display: flex; gap: 10px; align-items: flex-start; width: 100%; text-align: left; border: 0; background: transparent;
     padding: 8px; border-radius: 9px; cursor: pointer; font: inherit; color: inherit; transition: background .2s;
   }
   .step:hover { background: rgba(255,255,255,.06); }
   .step.active { background: rgba(227,20,28,.18); }
-  .num {
-    flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
-    font-size: 11px; font-weight: 700; color: #fff; background: var(--red);
-  }
+  .num { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; background: var(--red); }
   .step b { display: block; font-size: 13px; font-weight: 600; }
   .step small { display: block; font-size: 11.5px; color: var(--muted); line-height: 1.35; margin-top: 2px; }
 
-  /* Controls */
   #controls { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 4px; padding: 5px; }
-  #controls button {
-    border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 600;
-    padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text);
-  }
+  #controls button { border: 0; background: transparent; font: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; color: var(--text); }
   #controls button:hover { background: rgba(255,255,255,.08); }
   #controls button.on { background: var(--red); color: #fff; }
-  #foot { position: fixed; left: 16px; bottom: 22px; font-size: 11.5px; color: var(--muted); letter-spacing: .04em; }
 
-  /* 3D cards */
   .c3 {
     background: rgba(12,12,14,.9); border: 1px solid rgba(255,255,255,.28); border-radius: 4px;
     padding: 7px 10px; font-size: 11px; line-height: 1.4; color: #e8e9ec; pointer-events: auto; cursor: pointer;
@@ -95,18 +82,19 @@
   .c3 .num { width: 17px; height: 17px; font-size: 9.5px; }
   .c3 .tag { display: inline-block; margin: 2px 0 3px; padding: 1px 7px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .06em; color: #111; }
   .c3.active { border-color: var(--red); transform: scale(1.08); }
-  .dim { font-size: 15px; color: #e9eaee; background: #1b1c1f; padding: 0 8px; pointer-events: none; }
+  .dim { font-size: 15px; color: #e9eaee; background: #1c1d20; padding: 0 8px; pointer-events: none; }
   .hide-labels .c3 { display: none; }
 
-  @media (max-width: 1100px) {
-    #legend { display: none; }
-    #title h1 { font-size: 30px; }
-  }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; font-size: 13px; letter-spacing: .2em; color: var(--muted); text-transform: uppercase; pointer-events: none; transition: opacity .6s; }
+
+  @media (max-width: 1150px) { #legend { display: none; } #title h1 { font-size: 30px; } #slogan { font-size: 17px; bottom: 76px; } }
   @media (max-width: 760px) {
     #title { top: 10px; width: calc(100% - 32px); }
     #title h1 { font-size: 24px; }
     #title .sub { font-size: 11px; letter-spacing: .18em; }
     #title .sub2 { font-size: 11px; }
+    #slogan { font-size: 13px; white-space: normal; width: calc(100% - 32px); bottom: 124px; }
+    #slogan small { display: none; }
     #steps { top: auto; bottom: 64px; left: 16px; right: 16px; width: auto; padding: 8px; }
     #steps h2 { display: none; }
     #stepList { display: flex; gap: 4px; overflow-x: auto; }
@@ -115,7 +103,6 @@
     .step b { white-space: nowrap; font-size: 12px; }
     #controls { left: 16px; justify-content: space-between; }
     #controls button { padding: 8px 7px; font-size: 12px; }
-    #foot { display: none; }
     .c3 { min-width: 0; font-size: 10px; }
     .c3 div:not(.tag) { display: none; }
   }
@@ -129,6 +116,7 @@
 </head>
 <body>
 <div id="scene"></div>
+<div id="loading">Montando a maquete…</div>
 
 <div id="title">
   <h1><span class="r">Honda</span> <span class="w">Energy</span></h1>
@@ -142,18 +130,18 @@
   <div class="lg"><span class="dot" style="color:var(--mv);background:var(--mv)"></span><b>Geração</b><span class="kv" style="color:var(--mv)">34,5 kV</span>
     <small>Sai dos aerogeradores em média tensão pela rede subterrânea.</small></div>
   <div class="lg"><span class="dot" style="color:var(--hv);background:var(--hv)"></span><b>Transmissão</b><span class="kv" style="color:var(--hv)">69 kV</span>
-    <small>Tensão elevada para viajar longe com menos perdas.</small></div>
+    <small>A elevadora aumenta a tensão para a linha aérea levar a energia com menos perdas.</small></div>
   <div class="lg"><span class="dot" style="color:var(--dv);background:var(--dv)"></span><b>Distribuição</b><span class="kv" style="color:var(--dv)">13,8 kV</span>
-    <small>Tensão rebaixada para abastecer as unidades Honda.</small></div>
+    <small>A distribuidora reduz a tensão e abastece as unidades Honda.</small></div>
   <div class="chain">
-    <div class="col"><div class="b" style="height:24px;background:var(--mv)"></div>Parque</div>
+    <div class="col"><div class="b" style="height:24px;background:var(--mv)"></div>Turbinas</div>
     <div class="op" style="color:var(--hv)">▲<br>eleva</div>
-    <div class="col"><div class="b" style="height:48px;background:var(--hv)"></div>Rede</div>
+    <div class="col"><div class="b" style="height:48px;background:var(--hv)"></div>Linha</div>
     <div class="op" style="color:var(--dv)">▼<br>rebaixa</div>
     <div class="col"><div class="b" style="height:12px;background:var(--dv)"></div>Honda</div>
   </div>
-  <p class="explain"><b>Subestação coletora (elevadora):</b> junta a energia das 10 turbinas e aumenta a tensão.<br>
-  <b>Subestação Eletrosul (rebaixadora):</b> recebe da rede e reduz a tensão para a distribuição.</p>
+  <p class="explain"><b>Subestação elevadora:</b> recebe a energia das 10 turbinas e aumenta a tensão para transmitir.<br>
+  <b>Subestação distribuidora:</b> recebe a linha de transmissão, reduz a tensão e distribui para as unidades.</p>
 </div>
 
 <div id="steps" class="panel">
@@ -161,7 +149,7 @@
   <div id="stepList"></div>
 </div>
 
-<div id="foot">CONCEITO PRELIMINAR • Tensões, norte e dados das placas a validar</div>
+<div id="slogan">Energia que impulsiona o <b>futuro mais sustentável</b><small>Conceito preliminar • tensões, norte e dados das placas a validar</small></div>
 
 <div id="controls" class="panel">
   <button id="bOverview">Vista geral</button>
@@ -178,19 +166,22 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 
-// Unidade: 1 = 1 cm da maquete real (base 200 × 100 cm)
+// Unidade: 1 = 1 cm da maquete real (base 200 × 100 cm). +z aponta para a frente da maquete.
 const COLORS = { mv: 0x3aa8ff, hv: 0xffae2b, dv: 0x33e07a };
 
-// ---------- renderer ----------
+// ============ renderer ============
 const host = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.0;
+renderer.toneMappingExposure = 0.9;
 host.appendChild(renderer.domElement);
 
 const labelRenderer = new CSS2DRenderer();
@@ -202,116 +193,299 @@ const scene = new THREE.Scene();
 scene.background = (() => {
   const c = document.createElement('canvas'); c.width = 16; c.height = 512;
   const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 512);
-  gr.addColorStop(0, '#3b3c41'); gr.addColorStop(0.55, '#26272b'); gr.addColorStop(1, '#141517');
+  gr.addColorStop(0, '#3d3e43'); gr.addColorStop(0.55, '#26272b'); gr.addColorStop(1, '#131416');
   g.fillStyle = gr; g.fillRect(0, 0, 16, 512);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 })();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
 const camera = new THREE.PerspectiveCamera(34, innerWidth / innerHeight, 1, 1500);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.maxPolarAngle = 1.4;
-controls.minDistance = 25;
+controls.maxPolarAngle = 1.42;
+controls.minDistance = 12;
 controls.maxDistance = 520;
 controls.autoRotateSpeed = 0.5;
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.85, 0.45, 1.15);
-composer.addPass(bloom);
+composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.75, 0.4, 1.35));
 composer.addPass(new OutputPass());
 
-scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x3a3226, 0.9));
-const sun = new THREE.DirectionalLight(0xfff1dc, 2.3);
-sun.position.set(-70, 160, 90);
+scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x3a3226, 0.25));
+const sun = new THREE.DirectionalLight(0xfff0da, 1.7);
+sun.position.set(-70, 150, 95);
 sun.castShadow = true;
 sun.shadow.mapSize.set(4096, 4096);
-Object.assign(sun.shadow.camera, { left: -115, right: 115, top: 70, bottom: -70, near: 10, far: 400 });
-sun.shadow.bias = -0.0004;
+Object.assign(sun.shadow.camera, { left: -112, right: 112, top: 66, bottom: -66, near: 10, far: 400 });
+sun.shadow.bias = -0.0003;
+sun.shadow.normalBias = 0.02;
 scene.add(sun);
-const rim = new THREE.DirectionalLight(0x9fb6ff, 0.5);
+const rim = new THREE.DirectionalLight(0xa9bcff, 0.45);
 rim.position.set(120, 60, -120);
 scene.add(rim);
 
-// ---------- helpers ----------
-const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.75, metalness: 0.05, ...o });
-function box(w, h, d, m, x = 0, y = 0, z = 0, parent = scene, shadow = true) {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof m === 'number' ? mat(m) : m);
-  mesh.position.set(x, y, z);
-  mesh.castShadow = shadow; mesh.receiveShadow = true;
-  parent.add(mesh);
-  return mesh;
-}
+// ============ helpers ============
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const mat = (color, o = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.05, ...o });
 let seed = 11;
 const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const lerp = THREE.MathUtils.lerp;
+const m4 = new THREE.Matrix4();
 
-function canvasTex(w, h, draw) {
+function add(mesh, parent = scene, cast = true) { mesh.castShadow = cast; mesh.receiveShadow = true; parent.add(mesh); return mesh; }
+function box(w, h, d, m, x = 0, y = 0, z = 0, parent = scene, cast = true) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), typeof m === 'number' ? mat(m) : m);
+  mesh.position.set(x, y, z);
+  return add(mesh, parent, cast);
+}
+function rbox(w, h, d, r, m, x, y, z, parent = scene) {
+  const mesh = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 3, r), typeof m === 'number' ? mat(m) : m);
+  mesh.position.set(x, y, z);
+  return add(mesh, parent);
+}
+function cyl(rt, rb, h, m, x, y, z, seg = 16, parent = scene) {
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), typeof m === 'number' ? mat(m) : m);
+  mesh.position.set(x, y, z);
+  return add(mesh, parent);
+}
+function canvasTex(w, h, draw, srgb = true) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   draw(c.getContext('2d'), w, h);
   const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  if (srgb) t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8; t.wrapS = t.wrapT = THREE.RepeatWrapping;
   return t;
 }
-function ribbon(curve, width, y, material, segs = 300) {
-  const pts = curve.getSpacedPoints(segs);
-  const pos = [], idx = [];
+function rep(tex, rx, ry) { const t = tex.clone(); t.repeat.set(rx, ry); t.needsUpdate = true; return t; }
+function noise(g, w, h, n, rMax, colorFn) {
+  for (let i = 0; i < n; i++) { g.fillStyle = colorFn(); g.beginPath(); g.arc(Math.random() * w, Math.random() * h, Math.random() * rMax + 0.5, 0, 7); g.fill(); }
+}
+
+// terreno: colinas suaves só no campo dos aerogeradores
+function hy(x, z) {
+  const k = THREE.MathUtils.smoothstep(-z, 20, 34);
+  const e = THREE.MathUtils.smoothstep(99 - Math.abs(x), 0, 6) * THREE.MathUtils.smoothstep(49.5 - Math.abs(z), 0, 4);
+  const h = 0.9 + 0.8 * Math.sin(x * 0.055 + 1.3) * Math.cos(z * 0.09) + 0.45 * Math.sin(x * 0.12 + z * 0.07);
+  return Math.max(0, k * e * h);
+}
+function ribbon(curve, width, yoff, material, segs = 300, follow = true) {
+  const pts = curve.getSpacedPoints(segs), pos = [], uv = [], idx = [];
+  let dist = 0;
   pts.forEach((p, i) => {
     const t = curve.getTangentAt(Math.min(i / segs, 1));
     const n = V(-t.z, 0, t.x).normalize().multiplyScalar(width / 2);
-    pos.push(p.x + n.x, y, p.z + n.z, p.x - n.x, y, p.z - n.z);
-    if (i < pts.length - 1) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+    const a = [p.x + n.x, p.z + n.z], b = [p.x - n.x, p.z - n.z];
+    pos.push(a[0], (follow ? hy(a[0], a[1]) : 0) + yoff, a[1], b[0], (follow ? hy(b[0], b[1]) : 0) + yoff, b[1]);
+    if (i) dist += p.distanceTo(pts[i - 1]);
+    uv.push(0, dist / width, 1, dist / width);
+    if (i < pts.length - 1) { const k = i * 2; idx.push(k, k + 2, k + 1, k + 1, k + 2, k + 3); }
   });
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   g.setIndex(idx); g.computeVertexNormals();
   const m = new THREE.Mesh(g, material);
-  m.receiveShadow = true;
-  scene.add(m);
+  m.receiveShadow = true; scene.add(m);
   return m;
 }
 const curve = pts => new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.5);
+// barra entre dois pontos (para treliças)
+function strut(a, b, r) {
+  const len = a.distanceTo(b);
+  const g = new THREE.BoxGeometry(r, len, r);
+  const q = new THREE.Quaternion().setFromUnitVectors(V(0, 1, 0), b.clone().sub(a).normalize());
+  g.applyMatrix4(new THREE.Matrix4().compose(a.clone().lerp(b, 0.5), q, V(1, 1, 1)));
+  return g;
+}
 
-// ---------- board ----------
-box(206, 7, 106, mat(0x1c1c1e, { roughness: 0.35, metalness: 0.3 }), 0, -3.5, 0);
-box(203, 0.6, 103, mat(0x0f0f10), 0, -0.3, 0);
-const grassTex = canvasTex(1024, 512, (g, w, h) => {
-  g.fillStyle = '#4c7433'; g.fillRect(0, 0, w, h);
-  for (let i = 0; i < 9000; i++) {
-    const r = Math.random() * 6 + 1;
-    g.fillStyle = `hsla(${88 + Math.random() * 30},${35 + Math.random() * 25}%,${22 + Math.random() * 22}%,.35)`;
-    g.beginPath(); g.arc(Math.random() * w, Math.random() * h, r, 0, 7); g.fill();
+// ============ texturas procedurais ============
+const T = {
+  grass: canvasTex(2048, 1024, (g, w, h) => {
+    g.fillStyle = '#4d7534'; g.fillRect(0, 0, w, h);
+    noise(g, w, h, 900, 60, () => `hsla(${85 + Math.random() * 30},${30 + Math.random() * 20}%,${24 + Math.random() * 12}%,.18)`);
+    noise(g, w, h, 30000, 2.2, () => `hsla(${80 + Math.random() * 40},${35 + Math.random() * 30}%,${18 + Math.random() * 30}%,.5)`);
+  }),
+  lawn: canvasTex(512, 512, (g, w, h) => {
+    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#5c8f3c' : '#65993f'; g.fillRect(i * w / 8, 0, w / 8, h); }
+    noise(g, w, h, 9000, 1.3, () => `hsla(${85 + Math.random() * 25},45%,${26 + Math.random() * 18}%,.45)`);
+  }),
+  asphalt: canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = '#4e5155'; g.fillRect(0, 0, w, h);
+    noise(g, w, h, 16000, 1.2, () => `rgba(${Math.random() < .5 ? '255,255,255' : '0,0,0'},${Math.random() * .12})`);
+  }),
+  gravel: canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = '#8f8b84'; g.fillRect(0, 0, w, h);
+    noise(g, w, h, 22000, 1.6, () => `hsl(30,${Math.random() * 8}%,${40 + Math.random() * 35}%)`);
+  }),
+  pave: canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = '#c9c6bf'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(0,0,0,.12)'; g.lineWidth = 2;
+    for (let i = 0; i <= 8; i++) { g.beginPath(); g.moveTo(i * 32, 0); g.lineTo(i * 32, h); g.moveTo(0, i * 32); g.lineTo(w, i * 32); g.stroke(); }
+  }),
+  roof: canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = '#c7cacd'; g.fillRect(0, 0, w, h);
+    noise(g, w, h, 5000, 2, () => `rgba(0,0,0,${Math.random() * .05})`);
+    g.strokeStyle = 'rgba(0,0,0,.08)'; for (let i = 0; i < 16; i++) { g.beginPath(); g.moveTo(i * 32, 0); g.lineTo(i * 32, h); g.stroke(); }
+  }),
+  clad: canvasTex(256, 256, (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#eef0f2'); gr.addColorStop(1, '#d6d9dc');
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 32; i++) { g.fillStyle = 'rgba(0,0,0,.09)'; g.fillRect(i * 8, 0, 2, h); g.fillStyle = 'rgba(255,255,255,.5)'; g.fillRect(i * 8 + 3, 0, 1, h); }
+  }),
+  solar: canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = '#c9ced4'; g.fillRect(0, 0, w, h);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 2; c++) {
+      const x = c * 128 + 4, y = r * 64 + 3;
+      const gr = g.createLinearGradient(x, y, x + 120, y + 58); gr.addColorStop(0, '#22407a'); gr.addColorStop(1, '#0f1f45');
+      g.fillStyle = gr; g.fillRect(x, y, 120, 58);
+      g.strokeStyle = 'rgba(180,200,235,.35)'; g.lineWidth = 1;
+      for (let k = 1; k < 6; k++) { g.beginPath(); g.moveTo(x + k * 20, y); g.lineTo(x + k * 20, y + 58); g.stroke(); }
+      for (let k = 1; k < 3; k++) { g.beginPath(); g.moveTo(x, y + k * 19.3); g.lineTo(x + 120, y + k * 19.3); g.stroke(); }
+    }
+  }),
+  dock: canvasTex(128, 128, (g, w, h) => {
+    g.fillStyle = '#7d858d'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 16; i++) { g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, i * 8, w, 1.5); }
+  }),
+};
+// fachada de vidro: módulo 4 × 4 painéis com reflexo do céu, montantes e faixa de laje
+function glassFacade(rows = 4, cols = 4, spandrel = '#e8ebee') {
+  const tex = canvasTex(512, 512, (g, w, h) => {
+    const ph = h / rows, pw = w / cols;
+    for (let r = 0; r < rows; r++) {
+      const gr = g.createLinearGradient(0, r * ph, w, r * ph + ph);
+      gr.addColorStop(0, '#9fbad0'); gr.addColorStop(0.45, '#5b7890'); gr.addColorStop(1, '#2e4458');
+      g.fillStyle = gr; g.fillRect(0, r * ph, w, ph);
+      for (let c = 0; c < cols; c++) { g.fillStyle = `rgba(255,255,255,${Math.random() * .1})`; g.fillRect(c * pw, r * ph, pw, ph); }
+      g.fillStyle = spandrel; g.fillRect(0, r * ph + ph - 22, w, 22);
+    }
+    g.fillStyle = '#dfe4e8';
+    for (let c = 0; c <= cols; c++) g.fillRect(c * pw - 3, 0, 6, h);
+  });
+  const lit = canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+    const ph = h / rows, pw = w / cols;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      if (Math.random() < 0.7) { g.fillStyle = `hsl(40,90%,${55 + Math.random() * 25}%)`; g.fillRect(c * pw + 4, r * ph + 4, pw - 8, ph - 30); }
+    }
+  });
+  return { tex, lit };
+}
+const FACADE = glassFacade();
+const litMats = [];
+function glassMat(rx, ry) {
+  const m = new THREE.MeshStandardMaterial({
+    map: rep(FACADE.tex, rx, ry), emissiveMap: rep(FACADE.lit, rx, ry), emissive: 0xfff2dc, emissiveIntensity: 0.05,
+    metalness: 0.35, roughness: 0.12,
+  });
+  litMats.push(m);
+  return m;
+}
+const matCache = {};
+const M = {
+  white: mat(0xf1f3f5, { roughness: 0.4 }),
+  alu: mat(0xc9cfd6, { metalness: 0.7, roughness: 0.3 }),
+  dark: mat(0x2b2e33, { roughness: 0.6 }),
+  concrete: mat(0xbdbab3, { roughness: 0.9 }),
+  roof: new THREE.MeshStandardMaterial({ map: rep(T.roof, 4, 4), roughness: 0.85 }),
+  hedge: mat(0x3d6b2c, { roughness: 1 }),
+  porcelain: mat(0x8a4a2e, { roughness: 0.35 }),
+  steel: mat(0xaab3bc, { metalness: 0.65, roughness: 0.35 }),
+  tank: mat(0x7c8792, { metalness: 0.3, roughness: 0.5 }),
+};
+function texMat(key, tex, rx, ry, o = {}) {
+  const k = key + rx.toFixed(1) + 'x' + ry.toFixed(1);
+  return matCache[k] || (matCache[k] = new THREE.MeshStandardMaterial({ map: rep(tex, rx, ry), roughness: 0.9, ...o }));
+}
+function flat(w, d, x, z, m, y = 0.04) {
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, d), m);
+  mesh.rotation.x = -Math.PI / 2; mesh.position.set(x, y, z); mesh.receiveShadow = true;
+  scene.add(mesh); return mesh;
+}
+function textTex(text, { w = 512, h = 128, bg = null, color = '#d0101a', font = '800 92px Georgia, "Times New Roman", serif' } = {}) {
+  const t = canvasTex(w, h, (g) => {
+    if (bg) { g.fillStyle = bg; g.fillRect(0, 0, w, h); }
+    g.fillStyle = color; g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, w / 2, h / 2 + 4);
+  });
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  return t;
+}
+const hondaTex = textTex('HONDA');
+function hondaSign(x, y, z, w = 5, parent = scene, rotY = 0) {
+  const s = new THREE.Mesh(new THREE.PlaneGeometry(w, w / 4), new THREE.MeshStandardMaterial({ map: hondaTex, transparent: true, roughness: 0.4 }));
+  s.position.set(x, y, z); s.rotation.y = rotY; parent.add(s); return s;
+}
+
+// ============ base da maquete ============
+box(206, 7, 106, mat(0x151517, { roughness: 0.25, metalness: 0.4 }), 0, -3.55, 0);
+const plaque = new THREE.Mesh(new THREE.PlaneGeometry(150, 4.2), new THREE.MeshStandardMaterial({
+  map: textTex('HONDA ENERGY   •   ENERGIA QUE IMPULSIONA O FUTURO MAIS SUSTENTÁVEL', { w: 4096, h: 116, color: '#d9dce0', font: '600 64px Montserrat, Inter, sans-serif' }),
+  transparent: true, metalness: 0.6, roughness: 0.3,
+}));
+plaque.position.set(0, -3.6, 53.02); scene.add(plaque);
+const led = new THREE.Mesh(new THREE.BoxGeometry(206, 0.15, 0.15), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xffffff).multiplyScalar(1.4), toneMapped: false }));
+led.position.set(0, -0.25, 53.05); scene.add(led);
+
+const groundGeo = new THREE.PlaneGeometry(200, 100, 200, 100);
+groundGeo.rotateX(-Math.PI / 2);
+{ const p = groundGeo.attributes.position; for (let i = 0; i < p.count; i++) p.setY(i, hy(p.getX(i), p.getZ(i))); groundGeo.computeVertexNormals(); }
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({ map: T.grass, roughness: 1 }));
+ground.receiveShadow = true; scene.add(ground);
+
+// ============ aerogeradores ============
+function bladeGeometry(R) {
+  const secs = 26, P = 14, pos = [], col = [], idx = [];
+  const red = new THREE.Color(0xc8141b), wh = new THREE.Color(0xf4f6f8);
+  for (let i = 0; i <= secs; i++) {
+    const u = i / secs, r = R * (0.06 + 0.94 * u);
+    const chord = R * (u < 0.18 ? lerp(0.05, 0.085, u / 0.18) : lerp(0.085, 0.012, Math.pow((u - 0.18) / 0.82, 0.8)));
+    const th = u < 0.08 ? 0.9 : lerp(0.32, 0.1, (u - 0.08) / 0.92);
+    const tw = lerp(0.35, 0, u);
+    const c = ((u > 0.8 && u < 0.86) || u > 0.92) ? red : wh;
+    for (let k = 0; k < P; k++) {
+      const a = (k / P) * Math.PI * 2;
+      const px = 0.5 * Math.cos(a) + 0.2;
+      const pz = Math.sin(a) * (Math.sin(a) > 0 ? 0.6 : 0.4) * th;
+      const X0 = px * chord, Z0 = pz * chord;
+      pos.push(X0 * Math.cos(tw) - Z0 * Math.sin(tw), r, X0 * Math.sin(tw) + Z0 * Math.cos(tw));
+      col.push(c.r, c.g, c.b);
+      if (i < secs) { const a0 = i * P + k, a1 = i * P + (k + 1) % P; idx.push(a0, a1, a0 + P, a1, a1 + P, a0 + P); }
+    }
   }
-});
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 100), new THREE.MeshStandardMaterial({ map: grassTex, roughness: 1 }));
-ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
-scene.add(ground);
-
-// ---------- turbines ----------
-const white = mat(0xf4f6f8, { roughness: 0.35 });
-const redTip = mat(0xd4161c, { roughness: 0.4 });
-const rotors = [], rings = [], turbinePts = [];
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx); g.computeVertexNormals();
+  return g;
+}
+const turbWhite = new THREE.MeshStandardMaterial({ color: 0xf3f5f7, roughness: 0.32, metalness: 0.08 });
+const bladeMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.05, side: THREE.DoubleSide });
+const rotors = [], rings = [], beacons = [], turbinePts = [];
 function turbine(x, z, H) {
-  const g = new THREE.Group(); g.position.set(x, 0, z);
-  const hubH = H * 0.66, R = H * 0.33;
-  const tower = new THREE.Mesh(new THREE.CylinderGeometry(H * 0.018, H * 0.04, hubH, 20), white);
-  tower.position.y = hubH / 2; tower.castShadow = true; g.add(tower);
-  const nac = new THREE.Mesh(new THREE.CapsuleGeometry(H * 0.022, H * 0.07, 6, 12), white);
-  nac.rotation.x = Math.PI / 2; nac.position.set(0, hubH, -H * 0.015); nac.castShadow = true; g.add(nac);
-  const rotor = new THREE.Group(); rotor.position.set(0, hubH, H * 0.045);
-  const hub = new THREE.Mesh(new THREE.SphereGeometry(H * 0.022, 14, 10), white); hub.scale.z = 1.5; rotor.add(hub);
-  const bladeGeo = new THREE.CylinderGeometry(H * 0.005, H * 0.02, R, 8); bladeGeo.scale(1, 1, 0.35); bladeGeo.translate(0, R / 2, 0);
-  const tipGeo = new THREE.CylinderGeometry(H * 0.004, H * 0.007, R * 0.16, 8); tipGeo.scale(1, 1, 0.35); tipGeo.translate(0, R * 0.92, 0);
+  const g = new THREE.Group(); g.position.set(x, hy(x, z), z);
+  g.rotation.y = -0.18;
+  const hubH = H * 0.68, R = H * 0.32;
+  cyl(H * 0.075, H * 0.085, 0.25, M.concrete, 0, 0.05, 0, 24, g); // fundação
+  add(new THREE.Mesh(new THREE.LatheGeometry([new THREE.Vector2(H * 0.034, 0), new THREE.Vector2(H * 0.03, hubH * 0.3), new THREE.Vector2(H * 0.02, hubH)], 32), turbWhite), g);
+  box(H * 0.012, H * 0.03, 0.02, M.dark, 0, H * 0.02, H * 0.034, g); // porta
+  for (const f of [0.34, 0.67]) { const r = new THREE.Mesh(new THREE.TorusGeometry(lerp(H * 0.034, H * 0.02, f) + 0.004, 0.012, 6, 32), M.alu); r.rotation.x = Math.PI / 2; r.position.y = hubH * f; g.add(r); }
+  rbox(H * 0.06, H * 0.062, H * 0.17, H * 0.018, turbWhite, 0, hubH + H * 0.012, -H * 0.035, g); // nacele
+  box(H * 0.004, H * 0.03, H * 0.004, M.alu, 0, hubH + H * 0.055, -H * 0.1, g); // anemômetro
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(H * 0.009, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff1a1a).multiplyScalar(6), toneMapped: false }));
+  beacon.position.set(0, hubH + H * 0.047, -H * 0.08); g.add(beacon); beacons.push(beacon);
+  const rotor = new THREE.Group(); rotor.position.set(0, hubH + H * 0.012, H * 0.058); rotor.rotation.x = -0.08;
+  const spinner = new THREE.Mesh(new THREE.LatheGeometry(Array.from({ length: 9 }, (_, i) => new THREE.Vector2(H * 0.03 * Math.sqrt(1 - i / 8), H * 0.055 * (i / 8))), 24), turbWhite);
+  spinner.rotation.x = Math.PI / 2; spinner.castShadow = true; rotor.add(spinner);
+  const bg = bladeGeometry(R);
   for (let i = 0; i < 3; i++) {
-    const b = new THREE.Group(); b.rotation.z = i * Math.PI * 2 / 3;
-    const bm = new THREE.Mesh(bladeGeo, white); bm.castShadow = true; b.add(bm);
-    b.add(new THREE.Mesh(tipGeo, redTip));
-    rotor.add(b);
+    const b = new THREE.Mesh(bg, bladeMat); b.rotation.z = i * Math.PI * 2 / 3; b.position.z = H * 0.015; b.castShadow = true; rotor.add(b);
   }
   rotor.rotation.z = rand() * 3;
   g.add(rotor); rotors.push(rotor);
-  const ring = new THREE.Mesh(new THREE.RingGeometry(1.1, 1.7, 32), new THREE.MeshBasicMaterial({ color: new THREE.Color(COLORS.mv).multiplyScalar(2), transparent: true, side: THREE.DoubleSide, toneMapped: false }));
-  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.08; g.add(ring); rings.push(ring);
-  box(1.4, 0.3, 1.4, 0xcfd2d6, 0, 0.15, 0, g);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(H * 0.12, H * 0.17, 40), new THREE.MeshBasicMaterial({ color: new THREE.Color(COLORS.mv).multiplyScalar(3.5), transparent: true, side: THREE.DoubleSide, toneMapped: false }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.2; g.add(ring); rings.push(ring);
   scene.add(g);
 }
 for (let i = 0; i < 10; i++) {
@@ -319,302 +493,473 @@ for (let i = 0; i < 10; i++) {
   turbine(x, z, i === 0 ? 11 : 9);
   turbinePts.push(V(x, 0, z));
 }
+// estrada de serviço em cascalho + plataformas
+const roadCurve = curve([V(-90, 0, -36), V(-88, 0, -44.5), ...turbinePts.map(p => V(p.x, 0, p.z - 1.6)), V(88, 0, -15.5), V(91, 0, -20), V(85, 0, -22)]);
+ribbon(roadCurve, 2.2, 0.06, new THREE.MeshStandardMaterial({ map: rep(T.gravel, 1, 1), roughness: 1, polygonOffset: true, polygonOffsetFactor: -2 }), 600);
+turbinePts.forEach(p => {
+  const pad = new THREE.Mesh(new THREE.CircleGeometry(2.6, 32), new THREE.MeshStandardMaterial({ map: T.gravel, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2 }));
+  pad.rotation.x = -Math.PI / 2; pad.position.set(p.x, hy(p.x, p.z) + 0.05, p.z); pad.receiveShadow = true; scene.add(pad);
+});
 
-// service road along the turbines (loops at both ends)
-const gravel = mat(0xb9ab8d, { roughness: 1 });
-const roadCurve = curve([V(-90, 0, -36), V(-88, 0, -44.5), ...turbinePts.map(p => V(p.x, 0, p.z - 0.2)), V(88, 0, -14), V(90, 0, -20), V(84, 0, -21.5)]);
-ribbon(roadCurve, 2.2, 0.04, gravel, 500);
-
-// ---------- energy flows (blinking cables + moving lights) ----------
-const flows = [];
-function flow(key, pts, { level, width = 0.55, y = 0.07, n = 30, speed = 0.06, lift = 0.35, cable = true }) {
-  const c = curve(pts);
-  const color = new THREE.Color(COLORS[key]);
-  let strip = null;
-  if (cable) {
-    strip = ribbon(c, width, y, new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1, roughness: 0.5, transparent: true }), 300);
+// ============ torres treliçadas ============
+function latticeTower(h, base, top, arms, r = 0.09) {
+  const parts = [], n = 7, body = h * 0.82;
+  const lv = i => { const y = (i / n) * body, w = lerp(base, top, Math.pow(i / n, 0.8)) / 2; return [V(-w, y, -w), V(w, y, -w), V(w, y, w), V(-w, y, w)]; };
+  for (let i = 0; i < n; i++) {
+    const a = lv(i), b = lv(i + 1);
+    for (let k = 0; k < 4; k++) {
+      parts.push(strut(a[k], b[k], r * 1.5));
+      parts.push(strut(b[k], b[(k + 1) % 4], r * 0.8));
+      parts.push(strut(a[k], b[(k + 1) % 4], r * 0.6));
+      parts.push(strut(a[(k + 1) % 4], b[k], r * 0.6));
+    }
   }
-  const pm = new THREE.MeshBasicMaterial({ color: color.clone().multiplyScalar(3), transparent: true, toneMapped: false });
-  const inst = new THREE.InstancedMesh(new THREE.SphereGeometry(0.42, 10, 8), pm, n);
-  scene.add(inst);
-  const f = { key, c, strip, inst, pm, n, speed, lift, level, fade: 1, t: 0, len: c.getLength() };
-  flows.push(f);
-  return f;
+  const peak = V(0, h, 0);
+  lv(n).forEach(p => parts.push(strut(p, peak, r)));
+  const attach = [];
+  arms.forEach(({ y, len }) => {
+    const w = top / 2;
+    for (const s of [-1, 1]) {
+      const tip = V(s * len, y, 0);
+      parts.push(strut(V(s * w, y, -w), tip, r * 0.8), strut(V(s * w, y, w), tip, r * 0.8), strut(V(s * w, y - 0.8, 0), tip, r * 0.6));
+      attach.push(V(s * len, y - 0.95, 0));
+    }
+  });
+  return { geo: mergeGeometries(parts), attach };
 }
-// média tensão: turbinas → coletora
-const mvOff = p => V(p.x, 0, p.z + 1.8);
-flow('mv', [...turbinePts.slice(0, 5).map(mvOff), V(-4, 0, -26), V(-3, 0, -19)], { level: 1 });
-flow('mv', [...turbinePts.slice(5).reverse().map(mvOff), V(4, 0, -26), V(3, 0, -19)], { level: 1 });
-// alta tensão: coletora → Eletrosul
-flow('hv', [V(0, 0, -9), V(0, 0, -4), V(0, 0, 1)], { level: 2, width: 0.8, n: 10, speed: 0.12 });
-// distribuição: Eletrosul → unidades Honda
-flow('dv', [V(0, 0, 11), V(0, 0, 15), V(0, 0, 20)], { level: 3, n: 6, speed: 0.14 });
-flow('dv', [V(-5, 0, 11), V(-9, 0, 13), V(-50, 0, 13), V(-58, 0, 13.5), V(-62, 0, 16), V(-62, 0, 19)], { level: 3 });
-flow('dv', [V(5, 0, 11), V(9, 0, 13), V(50, 0, 13), V(58, 0, 13.5), V(62, 0, 16), V(62, 0, 19)], { level: 3 });
+const insulGeo = (() => { const pts = []; for (let i = 0; i <= 12; i++) pts.push(new THREE.Vector2(i % 2 ? 0.16 : 0.08, i * 0.07)); return new THREE.LatheGeometry(pts, 10); })();
+const glassInsMat = mat(0x6f8f86, { roughness: 0.2, metalness: 0.1 });
+function tower(x, z, rotY, spec) {
+  const g = new THREE.Group(); g.position.set(x, hy(x, z), z); g.rotation.y = rotY;
+  const t = new THREE.Mesh(spec.geo, M.steel); t.castShadow = true; g.add(t);
+  spec.attach.forEach(a => { const ins = new THREE.Mesh(insulGeo, glassInsMat); ins.position.copy(a); g.add(ins); });
+  scene.add(g); g.updateMatrixWorld();
+  return spec.attach.map(a => a.clone().applyMatrix4(g.matrixWorld)).sort((p, q) => (p.x - q.x) || (p.z - q.z));
+}
+const wireMat = new THREE.LineBasicMaterial({ color: 0x1f2226 });
+function sag(a, b, drop) {
+  const mid = a.clone().lerp(b, 0.5); mid.y -= drop;
+  const bz = new THREE.QuadraticBezierCurve3(a, mid, b);
+  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(bz.getPoints(24)), wireMat));
+  return [a, bz.getPoint(0.5), b];
+}
+const bigTower = latticeTower(12, 2, 0.7, [{ y: 9, len: 2.8 }, { y: 10.8, len: 2.1 }]);
+const midTower = latticeTower(9.5, 1.7, 0.6, [{ y: 7.6, len: 2.6 }]);
 
-// ---------- substations ----------
-const concrete = mat(0x9da1a6, { roughness: 0.9 });
-const steel = mat(0xb4bbc3, { metalness: 0.6, roughness: 0.35 });
-const fenceMat = new THREE.LineBasicMaterial({ color: 0x8a939c });
-function fence(cx, cz, w, d, h = 1) {
+// ============ subestações ============
+function fence(cx, cz, w, d, h = 1.1) {
   const pts = [], c = [[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2], [-w / 2, -d / 2]];
+  const posts = [];
   for (let i = 0; i < 4; i++) {
     const [ax, az] = c[i], [bx, bz] = c[i + 1];
-    pts.push(cx + ax, h, cz + az, cx + bx, h, cz + bz, cx + ax, h / 2, cz + az, cx + bx, h / 2, cz + bz);
-    const n = Math.round(Math.hypot(bx - ax, bz - az) / 0.8);
-    for (let k = 0; k <= n; k++) { const t = k / n; pts.push(cx + ax + (bx - ax) * t, 0.2, cz + az + (bz - az) * t, cx + ax + (bx - ax) * t, h, cz + az + (bz - az) * t); }
+    for (const y of [0.25, h / 2, h]) pts.push(cx + ax, y, cz + az, cx + bx, y, cz + bz);
+    const n = Math.round(Math.hypot(bx - ax, bz - az) / 0.35);
+    for (let k = 0; k <= n; k++) { const t = k / n; pts.push(cx + ax + (bx - ax) * t, 0.25, cz + az + (bz - az) * t, cx + ax + (bx - ax) * t, h, cz + az + (bz - az) * t); }
+    const np = Math.round(Math.hypot(bx - ax, bz - az) / 2.5);
+    for (let k = 0; k < np; k++) { const px = cx + ax + (bx - ax) * k / np, pz = cz + az + (bz - az) * k / np; posts.push(strut(V(px, 0.2, pz), V(px, h + 0.1, pz), 0.08)); }
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-  scene.add(new THREE.LineSegments(g, fenceMat));
+  scene.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0x9aa3ab, transparent: true, opacity: 0.8 })));
+  add(new THREE.Mesh(mergeGeometries(posts), M.steel));
+}
+function postInsulator(x, y, z, h = 1.2, parent = scene) {
+  const g = new THREE.Group(); g.position.set(x, y, z);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, h * 0.4, 8), M.steel); base.position.y = h * 0.2; g.add(base);
+  const ins = new THREE.Mesh(insulGeo, M.porcelain); ins.position.y = h * 0.4; ins.scale.set(0.8, h * 0.7, 0.8); ins.castShadow = true; g.add(ins);
+  parent.add(g); return h * 0.4 + 0.84 * h * 0.7;
 }
 function transformer(x, z, s = 1) {
   const g = new THREE.Group(); g.position.set(x, 0.3, z); g.scale.setScalar(s);
-  box(2.4, 1.8, 1.6, 0x7f8a95, 0, 0.9, 0, g);
-  for (let i = -3; i <= 3; i++) box(0.12, 1.4, 2.1, 0x66717c, i * 0.34, 0.9, 0, g);
-  box(0.6, 0.6, 1.4, 0x8c96a0, -0.8, 2.1, 0, g);
-  for (let i = -1; i <= 1; i++) {
-    const ins = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.16, 1, 8), mat(0x9b4a2a)); ins.position.set(i * 0.6, 2.3, 0.3); ins.castShadow = true; g.add(ins);
+  box(3.2, 0.25, 2.4, M.concrete, 0, 0.12, 0, g);
+  rbox(2.3, 2.1, 1.5, 0.12, M.tank, 0, 1.3, 0, g);
+  for (const side of [-1, 1]) for (let i = 0; i < 9; i++) box(0.07, 1.7, 0.55, M.tank, -1 + i * 0.25, 1.2, side * 1.02, g); // radiadores
+  const cons = cyl(0.28, 0.28, 1.6, M.tank, -0.4, 2.75, 0, 16, g); cons.rotation.z = Math.PI / 2; // conservador
+  box(0.1, 0.5, 0.1, M.tank, -0.4, 2.45, 0, g);
+  for (let i = 0; i < 3; i++) {
+    const hv = new THREE.Mesh(insulGeo, M.porcelain); hv.position.set(-0.6 + i * 0.6, 2.35, 0.35); hv.scale.set(0.75, 1.35, 0.75); hv.castShadow = true; g.add(hv);
+    const lv = new THREE.Mesh(insulGeo, M.porcelain); lv.position.set(-0.6 + i * 0.6, 2.35, -0.45); lv.scale.set(0.5, 0.7, 0.5); g.add(lv);
   }
+  box(0.5, 0.8, 0.4, 0x6d747c, 1.35, 1.3, 0.5, g);
   scene.add(g);
 }
-function gantry(x, z, w, h) {
-  const g = new THREE.Group(); g.position.set(x, 0.3, z);
-  for (const s of [-1, 1]) box(0.25, h, 0.25, steel, s * w / 2, h / 2, 0, g);
-  box(w + 0.6, 0.25, 0.25, steel, 0, h, 0, g);
-  for (let i = 0; i < 3; i++) box(0.08, 0.7, 0.08, mat(0x9b4a2a), (i - 1) * w / 3, h - 0.45, 0, g);
-  scene.add(g);
-}
-function breaker(x, z) {
-  const c = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 2.2, 8), mat(0x9b4a2a)); c.position.set(x, 1.4, z); c.castShadow = true; scene.add(c);
-  box(0.6, 0.3, 0.6, steel, x, 0.45, z);
-}
-const haloFor = [];
-function substation(cx, cz, w, d, key) {
-  box(w, 0.3, d, concrete, cx, 0.15, cz);
-  fence(cx, cz, w - 0.4, d - 0.4, 1.1);
-  const halo = new THREE.Mesh(new THREE.RingGeometry(0, 1, 4, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color(COLORS[key]).multiplyScalar(1.6), transparent: true, opacity: 0.25, toneMapped: false, side: THREE.DoubleSide }));
-  halo.rotation.set(-Math.PI / 2, 0, Math.PI / 4); halo.scale.set(w * 0.72, d * 0.72, 1); halo.position.set(cx, 0.32, cz);
-  scene.add(halo); haloFor.push({ halo, key });
-}
-// Subestação coletora (elevadora)
-substation(0, -14, 26, 10, 'hv');
-transformer(-6, -14, 1.3); transformer(0, -14, 1.3);
-gantry(-7, -17.5, 6, 4.5); gantry(1, -17.5, 6, 4.5); gantry(0, -10.2, 8, 5);
-for (let i = 0; i < 6; i++) breaker(-10 + i * 1.6, -11);
-box(4, 2.4, 3, 0xe8e6e0, 8.5, 1.5, -14); box(4.4, 0.25, 3.4, 0xa5acb3, 8.5, 2.8, -14);
-// Subestação Eletrosul (rebaixadora / distribuidora)
-substation(0, 6, 24, 10, 'dv');
-transformer(-5, 7, 1.4); transformer(2, 7, 1.4);
-gantry(-5, 2.2, 7, 5.5); gantry(5, 2.2, 7, 5.5); gantry(0, 10, 10, 3.5);
-for (let i = 0; i < 5; i++) breaker(6 + (i % 2) * 1.8, 4.5 + i * 1.1);
-box(3.6, 2.2, 2.8, 0xe8e6e0, -9, 1.4, 8.5); box(4, 0.25, 3.2, 0xa5acb3, -9, 2.6, 8.5);
-
-// ---------- SIN transmission towers ----------
-const lattice = new THREE.MeshStandardMaterial({ color: 0x9aa4ae, wireframe: true });
-const towerX = [-92, -70, -48, -26, 26, 48, 70, 92];
-const towerZ = -2;
-const armY = [9.2, 10.6];
-const wireMat = new THREE.LineBasicMaterial({ color: 0x2a2d31 });
-function sag(a, b, drop) {
-  const mid = a.clone().lerp(b, 0.5); mid.y -= drop;
-  scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(new THREE.QuadraticBezierCurve3(a, mid, b).getPoints(20)), wireMat));
-}
-const towerTops = towerX.map(x => {
-  const g = new THREE.Group(); g.position.set(x, 0, towerZ);
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 1.6, 11, 4, 8, true), lattice);
-  body.position.y = 5.5; body.rotation.y = Math.PI / 4; g.add(body);
-  box(0.2, 0.2, 5, steel, 0, armY[0], 0, g); box(0.2, 0.2, 3.4, steel, 0, armY[1], 0, g);
-  scene.add(g);
-  return [V(x, armY[0] - 0.3, towerZ - 2.3), V(x, armY[0] - 0.3, towerZ + 2.3), V(x, armY[1] - 0.3, towerZ - 1.5), V(x, armY[1] - 0.3, towerZ + 1.5)];
-});
-towerTops.forEach((t, i) => { if (i !== 3 && towerTops[i + 1]) t.forEach((p, k) => sag(p, towerTops[i + 1][k], 1.2)); });
-// ties into the Eletrosul gantries
-[[3, -5], [4, 5]].forEach(([ti, gx]) => towerTops[ti].slice(0, 3).forEach((p, k) => sag(p, V(gx + (k - 1) * 2.3, 5.5, 2.2), 0.8)));
-// grid flow along the towers (alta tensão)
-const sinL = [V(-5, 5.5, 2.2), ...towerX.slice(0, 4).reverse().map(x => V(x, armY[0] - 1, towerZ))];
-const sinR = [V(5, 5.5, 2.2), ...towerX.slice(4).map(x => V(x, armY[0] - 1, towerZ))];
-flow('hv', sinL, { level: 2, cable: false, n: 24, speed: 0.05, lift: 0 });
-flow('hv', sinR, { level: 2, cable: false, n: 24, speed: 0.05, lift: 0 });
-
-// ---------- roads & lots (front band) ----------
-const asphalt = mat(0x5d6064, { roughness: 0.95 });
-const lotMat = mat(0x4a4d51, { roughness: 0.95 });
-const curb = mat(0xc7c9cc);
-const flat = (w, d, x, z, m, y = 0.05) => { const b = box(w, 0.1, d, m, x, y, z, scene, false); return b; };
-flat(196, 3, 0, 16, asphalt);
-flat(196, 2.6, 0, 46.2, asphalt);
-[-25, 25].forEach(x => flat(2.6, 30, x, 31, asphalt));
-[-97.5, 97.5].forEach(x => flat(2.4, 30, x, 31, asphalt));
-// dashed centre line
-for (let x = -95; x < 95; x += 4) flat(1.8, 0.15, x, 16, mat(0xe8e2c8), 0.11);
-
-const glass = new THREE.MeshStandardMaterial({ color: 0x2e4d63, metalness: 0.5, roughness: 0.15, emissive: 0xfff0d0, emissiveIntensity: 0.05 });
-const windowsMats = [glass];
-const signTex = canvasTex(512, 128, (g, w, h) => {
-  g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
-  g.fillStyle = '#d0101a'; g.font = '800 96px Georgia, "Times New Roman", serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('HONDA', w / 2, h / 2 + 4);
-});
-function sign(x, y, z, w = 5) {
-  const s = new THREE.Mesh(new THREE.PlaneGeometry(w, w / 4), new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.6 }));
-  s.position.set(x, y, z); scene.add(s);
-}
-function office(x, z, w, h, d) {
-  box(w, 0.4, d + 0.6, 0xd9dadc, x, 0.2, z);
-  const floors = Math.round(h / 1.6);
-  box(w - 0.4, h, d - 0.4, glass, x, h / 2 + 0.4, z);
-  for (let i = 0; i <= floors; i++) box(w, 0.28, d, 0xeeeff1, x, 0.4 + i * (h / floors), z);
-  for (let i = 0; i <= Math.round(w / 2.2); i++) box(0.16, h, d + 0.05, 0xeeeff1, x - w / 2 + i * (w / Math.round(w / 2.2)), h / 2 + 0.4, z);
-  for (let i = 0; i < 4; i++) box(1.2, 0.6, 1, 0xa9adb2, x - w / 3 + i * w / 5, h + 0.8, z - d / 5);
-}
-function shed(x, z, w, h, d) {
-  box(w, h, d, 0xe9eaec, x, h / 2, z);
-  const teeth = Math.round(d / 2.4);
-  const tShape = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(d / teeth, 0), new THREE.Vector2(0, 1)]);
-  const tg = new THREE.ExtrudeGeometry(tShape, { depth: w - 0.4, bevelEnabled: false });
-  tg.rotateY(Math.PI / 2); tg.translate(-(w - 0.4) / 2, 0, 0);
-  for (let i = 0; i < teeth; i++) {
-    const t = new THREE.Mesh(tg, mat(0xcfd3d8, { roughness: 0.5 }));
-    t.position.set(x, h, z - d / 2 + i * (d / teeth)); t.castShadow = true; scene.add(t);
+function gantry(x, z, w, h, rotY = 0) {
+  const g = new THREE.Group(); g.position.set(x, 0.3, z); g.rotation.y = rotY;
+  const parts = [], cw = 0.5;
+  for (const s of [-1, 1]) {
+    const cx = s * w / 2;
+    for (const dx of [-cw / 2, cw / 2]) parts.push(strut(V(cx + dx, 0, 0), V(cx + dx, h, 0), 0.1));
+    for (let y = 0; y < h - 0.3; y += 0.6) parts.push(strut(V(cx - cw / 2, y, 0), V(cx + cw / 2, y + 0.6, 0), 0.05));
   }
-  for (let i = -2; i <= 2; i++) box(2, 2.2, 0.1, 0x8a9199, x + i * w / 6, 1.1, z + d / 2 + 0.05);
+  for (const dy of [0, 0.5]) parts.push(strut(V(-w / 2, h - dy, 0), V(w / 2, h - dy, 0), 0.1));
+  for (let x0 = -w / 2; x0 < w / 2 - 0.1; x0 += 0.5) parts.push(strut(V(x0, h - 0.5, 0), V(x0 + 0.5, h, 0), 0.05));
+  add(new THREE.Mesh(mergeGeometries(parts), M.steel), g);
+  const att = [];
+  for (let i = -1; i <= 1; i++) { const ins = new THREE.Mesh(insulGeo, glassInsMat); ins.position.set(i * w / 3.2, h - 1.3, 0); g.add(ins); att.push(V(i * w / 3.2, h - 1.35, 0)); }
+  scene.add(g); g.updateMatrixWorld();
+  return att.map(a => a.applyMatrix4(g.matrixWorld));
 }
+function breakerBay(x, z) {
+  box(1.2, 0.15, 0.6, M.concrete, x, 0.37, z);
+  for (let i = -1; i <= 1; i++) postInsulator(x + i * 0.4, 0.45, z, 1.4);
+  box(1.1, 0.35, 0.25, M.tank, x, 0.75, z - 0.35);
+}
+function controlHouse(x, z, w, d, h) {
+  box(w, h, d, M.white, x, h / 2 + 0.3, z);
+  box(w + 0.3, 0.2, d + 0.3, 0x9ea5ac, x, h + 0.4, z);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(w * 0.8, h * 0.3, 0.05), glassMat(w / 2.6, 0.25)); band.position.set(x, h * 0.6 + 0.3, z + d / 2 + 0.03); scene.add(band);
+  box(0.6, 1.1, 0.06, M.dark, x - w / 2 + 0.6, 0.85, z + d / 2 + 0.03);
+  rbox(0.9, 0.35, 0.7, 0.08, 0xd5d8db, x + w / 4, h + 0.65, z);
+}
+const halos = [];
+function substationPad(cx, cz, w, d, key) {
+  box(w, 0.3, d, new THREE.MeshStandardMaterial({ map: rep(T.gravel, w / 8, d / 8), roughness: 1 }), cx, 0.15, cz, scene, false);
+  fence(cx, cz, w - 0.4, d - 0.4);
+  const halo = new THREE.Mesh(new THREE.PlaneGeometry(w + 3, d + 3), new THREE.MeshBasicMaterial({
+    map: canvasTex(256, 128, (g, W, H) => { const gr = g.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, W / 2); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.7, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, H); }),
+    color: new THREE.Color(COLORS[key]).multiplyScalar(1.5), transparent: true, depthWrite: false, toneMapped: false,
+  }));
+  halo.rotation.x = -Math.PI / 2; halo.position.set(cx, 0.33, cz);
+  scene.add(halo); halos.push({ halo, key });
+  for (const [sx, sz] of [[-1, -1], [1, 1]]) cyl(0.05, 0.12, 7, M.steel, cx + sx * (w / 2 - 1), 3.8, cz + sz * (d / 2 - 1), 6); // para-raios
+}
+
+// --- Subestação ELEVADORA (coletora): 34,5 kV → 69 kV
+substationPad(0, -14, 26, 10, 'hv');
+transformer(-5, -14.8, 1.25); transformer(2, -14.8, 1.25);
+controlHouse(9.5, -15.5, 4.2, 3, 2.2);
+for (let i = 0; i < 4; i++) breakerBay(-10 + i * 1.6, -17.5);
+[-5, 2].forEach(x => { breakerBay(x - 1, -11.8); breakerBay(x + 1, -11.8); });
+{ const hgt = postInsulator(-11, 0.3, -12.8, 1.8); for (let x = -9; x <= 7; x += 4) postInsulator(x, 0.3, -12.8, 1.8); const bus = cyl(0.06, 0.06, 18, M.alu, -2, 0.3 + hgt, -12.8, 8); bus.rotation.z = Math.PI / 2; }
+const elevOut = gantry(0, -9.6, 8.5, 5.5);
+gantry(-6, -18.6, 7, 4.2);
+
+// --- Subestação DISTRIBUIDORA (Eletrosul): 69 kV → 13,8 kV
+substationPad(0, 6, 24, 10, 'dv');
+transformer(-4, 6.4, 1.3); transformer(3.5, 6.4, 1.3);
+controlHouse(-8.8, 8.8, 4, 2.6, 2);
+for (let i = 0; i < 5; i++) breakerBay(7.5 + (i % 2) * 1.6, 3.4 + i * 1.3);
+[-4, 3.5].forEach(x => breakerBay(x, 3.6));
+{ const hgt = postInsulator(-10, 0.3, 9.8, 1.4); for (let x = -6; x <= 10; x += 4) postInsulator(x, 0.3, 9.8, 1.4); const bus = cyl(0.05, 0.05, 20, M.alu, 0, 0.3 + hgt, 9.8, 8); bus.rotation.z = Math.PI / 2; }
+const distIn = gantry(0, 1.9, 8.5, 5.5);
+const distSideL = gantry(-11, 5.5, 6, 5, Math.PI / 2);
+const distSideR = gantry(11, 5.5, 6, 5, Math.PI / 2);
+
+// --- Linha de transmissão elevadora → distribuidora (torre intermediária)
+const midAtt = tower(0, -4, 0, midTower);
+const transWires = [[elevOut[0], midAtt[0], distIn[0]], [elevOut[2], midAtt[1], distIn[2]]]
+  .map(([a, b, c]) => [...sag(a, b, 0.35), ...sag(b, c, 0.35).slice(1)]);
+
+// --- Rede (SIN) conectada à distribuidora
+const towerX = [-92, -70, -48, -28, 28, 48, 70, 92], towerZ = -1;
+const tAtt = towerX.map(x => tower(x, towerZ, Math.PI / 2, bigTower));
+tAtt.forEach((t, i) => { if (i !== 3 && tAtt[i + 1]) t.forEach((p, k) => sag(p, tAtt[i + 1][k], 1.1)); });
+[[3, distSideL], [4, distSideR]].forEach(([ti, gat]) => tAtt[ti].slice(0, 3).forEach((p, k) => sag(p, gat[k], 0.7)));
+
+// ============ fluxos de energia (cabos piscando + luzes em movimento) ============
+const flows = [];
+function flow(key, pts, { level, width = 0.5, n = 30, speed = 1, lift = 0.35, cable = true, ground = true, y = 0.1 }) {
+  const c = curve(pts);
+  const color = new THREE.Color(COLORS[key]);
+  let strip = null;
+  if (cable) strip = ribbon(c, width, y, new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 1, roughness: 0.5, transparent: true, polygonOffset: true, polygonOffsetFactor: -4 }), 300);
+  const pm = new THREE.MeshBasicMaterial({ color: color.clone().multiplyScalar(5), transparent: true, toneMapped: false });
+  const inst = new THREE.InstancedMesh(new THREE.SphereGeometry(0.34, 10, 8), pm, n);
+  inst.frustumCulled = false; scene.add(inst);
+  const f = { key, c, strip, inst, pm, n, speed, lift, level, ground, y, fade: 1, t: rand(), len: c.getLength() };
+  flows.push(f);
+  return f;
+}
+const mvOff = p => V(p.x, 0, p.z + 2.2);
+flow('mv', [...turbinePts.slice(0, 5).map(mvOff), V(-4, 0, -24), V(-3, 0, -19)], { level: 1 });
+flow('mv', [...turbinePts.slice(5).reverse().map(mvOff), V(4, 0, -24), V(3, 0, -19)], { level: 1 });
+// dentro da elevadora: transformadores → pórtico de saída
+flow('hv', [V(-3, 0, -18.8), V(-3, 0, -16.5), V(-5, 0, -13), V(-2.7, 0, -9.8)], { level: 2, n: 6, width: 0.3, y: 0.34 });
+flow('hv', [V(3, 0, -18.8), V(3, 0, -16.5), V(2, 0, -13), V(2.7, 0, -9.8)], { level: 2, n: 6, width: 0.3, y: 0.34 });
+// linha aérea 69 kV
+transWires.forEach(w => flow('hv', w, { level: 2, cable: false, ground: false, n: 12, lift: 0, speed: 0.8 }));
+// rede SIN
+const sinPts = side => { const idx = side < 0 ? [3, 2, 1, 0] : [4, 5, 6, 7]; const g = side < 0 ? distSideL : distSideR; return [g[1], ...idx.map(i => tAtt[i][1])]; };
+flow('hv', sinPts(-1), { level: 2, cable: false, ground: false, n: 22, lift: 0, speed: 0.8 });
+flow('hv', sinPts(1), { level: 2, cable: false, ground: false, n: 22, lift: 0, speed: 0.8 });
+// distribuição 13,8 kV → unidades Honda
+flow('dv', [V(0, 0, 11), V(0, 0, 15), V(0, 0, 19.5)], { level: 3, n: 6 });
+flow('dv', [V(-5, 0, 11), V(-9, 0, 13), V(-50, 0, 13), V(-60, 0, 13.4), V(-66, 0, 16), V(-66, 0, 19.5)], { level: 3 });
+flow('dv', [V(5, 0, 11), V(9, 0, 13), V(40, 0, 13), V(48, 0, 13.4), V(54, 0, 16), V(54, 0, 18.4)], { level: 3 });
+
+// ============ campus: ruas, gramados, estacionamentos ============
+flat(196, 26, 0, 31.5, new THREE.MeshStandardMaterial({ map: rep(T.lawn, 18, 3), roughness: 1 }), 0.03);
+function road(w, d, x, z) { flat(w, d, x, z, texMat('asph', T.asphalt, w / 10, d / 10, { roughness: 0.95 }), 0.07); }
+road(198, 3.4, 0, 16); road(198, 2.8, 0, 46.3);
+[-25, 25].forEach(x => road(2.8, 29, x, 31.5));
+[-97.6, 97.6].forEach(x => road(2.4, 29, x, 31.5));
+const lineMat = mat(0xece6cf, { roughness: 0.8 });
+const dash = [];
+for (let x = -96; x < 96; x += 3.2) dash.push([x, 16, 1.6, 0.14], [x, 46.3, 1.6, 0.12]);
+[14, 18].forEach(z => box(198, 0.18, 0.9, texMat('pave', T.pave, 198 / 4, 0.25), 0, 0.09, z, scene, false));
+[44.5, 48.1].forEach(z => box(198, 0.18, 0.8, texMat('pave', T.pave, 198 / 4, 0.25), 0, 0.09, z, scene, false));
+
+const cars = [], lines = [], islands = [];
 function lot(x0, x1, z0, z1) {
-  flat(x1 - x0, z1 - z0, (x0 + x1) / 2, (z0 + z1) / 2, lotMat, 0.06);
-  const rows = [];
-  for (let z = z0 + 1.2; z < z1 - 0.8; z += 2.4) for (let x = x0 + 1; x < x1 - 0.8; x += 1.35) if (rand() < 0.85) rows.push([x, z]);
-  return rows;
+  road(x1 - x0, z1 - z0, (x0 + x1) / 2, (z0 + z1) / 2);
+  const stallW = 1.05, rowD = 2.1, aisle = 2.4;
+  let z = z0 + 0.4, face = 1;
+  while (z + rowD < z1 - 0.2) {
+    for (let x = x0 + 0.8; x + stallW < x1 - 0.6; x += stallW) {
+      lines.push([x, z + rowD / 2, 0.06, rowD * 0.9]);
+      if (rand() < 0.82) cars.push([x + stallW / 2, z + rowD / 2, face > 0 ? 0 : Math.PI]);
+    }
+    islands.push([x0 + 0.4, z + rowD / 2], [x1 - 0.3, z + rowD / 2]);
+    z += rowD; face *= -1;
+    if (face > 0) z += aisle;
+  }
 }
-const cars = [];
-const addCars = arr => cars.push(...arr);
-const trucks = [];
+function hedge(x0, x1, z) { rbox(x1 - x0, 0.7, 0.7, 0.25, M.hedge, (x0 + x1) / 2, 0.35, z); }
 
-// Honda Itirapina — produção de automóveis
-office(-78, 23.5, 30, 6.5, 9);
-shed(-49, 24, 20, 5, 11);
-sign(-78, 5.2, 28.25, 6); sign(-49, 4, 29.6, 4);
-addCars(lot(-94, -58, 31, 42));
-for (let i = 0; i < 4; i++) trucks.push([-54 + i * 3, 33, 0]);
-// HSA — administrativo
-office(0, 24, 26, 5.5, 8);
-box(8, 8, 9, glass, 0, 4.4, 24.3); box(8.4, 0.35, 9.4, 0xeeeff1, 0, 8.5, 24.3);
-sign(0, 7, 28.85, 5);
-addCars(lot(-21, -4, 31, 42)); addCars(lot(4, 21, 31, 42));
-flat(3, 13, 0, 36, curb, 0.06);
-// Honda Sumaré — motores e componentes
-shed(47, 25, 34, 6, 15);
-shed(79, 25, 26, 7, 15);
-sign(47, 4.6, 32.6, 6);
-addCars(lot(30, 70, 35, 43));
-for (let i = 0; i < 6; i++) trucks.push([75 + i * 3.4, 38, 0]);
+// ============ prédios ============
+function facadeBox(w, h, d, x, y, z, floorsH = 1.6) {
+  const side = glassMat(d / 6.4, h / (floorsH * 4)), front = glassMat(w / 6.4, h / (floorsH * 4));
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [side, side, M.roof, M.roof, front, front]);
+  mesh.position.set(x, y + h / 2, z); return add(mesh);
+}
+function roofDetails(x, z, w, d, y, n = 4) {
+  for (const s of [-1, 1]) { box(w, 0.35, 0.18, M.white, x, y + 0.17, z + s * (d / 2 - 0.09)); box(0.18, 0.35, d, M.white, x + s * (w / 2 - 0.09), y + 0.17, z); }
+  for (let i = 0; i < n; i++) {
+    const ux = x - w / 2 + (i + 0.7) * w / (n + 0.4), uz = z - d / 4 + (i % 2) * d / 3;
+    rbox(1.6, 0.55, 1.1, 0.08, 0xd7dadd, ux, y + 0.3, uz);
+    for (const f of [-0.4, 0.4]) cyl(0.3, 0.3, 0.06, M.dark, ux + f, y + 0.6, uz, 14);
+  }
+}
+function office({ x, z, w, d, floors, fh = 1.6, fins = true, canopy = true }) {
+  const h = floors * fh;
+  box(w + 2.4, 0.2, d + 2.4, texMat('pave', T.pave, (w + 2.4) / 4, (d + 2.4) / 4), x, 0.1, z, scene, false);
+  facadeBox(w, h, d, x, 0.2, z, fh);
+  for (let i = 1; i <= floors; i++) box(w + 0.3, 0.14, d + 0.3, M.white, x, 0.2 + i * fh - 0.07, z); // lajes
+  if (fins) { const n = Math.round(w / 1.3); for (let i = 0; i <= n; i++) box(0.07, h, 0.45, M.alu, x - w / 2 + i * w / n, 0.2 + h / 2, z + d / 2 + 0.22); }
+  box(w, 0.2, d, M.roof, x, 0.2 + h + 0.1, z);
+  roofDetails(x, z, w, d, 0.2 + h + 0.2, Math.max(2, Math.round(w / 6)));
+  if (canopy) {
+    box(6, 0.18, 2.6, M.white, x, 0.2 + fh * 1.1, z + d / 2 + 1.3);
+    for (const s of [-1, 1]) cyl(0.07, 0.07, fh * 1.1, M.alu, x + s * 2.7, 0.2 + fh * 0.55, z + d / 2 + 2.4, 8);
+  }
+  return h;
+}
+function sawShed({ x, z, w, d, h, solar = true, docks = 0 }) {
+  const cl = texMat('clad', T.clad, w / 4, 1), cls = texMat('clad', T.clad, d / 4, 1);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [cls, cls, M.roof, M.roof, cl, cl]);
+  body.position.set(x, h / 2, z); add(body);
+  box(w + 0.2, 0.4, d + 0.2, M.white, x, h + 0.2, z); // platibanda
+  const teeth = Math.round(d / 2.6), td = d / teeth, th = 1.1, ang = Math.atan2(th, td);
+  const solarMat = new THREE.MeshStandardMaterial({ map: rep(T.solar, (w - 1) / 2.5, 1), metalness: 0.5, roughness: 0.25 });
+  const sky = new THREE.MeshStandardMaterial({ color: 0x9fc3da, metalness: 0.4, roughness: 0.1, emissive: 0xfff0d0, emissiveIntensity: 0.05 });
+  litMats.push(sky);
+  for (let i = 0; i < teeth; i++) {
+    const z0 = z - d / 2 + i * td;
+    const slope = new THREE.Mesh(new THREE.BoxGeometry(w - 0.8, 0.06, Math.hypot(td, th)), solar ? solarMat : M.roof);
+    slope.position.set(x, h + 0.4 + th / 2, z0 + td / 2); slope.rotation.x = ang; add(slope);
+    box(w - 0.8, th, 0.05, sky, x, h + 0.4 + th / 2, z0 + td - 0.02); // shed com vidro
+  }
+  for (let i = 0; i < docks; i++) {
+    const dx = x + w / 2 - 2 - i * 2.6, dz = z + d / 2 + 0.03;
+    box(1.8, 2, 0.06, texMat('dock', T.dock, 1, 1), dx, 1.1, dz);
+    box(2.2, 0.1, 1, M.dark, dx, 2.4, dz + 0.5);
+  }
+  for (let i = 0; i < Math.round(w / 10); i++) cyl(0.25, 0.3, 2.2, M.alu, x - w / 2 + 3 + i * 9, h + 1.4, z - d / 3, 12); // exaustores
+}
+const flagMeshes = [];
+function flagpoles(x, z) {
+  [['#d0101a', '#ffffff'], ['#009c3b', '#ffdf00'], ['#ffffff', '#d0101a']].forEach(([a, b], i) => {
+    cyl(0.04, 0.05, 5, M.alu, x + i * 1.3, 2.5, z, 8);
+    const tex = canvasTex(64, 40, (g, w, h) => {
+      g.fillStyle = a; g.fillRect(0, 0, w, h); g.fillStyle = b;
+      if (i === 1) { g.beginPath(); g.moveTo(32, 4); g.lineTo(60, 20); g.lineTo(32, 36); g.lineTo(4, 20); g.fill(); g.fillStyle = '#002776'; g.beginPath(); g.arc(32, 20, 9, 0, 7); g.fill(); }
+      else g.fillRect(0, 16, w, 8);
+    });
+    const f = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.7), new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }));
+    f.position.set(x + i * 1.3 + 0.57, 4.55, z); scene.add(f); flagMeshes.push(f);
+  });
+}
+function monument(x, z) {
+  box(4, 1.3, 0.5, M.white, x, 0.75, z);
+  hondaSign(x, 0.85, z + 0.26, 3.4);
+  box(4.4, 0.12, 0.8, M.concrete, x, 0.06, z);
+}
+function trucks(list) {
+  list.forEach(([x, z, rot]) => {
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rot;
+    rbox(1.4, 1.6, 5.2, 0.06, 0xf4f4f4, 0, 1.2, 0, g);
+    box(1.42, 0.25, 5.2, 0xd0101a, 0, 0.55, 0, g);
+    rbox(1.35, 1.3, 1.3, 0.15, 0xe8e8ea, 0, 1.0, 3.35, g);
+    box(1.2, 0.5, 0.05, M.dark, 0, 1.35, 4.0, g);
+    for (const zz of [-2, -1.3, 2.9]) for (const s of [-1, 1]) { const wh = cyl(0.25, 0.25, 0.2, M.dark, s * 0.62, 0.25, zz, 12, g); wh.rotation.z = Math.PI / 2; }
+    scene.add(g);
+  });
+}
 
-// cars (instanced)
-const carGeo = new THREE.BoxGeometry(0.75, 0.45, 1.5);
-const carColors = [0xd01f26, 0xf2f2f2, 0x1d1e21, 0x8f969d, 0x2b4c8c, 0xc7c9cc];
-const carMesh = new THREE.InstancedMesh(carGeo, mat(0xffffff, { roughness: 0.35, metalness: 0.4 }), cars.length);
-const m4 = new THREE.Matrix4();
-cars.forEach(([x, z], i) => {
-  m4.makeTranslation(x, 0.35, z); carMesh.setMatrixAt(i, m4);
-  carMesh.setColorAt(i, new THREE.Color(carColors[Math.floor(rand() * carColors.length)]));
+// --- Honda Itirapina: produção de automóveis
+office({ x: -83, z: 23.8, w: 22, d: 8, floors: 3 });
+hondaSign(-83, 4.2, 28.3, 6);
+sawShed({ x: -47.5, z: 24.2, w: 36, d: 11.5, h: 5.2, docks: 6 });
+hondaSign(-40, 3.6, 30.0, 5);
+lot(-95.5, -69, 32.5, 43);
+road(40, 12, -47, 36.4);
+trucks([[-38.5, 33.9, 0], [-41.1, 33.9, 0], [-43.7, 33.9, 0], [-58, 38.5, Math.PI / 2], [-58, 41.4, Math.PI / 2]]);
+flagpoles(-78, 31);
+hedge(-96, -70, 44.1);
+// --- HSA: administrativo
+office({ x: 0, z: 23.5, w: 10, d: 9, floors: 6, fins: false });
+office({ x: -12.5, z: 24, w: 14, d: 7.5, floors: 3, canopy: false });
+office({ x: 12.5, z: 24, w: 14, d: 7.5, floors: 3, canopy: false });
+hondaSign(0, 8.6, 28.1, 5);
+box(8, 0.15, 5, texMat('pave', T.pave, 2, 1.2), 0, 0.12, 31.5, scene, false);
+cyl(1.4, 1.5, 0.3, M.concrete, 0, 0.2, 31.8, 32);
+cyl(1.2, 1.2, 0.05, mat(0x3f7fb0, { roughness: 0.05, metalness: 0.3 }), 0, 0.36, 31.8, 32); // espelho d'água
+monument(0, 34.4);
+flagpoles(-5.5, 30.5);
+lot(-23, -4.5, 33.5, 43.2); lot(4.5, 23, 33.5, 43.2);
+hedge(-23, -4, 44.1); hedge(4, 23, 44.1);
+// --- Honda Sumaré: motores e componentes
+office({ x: 33.5, z: 24.8, w: 10, d: 11, floors: 2 });
+hondaSign(33.5, 2.7, 30.8, 4.2);
+sawShed({ x: 56, z: 24.8, w: 34, d: 12.5, h: 6 });
+sawShed({ x: 84, z: 24.8, w: 22, d: 12.5, h: 7, docks: 7 });
+hondaSign(56, 4.6, 31.1, 6);
+lot(28, 64, 34.5, 43.2);
+road(30, 12, 81, 37.2);
+trucks([[93, 34.3, 0], [90.4, 34.3, 0], [87.8, 34.3, 0], [85.2, 34.3, 0], [72, 40.5, Math.PI / 2], [72, 37.2, Math.PI / 2]]);
+{ const tx = 94.5, tz = 19.6; for (const [a, b] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) cyl(0.08, 0.08, 6, M.steel, tx + a * 0.8, 3, tz + b * 0.8, 6); cyl(1.4, 1.4, 1.8, M.white, tx, 6.9, tz, 24); } // caixa d'água
+hedge(28, 64, 44.1);
+
+// carros instanciados: carroceria + vidros
+const carBodyGeo = new RoundedBoxGeometry(0.74, 0.3, 1.6, 2, 0.1).translate(0, 0.25, 0);
+const carCabGeo = new RoundedBoxGeometry(0.64, 0.28, 0.82, 2, 0.1).translate(0, 0.5, -0.06);
+const carBody = new THREE.InstancedMesh(carBodyGeo, new THREE.MeshStandardMaterial({ roughness: 0.25, metalness: 0.55 }), cars.length);
+const carCab = new THREE.InstancedMesh(carCabGeo, new THREE.MeshStandardMaterial({ color: 0x1a232d, roughness: 0.08, metalness: 0.6 }), cars.length);
+const carColors = [0xc8121a, 0xf2f2f2, 0x16171a, 0x8f969d, 0x2b4c8c, 0xc7c9cc, 0xf2f2f2, 0x5b6068];
+const q = new THREE.Quaternion(), sc = V(1, 1, 1);
+cars.forEach(([x, z, r], i) => {
+  q.setFromAxisAngle(V(0, 1, 0), r + (rand() - 0.5) * 0.08);
+  m4.compose(V(x, 0.08, z), q, sc); carBody.setMatrixAt(i, m4); carCab.setMatrixAt(i, m4);
+  carBody.setColorAt(i, new THREE.Color(carColors[Math.floor(rand() * carColors.length)]));
 });
-carMesh.castShadow = true; scene.add(carMesh);
-trucks.forEach(([x, z]) => {
-  box(1.4, 1.5, 5, 0xf1f1f1, x, 1, z);
-  box(1.4, 1.2, 1.3, 0xc8161d, x, 0.85, z + 3.2);
-});
+[carBody, carCab].forEach(m => { m.castShadow = true; scene.add(m); });
+// faixas pintadas
+const lineGeo = new THREE.PlaneGeometry(1, 1); lineGeo.rotateX(-Math.PI / 2);
+const allLines = [...lines, ...dash];
+const lineInst = new THREE.InstancedMesh(lineGeo, lineMat, allLines.length);
+allLines.forEach(([x, z, w, d], i) => { m4.makeScale(w, 1, d).setPosition(x, 0.09, z); lineInst.setMatrixAt(i, m4); });
+scene.add(lineInst);
+// postes de iluminação
+const lamps = [];
+for (let x = -92; x <= 92; x += 11) lamps.push([x, 14.2, Math.PI], [x + 5.5, 17.8, 0]);
+for (const [x0, x1, z] of [[-95, -70, 38.5], [-22, -5, 38.6], [5, 22, 38.6], [29, 63, 39]]) for (let x = x0 + 3; x < x1; x += 8) lamps.push([x, z, 0]);
+const poleGeo = mergeGeometries([new THREE.CylinderGeometry(0.05, 0.07, 3.2, 6).translate(0, 1.6, 0), new THREE.BoxGeometry(0.06, 0.06, 0.8).translate(0, 3.15, 0.35)]);
+const headGeo = new THREE.BoxGeometry(0.22, 0.08, 0.4).translate(0, 3.1, 0.7);
+const poles = new THREE.InstancedMesh(poleGeo, M.alu, lamps.length);
+const heads = new THREE.InstancedMesh(headGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(0xfff1d6).multiplyScalar(2.2), toneMapped: false }), lamps.length);
+lamps.forEach(([x, z, r], i) => { q.setFromAxisAngle(V(0, 1, 0), r); m4.compose(V(x, 0, z), q, sc); poles.setMatrixAt(i, m4); heads.setMatrixAt(i, m4); });
+poles.castShadow = true; scene.add(poles, heads);
 
-// ---------- trees (instanced) ----------
+// ============ vegetação ============
+function blobGeo(detail = 2) {
+  let g = new THREE.IcosahedronGeometry(1, detail);
+  g.deleteAttribute('normal'); g.deleteAttribute('uv'); g = mergeVertices(g);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const v = V(p.getX(i), p.getY(i), p.getZ(i));
+    v.multiplyScalar(1 + 0.16 * Math.sin(v.x * 5.1 + v.y * 3.7) * Math.cos(v.z * 4.3 - v.y * 2.2));
+    p.setXYZ(i, v.x, v.y * 0.9, v.z);
+  }
+  g.computeVertexNormals(); return g;
+}
+const crownGeo = mergeGeometries([blobGeo().translate(0, 1.9, 0), blobGeo().scale(0.7, 0.7, 0.7).translate(0.6, 1.6, 0.2), blobGeo().scale(0.65, 0.65, 0.65).translate(-0.5, 1.7, -0.3)]);
+const pineGeo = mergeGeometries([0, 1, 2].map(i => new THREE.ConeGeometry(0.95 - i * 0.24, 1.5 - i * 0.2, 10).translate(0, 1.2 + i * 0.75, 0)));
+const trunkGeo = new THREE.CylinderGeometry(0.1, 0.15, 1.2, 6).translate(0, 0.6, 0);
 const noTree = [
-  [-15, 15, -21, -7], [-14, 14, -1, 13], [-13, 13, -31, -19], [-100, 100, 11, 18],
-  [-99, -30, 18, 43], [-24, 24, 18, 43], [28, 96, 17, 44], [-100, 100, 44.5, 48], [-100, -95, 18, 46], [95, 100, 18, 46],
-  [-26.5, -23.5, 16, 46], [23.5, 26.5, 16, 46],
+  [-15, 15, -21, -7], [-14, 14, -1, 13], [-13, 13, -31, -19], [-3, 3, -9, 1], [-100, 100, 10.5, 19],
+  [-99, -26, 19, 45], [-24, 24, 19, 45], [26, 97, 19, 45], [-100, 100, 43.5, 50], [-100, -95, 18, 50], [95, 100, 18, 50],
 ];
-const roadSamples = roadCurve.getSpacedPoints(160);
+const roadSamples = roadCurve.getSpacedPoints(200);
 const cableSamples = flows.filter(f => f.strip).flatMap(f => f.c.getSpacedPoints(60));
 function treeOk(x, z) {
   if (noTree.some(([a, b, c, d]) => x > a && x < b && z > c && z < d)) return false;
-  if (roadSamples.some(p => Math.hypot(p.x - x, p.z - z) < 2.4)) return false;
-  if (cableSamples.some(p => Math.hypot(p.x - x, p.z - z) < 1.4)) return false;
-  if (turbinePts.some(p => Math.hypot(p.x - x, p.z - z) < 3)) return false;
+  if (roadSamples.some(p => Math.hypot(p.x - x, p.z - z) < 2.3)) return false;
+  if (cableSamples.some(p => Math.hypot(p.x - x, p.z - z) < 1.3)) return false;
+  if (turbinePts.some(p => Math.hypot(p.x - x, p.z - z) < 3.6)) return false;
   if (towerX.some(tx => Math.hypot(tx - x, towerZ - z) < 3)) return false;
   return true;
 }
 const treePts = [];
-for (let i = 0; i < 16000 && treePts.length < 2200; i++) {
-  const x = -99 + rand() * 198, z = -49 + rand() * 98;
-  // denser near the border, lighter in the open field
+for (let i = 0; i < 20000 && treePts.length < 2300; i++) {
+  const x = -99 + rand() * 198, z = -49 + rand() * 60;
   const edge = Math.min(99 - Math.abs(x), 49 - Math.abs(z));
-  const zone = z > 18 ? 0.9 : (z < -38 || edge < 9 ? 0.95 : 0.22);
+  const zone = z > 4 ? 0.3 : (z < -38 || edge < 9 ? 0.95 : 0.2);
   if (rand() > zone) continue;
-  if (treeOk(x, z)) treePts.push([x, z]);
+  if (treeOk(x, z)) treePts.push([x, z, 0.5 + rand() * 0.45]);
 }
-const coneGeo = new THREE.ConeGeometry(0.9, 3, 7); coneGeo.translate(0, 1.9, 0);
-const roundGeo = new THREE.IcosahedronGeometry(1.1, 0); roundGeo.translate(0, 1.7, 0);
-const trunkGeo = new THREE.CylinderGeometry(0.12, 0.16, 0.9, 5); trunkGeo.translate(0, 0.45, 0);
-const leaf = mat(0xffffff, { roughness: 0.95 });
-const cones = new THREE.InstancedMesh(coneGeo, leaf, treePts.length);
-const rounds = new THREE.InstancedMesh(roundGeo, leaf, treePts.length);
+islands.forEach(([x, z]) => { if (rand() < 0.7) treePts.push([x, z, 0.45]); });
+const leafMat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
+const crowns = new THREE.InstancedMesh(crownGeo, leafMat, treePts.length);
+const pines = new THREE.InstancedMesh(pineGeo, leafMat, treePts.length);
 const trunks = new THREE.InstancedMesh(trunkGeo, mat(0x5a4330), treePts.length);
-let nc = 0, nr = 0;
-const q = new THREE.Quaternion(), sc = new THREE.Vector3(), pv = new THREE.Vector3();
-treePts.forEach(([x, z], i) => {
-  const s = 0.5 + rand() * 0.45;
+let nc = 0, np = 0;
+treePts.forEach(([x, z, s], i) => {
   q.setFromAxisAngle(V(0, 1, 0), rand() * 6.28);
-  sc.set(s, s * (0.85 + rand() * 0.4), s); pv.set(x, 0, z);
-  m4.compose(pv, q, sc);
+  const s2 = s * (0.85 + rand() * 0.3);
+  m4.compose(V(x, hy(x, z), z), q, V(s2, s2 * (0.9 + rand() * 0.3), s2));
   trunks.setMatrixAt(i, m4);
-  const col = new THREE.Color().setHSL(0.26 + rand() * 0.08, 0.35 + rand() * 0.25, 0.16 + rand() * 0.14);
-  if (rand() < 0.55) { cones.setMatrixAt(nc, m4); cones.setColorAt(nc++, col); }
-  else { rounds.setMatrixAt(nr, m4); rounds.setColorAt(nr++, col); }
+  const pine = z < 10 && rand() < 0.45;
+  const col = new THREE.Color().setHSL(pine ? 0.3 + rand() * 0.04 : 0.22 + rand() * 0.08, 0.35 + rand() * 0.25, pine ? 0.14 + rand() * 0.08 : 0.2 + rand() * 0.14);
+  if (pine) { pines.setMatrixAt(np, m4); pines.setColorAt(np++, col); } else { crowns.setMatrixAt(nc, m4); crowns.setColorAt(nc++, col); }
 });
-cones.count = nc; rounds.count = nr;
-[cones, rounds, trunks].forEach(m => { m.castShadow = true; m.receiveShadow = true; scene.add(m); });
+crowns.count = nc; pines.count = np;
+[crowns, pines, trunks].forEach(m => { m.castShadow = true; m.receiveShadow = true; scene.add(m); });
+// arbustos junto aos prédios
+const shrubPts = [];
+for (const [x0, x1, z] of [[-94, -72, 29.6], [-22, -6, 29], [6, 22, 29], [28.5, 38.5, 31.6]]) for (let x = x0; x < x1; x += 0.9) shrubPts.push([x + rand() * 0.3, z + rand() * 0.4]);
+const shrubs = new THREE.InstancedMesh(blobGeo(1), mat(0xffffff, { roughness: 1 }), shrubPts.length);
+shrubPts.forEach(([x, z], i) => { const s = 0.35 + rand() * 0.2; m4.compose(V(x, s * 0.6, z), q, V(s, s * 0.8, s)); shrubs.setMatrixAt(i, m4); shrubs.setColorAt(i, new THREE.Color().setHSL(0.25 + rand() * 0.1, 0.45, 0.22 + rand() * 0.1)); });
+shrubs.castShadow = true; scene.add(shrubs);
 
-// ---------- dimension lines ----------
+// ============ cotas ============
 const dimMat = new THREE.LineBasicMaterial({ color: 0xcfd3d8 });
 function dimLine(a, b) {
   scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a, b]), dimMat));
   const dir = b.clone().sub(a).normalize();
   for (const [p, d] of [[a, dir], [b, dir.clone().negate()]]) {
     const cone = new THREE.Mesh(new THREE.ConeGeometry(0.7, 2.4, 10), new THREE.MeshBasicMaterial({ color: 0xcfd3d8 }));
-    cone.position.copy(p).addScaledVector(d, 1.2);
-    cone.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().negate());
-    scene.add(cone);
+    cone.position.copy(p).addScaledVector(d, 1.2); cone.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().negate()); scene.add(cone);
   }
 }
-dimLine(V(-102, -7, 62), V(102, -7, 62));
+dimLine(V(-102, -7, 64), V(102, -7, 64));
 dimLine(V(112, -7, 52), V(112, -7, -52));
-function dimLabel(text, pos) {
-  const el = document.createElement('div'); el.className = 'dim'; el.textContent = text;
-  const o = new CSS2DObject(el); o.position.copy(pos); scene.add(o);
-}
-dimLabel('2,00 m', V(0, -7, 62));
+function dimLabel(text, pos) { const el = document.createElement('div'); el.className = 'dim'; el.textContent = text; const o = new CSS2DObject(el); o.position.copy(pos); scene.add(o); }
+dimLabel('2,00 m', V(0, -7, 64));
 dimLabel('1,00 m', V(112, -7, 0));
 
-// ---------- steps / cards ----------
+// ============ etapas / placas ============
 const STEPS = [
-  { name: 'Parque Eólico', desc: '10 aerogeradores captam o vento em Xangri-Lá (RS).', lvl: 0,
-    cam: [-10, 85, 50], look: [0, 4, -30],
+  { name: 'Parque Eólico', desc: '10 aerogeradores girando com o vento em Xangri-Lá (RS).', lvl: 0,
+    cam: [-30, 30, 0], look: [-55, 6, -36],
     card: { at: [-62, 1, -22], lines: ['Xangri-Lá • RS', 'Construção: a confirmar', 'Geração de energia eólica'] } },
-  { name: 'Rede de média tensão', desc: 'Cabos subterrâneos levam 34,5 kV até a subestação coletora.', lvl: 1,
-    cam: [-60, 55, 25], look: [-35, 0, -30] },
-  { name: 'Subestação Coletora', desc: 'ELEVADORA: aumenta a tensão de 34,5 kV para 69 kV.', lvl: 2,
-    cam: [40, 50, 30], look: [0, 2, -14],
-    card: { at: [38, 1, -20], tag: ['▲ ELEVADORA', 'hv'], lines: ['34,5 kV → 69 kV', 'Junta a energia das 10 turbinas'] } },
-  { name: 'Linha de transmissão', desc: 'Em 69 kV a energia percorre a rede com menos perdas.', lvl: 2,
-    cam: [-80, 45, 60], look: [-40, 5, -2] },
-  { name: 'Subestação Eletrosul', desc: 'REBAIXADORA: reduz a tensão para distribuir às unidades Honda.', lvl: 3,
-    cam: [35, 45, 55], look: [0, 2, 6],
-    card: { at: [-34, 1, 6], tag: ['▼ REBAIXADORA', 'dv'], lines: ['69 kV → 13,8 kV', 'Local e data: a confirmar', 'Conexão à rede elétrica'] } },
+  { name: 'Rede de média tensão', desc: 'Cabos subterrâneos levam 34,5 kV das turbinas até a elevadora.', lvl: 1,
+    cam: [-40, 48, 15], look: [-20, 0, -30] },
+  { name: 'Subestação Elevadora', desc: 'Aumenta a tensão de 34,5 kV para 69 kV para transmitir.', lvl: 2,
+    cam: [26, 24, 4], look: [0, 2, -14],
+    card: { at: [36, 1, -21], tag: ['▲ ELEVADORA', 'hv'], lines: ['Subestação coletora', '34,5 kV → 69 kV'] } },
+  { name: 'Linha de transmissão', desc: 'A linha aérea em 69 kV leva a energia até a distribuidora.', lvl: 2,
+    cam: [-22, 16, 8], look: [0, 5, -5] },
+  { name: 'Subestação Distribuidora', desc: 'Eletrosul: reduz a tensão para 13,8 kV e distribui.', lvl: 3,
+    cam: [24, 22, 26], look: [0, 2, 5],
+    card: { at: [-34, 1, 6], tag: ['▼ DISTRIBUIDORA', 'dv'], lines: ['Subestação Eletrosul', '69 kV → 13,8 kV', 'Local e data: a confirmar'] } },
   { name: 'Honda Itirapina', desc: 'Produção de automóveis.', lvl: 3,
-    cam: [-64, 50, 100], look: [-64, 2, 30],
-    card: { at: [-72, 1, 45], lines: ['Itirapina • SP', 'Construção: a confirmar', 'Produção de automóveis'] } },
+    cam: [-60, 36, 80], look: [-68, 2, 30],
+    card: { at: [-72, 1, 46], lines: ['Itirapina • SP', 'Construção: a confirmar', 'Produção de automóveis'] } },
   { name: 'HSA', desc: 'Atividades administrativas.', lvl: 3,
-    cam: [0, 48, 98], look: [0, 2, 30],
-    card: { at: [0, 1, 45], lines: ['Local e data: a confirmar', 'Atividades administrativas'] } },
+    cam: [8, 26, 66], look: [0, 3, 28],
+    card: { at: [0, 1, 46], lines: ['Local e data: a confirmar', 'Atividades administrativas'] } },
   { name: 'Honda Sumaré', desc: 'Motores e componentes.', lvl: 3,
-    cam: [62, 50, 100], look: [62, 2, 30],
-    card: { at: [66, 1, 45], lines: ['Sumaré • SP', 'Construção: a confirmar', 'Motores e componentes'] } },
+    cam: [70, 30, 76], look: [62, 3, 28],
+    card: { at: [66, 1, 46], lines: ['Sumaré • SP', 'Construção: a confirmar', 'Motores e componentes'] } },
 ];
 const cardEls = [];
 STEPS.forEach((s, i) => {
@@ -635,13 +980,10 @@ const stepEls = STEPS.map((s, i) => {
   return b;
 });
 
-// ---------- camera / story ----------
-let level = 99;           // quais fluxos estão ligados (99 = todos)
-let tween = null;
-const overview = () => innerWidth > 760 ? { cam: [0, 146, 182], look: [0, -6, 4] } : { cam: [0, 260, 300], look: [0, 0, 10] };
-function flyTo(cam, look, dur = 1.8) {
-  tween = { t: 0, dur, p0: camera.position.clone(), l0: controls.target.clone(), p1: V(...cam), l1: V(...look) };
-}
+// ============ câmera / apresentação ============
+let level = 99, tween = null;
+const overview = () => innerWidth > 760 ? { cam: [0, 142, 178], look: [0, -6, 4] } : { cam: [0, 260, 300], look: [0, 0, 10] };
+function flyTo(cam, look, dur = 1.9) { tween = { t: 0, dur, p0: camera.position.clone(), l0: controls.target.clone(), p1: V(...cam), l1: V(...look) }; }
 function go(i) {
   stepEls.forEach((e, k) => e.classList.toggle('active', k === i));
   cardEls.forEach((e, k) => e && e.classList.toggle('active', k === i));
@@ -652,7 +994,7 @@ function go(i) {
 }
 camera.position.set(-120, 260, 300);
 controls.target.set(0, 0, 0);
-{ const o = overview(); flyTo(o.cam, o.look, 2.6); }
+{ const o = overview(); flyTo(o.cam, o.look, 2.8); }
 
 const $ = id => document.getElementById(id);
 let tourTimer = null;
@@ -663,23 +1005,23 @@ $('bTour').onclick = () => tourTimer ? stopTour() : startTour();
 function startTour() {
   $('bTour').classList.add('on'); $('bTour').textContent = '■ Parar';
   let i = 0; go(0);
-  tourTimer = setInterval(() => { i++; if (i >= STEPS.length) { stopTour(); go(-1); } else go(i); }, 4800);
+  tourTimer = setInterval(() => { i++; if (i >= STEPS.length) { stopTour(); go(-1); } else go(i); }, 5000);
 }
-function stopTour() {
-  clearInterval(tourTimer); tourTimer = null;
-  $('bTour').classList.remove('on'); $('bTour').textContent = '▶ Apresentação';
-}
+function stopTour() { clearInterval(tourTimer); tourTimer = null; $('bTour').classList.remove('on'); $('bTour').textContent = '▶ Apresentação'; }
 controls.addEventListener('start', () => { tween = null; });
 
-// ---------- loop ----------
+// ============ loop ============
 const clock = new THREE.Clock();
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-const tmp = new THREE.Vector3();
+const tmp = V(0, 0, 0);
 function animate() {
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05), time = clock.elapsedTime;
-  rotors.forEach((r, i) => r.rotation.z -= dt * (1.5 + (i % 3) * 0.12));
+  rotors.forEach((r, i) => r.rotation.z -= dt * (1.4 + (i % 3) * 0.1));
   const blink = 0.5 + 0.5 * Math.sin(time * 5);
-  rings.forEach((r, i) => r.material.opacity = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(time * 4 - i * 0.6)));
+  rings.forEach((r, i) => r.material.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * 4 - i * 0.6)));
+  const beaconOn = (time % 1.6) < 0.5; // luz de sinalização sincronizada
+  beacons.forEach(b => b.visible = beaconOn);
+  flagMeshes.forEach((f, i) => f.rotation.y = Math.sin(time * 2 + i) * 0.25);
 
   flows.forEach(f => {
     const on = level >= f.level ? 1 : 0;
@@ -687,25 +1029,22 @@ function animate() {
     f.inst.visible = f.fade > 0.02;
     f.pm.opacity = f.fade;
     if (f.strip) {
-      f.strip.material.opacity = 0.25 + 0.75 * f.fade;
-      f.strip.material.emissiveIntensity = f.fade * (0.6 + 1.8 * blink);
+      f.strip.material.opacity = 0.2 + 0.8 * f.fade;
+      f.strip.material.emissiveIntensity = f.fade * (0.6 + 2.6 * blink);
     }
-    f.t = (f.t + dt * f.speed * (40 / f.len) * 6) % 1;
+    f.t = (f.t + dt * f.speed * 12 / f.len) % 1;
     for (let k = 0; k < f.n; k++) {
-      const u = (f.t + k / f.n) % 1;
-      f.c.getPointAt(u, tmp); tmp.y += f.lift;
+      f.c.getPointAt((f.t + k / f.n) % 1, tmp);
+      tmp.y = (f.ground ? hy(tmp.x, tmp.z) + f.y : tmp.y) + f.lift;
       const s = 0.7 + 0.5 * Math.max(0, Math.sin(time * 8 - k * 1.3));
       m4.makeScale(s, s, s).setPosition(tmp);
       f.inst.setMatrixAt(k, m4);
     }
     f.inst.instanceMatrix.needsUpdate = true;
   });
-  haloFor.forEach(({ halo, key }) => {
-    const f = flows.find(x => x.key === key);
-    halo.material.opacity = f.fade * (0.12 + 0.3 * blink);
-  });
-  const lit = level >= 3 ? 1 : 0.2;
-  windowsMats.forEach(m => m.emissiveIntensity += ((lit * (0.16 + 0.05 * blink)) - m.emissiveIntensity) * Math.min(1, dt * 2));
+  halos.forEach(({ halo, key }) => { const f = flows.find(x => x.key === key); halo.material.opacity = f.fade * (0.35 + 0.65 * blink); });
+  const lit = level >= 3 ? 1 : 0.15; // janelas acendem quando a energia chega
+  litMats.forEach(m => m.emissiveIntensity += (lit * (0.12 + 0.03 * blink) - m.emissiveIntensity) * Math.min(1, dt * 2));
 
   if (tween) {
     tween.t += raw / tween.dur;
@@ -719,7 +1058,10 @@ function animate() {
   labelRenderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
+// reflexos do ambiente mais suaves (evita estourar os brancos)
+scene.traverse(o => { const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : []; ms.forEach(m => { if (m.isMeshStandardMaterial) m.envMapIntensity = 0.45; }); });
 animate();
+document.getElementById('loading').style.opacity = 0;
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
