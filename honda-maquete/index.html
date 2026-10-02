@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
 <title>Maquete Honda Energy</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@300;600;700;800&display=swap" rel="stylesheet">
@@ -108,6 +109,90 @@
     .c3 { min-width: 0; font-size: 10px; }
     .c3 div:not(.tag) { display: none; }
   }
+
+  /* ===== Proposta (mesmo formato da proposta Promins) ===== */
+  #controls button.prop { background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.22); }
+  #controls button.prop:hover { background: var(--red); border-color: var(--red); }
+  #prop {
+    position: fixed; inset: 0; z-index: 50; overflow: auto; padding-inline: 16px;
+    background: radial-gradient(1100px 560px at 85% -10%, #3a1416 0%, #17181b 55%, #121315 100%);
+    font-family: Inter, system-ui, sans-serif; color: var(--text);
+  }
+  #prop .bar-top {
+    position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-inline: -16px; padding-block: 12px; padding-inline: max(16px, calc((100% + 32px - 1080px) / 2));
+    background: rgba(22,23,26,.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  #prop .brandline { font-family: Montserrat, Inter, sans-serif; font-weight: 700; font-size: 15px; letter-spacing: .02em; }
+  #prop .brandline .x { color: var(--muted); font-weight: 400; margin-inline: 6px; }
+  #prop .brandline .r { color: var(--red); }
+  #prop .pbtn { border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.05); color: var(--text); border-radius: 8px;
+    padding: 9px 14px; font: 600 13px Inter, sans-serif; cursor: pointer; white-space: nowrap; }
+  #prop .pbtn:hover { border-color: #fff; }
+  #prop .pbtn.primary { background: var(--red); border-color: var(--red); color: #fff; }
+  #prop .pbtn:focus-visible, #controls button:focus-visible, .step:focus-visible { outline: 2px solid var(--dv); outline-offset: 2px; }
+  #prop .wrap { max-width: 1080px; margin: 0 auto; padding-block: 18px 56px; display: flex; flex-direction: column; gap: 36px; }
+  #prop .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--dv); font-weight: 700; }
+  #prop h2 { font-family: Montserrat, Inter, sans-serif; font-weight: 800; font-size: clamp(30px, 4.6vw, 50px); line-height: 1.02; margin: 8px 0 14px; text-wrap: balance; letter-spacing: -.01em; }
+  #prop h2 em { font-style: normal; color: var(--dv); }
+  #prop .lead { color: var(--muted); font-size: 16px; line-height: 1.6; max-width: 64ch; margin: 0; }
+  #prop h3 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 700; }
+  #prop .mq { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  #prop .mqc { border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 20px 22px; background: rgba(255,255,255,.03); display: flex; flex-direction: column; gap: 12px; }
+  #prop .mqc .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--hv); font-weight: 700; }
+  #prop .mqc h4 { font-family: Montserrat, Inter, sans-serif; font-weight: 800; font-size: 24px; margin: 0; line-height: 1.1; }
+  #prop .dims { display: flex; gap: 10px 22px; flex-wrap: wrap; font-size: 13px; }
+  #prop .dims span b { display: block; font-size: 10px; letter-spacing: .14em; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
+  #prop ul { margin: 0; padding-left: 18px; color: var(--muted); line-height: 1.6; }
+  #prop ul li + li { margin-top: 4px; }
+  #prop p { margin: 0; color: var(--muted); line-height: 1.6; }
+  #prop strong { color: var(--text); }
+  #prop .scope-note, #prop .price-note { font-size: 13px; margin-top: 12px; }
+  #prop .lv { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); border: 1px solid rgba(255,255,255,.16); border-radius: 12px; overflow: hidden; }
+  #prop .lvc { padding: 20px 22px; border-right: 1px solid rgba(255,255,255,.1); display: flex; flex-direction: column; gap: 8px; }
+  #prop .lvc:last-child { border-right: 0; }
+  #prop .lvc .nm { font-family: Montserrat, Inter, sans-serif; font-weight: 800; font-size: 22px; text-transform: uppercase; }
+  #prop .lvc.hi { background: rgba(227,20,28,.1); }
+  #prop .lvc.hi .nm { color: #ff5a5f; }
+  #prop .level-tag { font-size: 10px; letter-spacing: .1em; font-weight: 800; color: #ff5a5f; }
+  #prop .prices { margin: auto 0 0; padding-top: 12px; display: grid; gap: 12px; }
+  #prop .prices div { display: grid; gap: 2px; }
+  #prop .prices dt { color: var(--muted); font-size: 12px; }
+  #prop .prices dd { margin: 0; font-family: Montserrat, Inter, sans-serif; font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; }
+  #prop .prices .sum { border-top: 1px solid rgba(255,255,255,.18); padding-top: 12px; }
+  #prop .prices .sum dd { color: var(--dv); }
+  #prop .investment { border: 1px solid rgba(227,20,28,.5); border-radius: 12px; padding: 22px 24px; background: linear-gradient(135deg, rgba(227,20,28,.12), rgba(51,224,122,.04)); margin-top: 18px; display: grid; gap: 10px; }
+  #prop .investment h4 { font-family: Montserrat, Inter, sans-serif; font-size: 22px; margin: 0; color: #ff5a5f; text-transform: uppercase; }
+  #prop .investment .total { border-top: 1px solid rgba(255,255,255,.18); padding-top: 12px; }
+  #prop .terms { border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 18px 22px; margin-top: 18px; }
+  #prop .terms summary { cursor: pointer; font-weight: 600; }
+  #prop .terms ul { margin-top: 12px; }
+  #prop .terms li + li { margin-top: 8px; }
+  #prop .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+  #prop .need { list-style: none; padding: 0; display: grid; gap: 8px; }
+  #prop .need li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; color: var(--text); line-height: 1.45; margin: 0; }
+  #prop .need li::before { content: ""; width: 10px; height: 10px; border: 1.5px solid var(--dv); border-radius: 2px; margin-top: 5px; }
+  #prop .steps-list { list-style: none; padding: 0; counter-reset: s; display: grid; gap: 10px; }
+  #prop .steps-list li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 10px; color: var(--text); line-height: 1.45; margin: 0; }
+  #prop .steps-list li::before { content: counter(s); font-family: Montserrat, Inter, sans-serif; font-weight: 800; font-size: 20px; color: var(--red); }
+  #prop .steps-list li span { grid-column: 2; color: var(--muted); font-size: 13px; }
+  #prop .cta { border: 1px solid rgba(227,20,28,.5); border-radius: 14px; padding: 24px 26px; background: linear-gradient(135deg, rgba(227,20,28,.12), rgba(58,168,255,.05)); display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 24px; align-items: center; }
+  #prop .cta h3 { color: #ff5a5f; margin-bottom: 6px; }
+  #prop .cta .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  #prop .copy-status { min-height: 1.3em; margin-top: 8px; font-size: 12px; color: var(--dv); }
+  #prop .sign { font-size: 12px; color: var(--muted); text-align: center; }
+  body.prop-open #title, body.prop-open #legend, body.prop-open #steps, body.prop-open #slogan, body.prop-open #controls { visibility: hidden; }
+  /* Aviso de privacidade que o site nexlayer3d.net injeta nas maquetes */
+  #nl-box { right: auto !important; top: auto !important; left: 16px !important; bottom: 16px !important; }
+  @media (max-width: 760px) {
+    #prop .lv { grid-template-columns: 1fr; }
+    #prop .lvc { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+    #prop .lvc:last-child { border-bottom: 0; }
+    #prop .cta { grid-template-columns: 1fr; padding: 20px; }
+    #prop .cta .actions { justify-content: flex-start; }
+    #prop .brandline { font-size: 13px; }
+    #nl-box { right: auto !important; bottom: auto !important; left: 12px !important; top: 140px !important; }
+  }
 </style>
 <script type="importmap">
 { "imports": {
@@ -117,6 +202,7 @@
 </script>
 </head>
 <body>
+<span id="nl-secao" hidden></span>
 <div id="scene"></div>
 <div id="loading">Montando a maquete…</div>
 
@@ -159,7 +245,200 @@
   <button id="bTour">▶ Apresentação</button>
   <button id="bRotate">Girar</button>
   <button id="bLabels" class="on">Placas</button>
+  <button id="bProp" class="prop">Proposta</button>
 </div>
+
+<section id="prop" hidden aria-labelledby="propTitle">
+  <div class="bar-top">
+    <div class="brandline">NexLayer3D<span class="x">×</span><span class="r">Honda</span> Energy</div>
+    <button class="pbtn" type="button" data-close-prop>← Voltar à maquete</button>
+  </div>
+  <div class="wrap">
+    <div>
+      <div class="eyebrow">NexLayer3D para Honda · prévia de outubro/2026</div>
+      <h2 id="propTitle">Uma maquete para mostrar o caminho da <em>energia limpa</em> da Honda</h2>
+      <p class="lead">Do parque eólico de Xangri-Lá (RS) até as unidades Honda em São Paulo: a maquete mostra como a energia é gerada, elevada, transmitida e distribuída. Na versão interativa, o fluxo acende em sequência, muda de cor a cada etapa e é comandado por uma tela touch.</p>
+    </div>
+
+    <div>
+      <h3>A maquete</h3>
+      <div class="mq">
+        <article class="mqc">
+          <div class="k">Maquete única · parque, subestações e unidades</div>
+          <h4>Caminho da Energia Honda</h4>
+          <div class="dims">
+            <span><b>BASE</b>2,00 × 1,00 m</span>
+            <span><b>AEROGERADORES</b>10 (9 de 9 cm + 1 de 11 cm)</span>
+            <span><b>LOCAL</b>Recepção, showroom ou eventos</span>
+          </div>
+          <ul>
+            <li>Parque eólico com 10 aerogeradores de alto padrão, com rotores girando</li>
+            <li>Subestação elevadora, linha de transmissão e subestação distribuidora, com transformadores, pórticos e torres em detalhe</li>
+            <li>Unidades Honda Itirapina, HSA e Sumaré, com estacionamentos, docas e paisagismo</li>
+            <li>Na versão Interativa: fluxo de energia em LED que muda de cor a cada etapa (geração, transmissão e distribuição), luz de sinalização nas turbinas e unidades que acendem quando a energia chega</li>
+          </ul>
+          <button class="pbtn" type="button" data-close-prop style="align-self:flex-start">Ver prévia digital →</button>
+        </article>
+        <article class="mqc">
+          <div class="k">1 tela de comando touch de 10″</div>
+          <h4>Siga a energia</h4>
+          <ul>
+            <li>Iniciar a apresentação guiada em 8 etapas, do vento até as fábricas</li>
+            <li>Acender cada trecho do fluxo: geração (azul), transmissão (laranja) e distribuição (verde)</li>
+            <li>Mostrar a diferença entre a subestação elevadora e a distribuidora, com textos, fotos e números do projeto</li>
+            <li>Ler a história do projeto, curiosidades e informações das três unidades</li>
+          </ul>
+          <p class="scope-note"><strong>Uma tela de comando para a maquete.</strong> Tablet ou controlador simples, com tela touch de aproximadamente 10 polegadas, botões, textos e imagens em português. Sem fala, assistente conversacional, banco de perguntas ou jogos. Textos, fotos e curiosidades fornecidos ou aprovados pela Honda. Esta tela não é o totem multimídia opcional.</p>
+        </article>
+      </div>
+    </div>
+
+    <div>
+      <h3>Investimento preliminar · por nível</h3>
+      <div class="lv">
+        <div class="lvc">
+          <div class="nm">Essencial</div>
+          <p>Maquete física 2,00 × 1,00 m com acabamento, base de apoio, placa de identificação, iluminação geral e os 10 aerogeradores com rotores girando. Caminho da energia representado de forma estática. Sem computador e sem controle por tela.</p>
+          <dl class="prices"><div class="sum"><dt>Maquete Caminho da Energia · estimativa</dt><dd>R$ 48.000</dd></div></dl>
+        </div>
+        <div class="lvc hi">
+          <span class="level-tag">RECOMENDADA</span>
+          <div class="nm">Interativa</div>
+          <p>Essencial + LEDs endereçáveis com o fluxo de energia em três cores acendendo em sequência, luz de sinalização nas turbinas, iluminação das unidades, controladores, interface de comando e conteúdo institucional. Inclui uma tela touch simples de aproximadamente 10 polegadas, sem voz e sem quiz.</p>
+          <dl class="prices"><div class="sum"><dt>Maquete + 1 tela · estimativa</dt><dd>R$ 72.000</dd></div></dl>
+        </div>
+        <div class="lvc">
+          <div class="nm">Completa</div>
+          <p>Interativa + versão 3D navegável para web e tablet, feita a partir desta prévia com os dados reais da Honda, 6 imagens e 1 vídeo de até 60 segundos. Totem com voz e quiz não incluído.</p>
+          <dl class="prices"><div class="sum"><dt>Maquete + 1 tela + digital · estimativa</dt><dd>R$ 90.000</dd></div></dl>
+        </div>
+      </div>
+      <p class="price-note">Estimativas comerciais de 02/10/2026 para planejamento, com previsão de tributos no escopo descrito; não constituem orçamento fechado. Os níveis são alternativas, não valores cumulativos. Interativa e Completa já consideram a tela simples e o conteúdo institucional; o totem multimídia é opcional e cobrado separadamente. Valores finais sujeitos à validação das plantas, do detalhamento, do hardware e das condições de entrega.</p>
+
+      <div class="investment">
+        <h4>Recomendação · maquete interativa</h4>
+        <p>O fluxo que acende e muda de cor é o que conta a história: a energia sai das turbinas, <strong>é elevada</strong> na subestação coletora para ser transmitida, <strong>é rebaixada</strong> na subestação distribuidora e chega às fábricas. Sem ele, a maquete mostra o lugar, mas não o caminho.</p>
+        <p class="total"><strong>Investimento preliminar recomendado: R$ 72.000.</strong><br>Inclui a maquete interativa, uma tela simples, eletrônica, programação e o conteúdo institucional previsto no roteiro. Frete, seguro, instalação presencial, mobiliário, cúpula de acrílico e case de viagem ficam à parte.</p>
+      </div>
+
+      <article class="mqc" style="margin-top:24px">
+        <div class="k">Opcional à parte · totem multimídia</div>
+        <h4>Totem multimídia · voz, curiosidades e quiz</h4>
+        <div class="dims">
+          <span><b>TELA TOUCH</b>aprox. 15″</span>
+          <span><b>PROCESSAMENTO</b>Computador embarcado</span>
+          <span><b>CONTEÚDO E ÁUDIO</b>até 5 idiomas</span>
+        </div>
+        <p>Uma experiência adicional para visitantes: a pessoa escolhe o idioma, toca em uma pergunta, ouve a resposta e explora o projeto de energia renovável da Honda. O totem também pode acionar os circuitos da maquete.</p>
+        <ul>
+          <li>Até 500 perguntas e respostas-base sobre o projeto, as unidades, a energia eólica e curiosidades, nos idiomas definidos com a Honda (por exemplo português, inglês e japonês)</li>
+          <li>Respostas em texto e voz sintetizada, com controle de volume e reprodução local dos áudios aprovados</li>
+          <li>Um jogo de quiz com pontuação e explicações, usando até 50 perguntas do mesmo banco</li>
+          <li>Computador dedicado, tela touch de aproximadamente 15 polegadas, som, alimentação e gabinete compacto de bancada incluídos</li>
+          <li>Interface com a identidade visual Honda e integração aos comandos da maquete, nos níveis Interativa ou Completa</li>
+        </ul>
+        <dl class="prices">
+          <div><dt>Totem completo · investimento adicional estimado</dt><dd>R$ 38.000</dd></div>
+          <div class="sum"><dt>Maquete Interativa + totem</dt><dd>R$ 110.000</dd></div>
+          <div><dt>Alternativa: maquete Completa + totem</dt><dd>R$ 128.000</dd></div>
+        </dl>
+        <p class="scope-note"><strong>Contratação opcional, não incluída nos três níveis acima.</strong> Inclui organização do banco, tradução assistida e geração de áudio a partir de materiais fornecidos pela Honda, com validação técnica e linguística do cliente antes da produção final. Premissa: respostas curtas (até 80 palavras), duas rodadas de revisão do banco e conteúdo local, que funciona offline e sem mensalidade. Conversa livre, reconhecimento de voz, locução humana, tradução certificada, painel de edição, CRM, pedestal de piso personalizado, logística e instalação presencial ficam à parte.</p>
+      </article>
+
+      <details class="terms">
+        <summary>Premissas, limites de escopo e itens à parte</summary>
+        <ul>
+          <li><strong>Dimensão e acabamento:</strong> base de 2,00 × 1,00 m, sujeita à validação do espaço e do transporte. Aerogeradores de fabricante especializado (9 de 9 cm e 1 de 11 cm); demais elementos em impressão 3D e acabamento expositivo. Mesa, pedestal, cúpula de acrílico e case não estão incluídos e podem ser orçados à parte.</li>
+          <li><strong>Representação:</strong> o parque de Xangri-Lá (RS) e as unidades em São Paulo ficam na mesma base, com as distâncias comprimidas. Tensões, quantidades e dados das placas serão validados com a Honda antes da produção.</li>
+          <li><strong>Projeto:</strong> plantas, dados e conteúdo fornecidos pela Honda, modelagem para fabricação, duas rodadas de ajustes antes da aprovação para produzir, montagem e testes em oficina. Mudanças após essa aprovação e levantamento presencial são avaliados à parte.</li>
+          <li><strong>Comando básico:</strong> uma tela touch simples de aproximadamente 10 polegadas, com até 8 etapas de visita e a sequência luminosa do fluxo em três trechos. Interface em português, sem voz, perguntas e respostas ou quiz. A demonstração é didática, não uma simulação elétrica de engenharia.</li>
+          <li><strong>Conteúdo da tela:</strong> organização de até 10 páginas de conteúdo e 20 imagens, com materiais fornecidos ou aprovados pela Honda. Captação de fotos e vídeos, traduções e conteúdo adicional ficam à parte.</li>
+          <li><strong>Digital na Completa:</strong> versão navegável da maquete aprovada para web e tablet. Não inclui realidade virtual, configurador ou integração com CRM.</li>
+          <li><strong>Custos posteriores:</strong> hospedagem, domínio, manutenção recorrente, novas versões e deslocamentos para eventos não entram nos valores. Suporte, garantia, prazo de produção e condições de pagamento serão definidos na proposta comercial final.</li>
+        </ul>
+      </details>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>O que precisamos da Honda</h3>
+        <ul class="need" id="needList">
+          <li>Plantas de implantação ou imagens aéreas das unidades Itirapina, HSA e Sumaré</li>
+          <li>Dados do parque eólico e das subestações: tensões, layout e quantidades</li>
+          <li>Fotos e medidas do local da maquete, incluindo a posição da tela e do totem, se contratado</li>
+          <li>Textos, fotos e números aprovados para o conteúdo</li>
+          <li>Manual de marca e data-alvo de entrega</li>
+          <li>Para o totem opcional: idiomas, materiais de referência e responsáveis pela aprovação</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Próximos passos</h3>
+        <ol class="steps-list">
+          <li>Validar escopo e faixa de investimento<span>qual nível e onde a maquete vai ficar</span></li>
+          <li>Receber os arquivos da Honda<span>plantas, dados do parque e fotos</span></li>
+          <li>Fechar preço, logística e prazo de produção</li>
+          <li>Aprovar o modelo 3D antes de fabricar</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="cta">
+      <div>
+        <h3>Próxima decisão</h3>
+        <p>Validar o nível de entrega, a faixa de investimento, a tela de comando, o local de instalação e a data-alvo. Com os arquivos da Honda, fechamos o orçamento e o cronograma.</p>
+        <p class="copy-status" id="copyStatus" role="status" aria-live="polite"></p>
+      </div>
+      <div class="actions">
+        <button class="pbtn primary" id="copyScope" type="button">Copiar checklist</button>
+        <button class="pbtn" type="button" data-close-prop>Rever maquete</button>
+      </div>
+    </div>
+    <p class="sign">NexLayer3D · Maquetes técnicas interativas · vendas@nexlayer3d.net · nexlayer3d.net</p>
+  </div>
+</section>
+
+<script>
+// Proposta: abre por botão ou pelo link com #proposta. Funciona mesmo se o 3D não carregar.
+(function () {
+  const prop = document.getElementById('prop');
+  // Nome da parte aberta: o rastreio do site nexlayer3d.net observa este elemento.
+  window.nl3dSecao = t => { const e = document.getElementById('nl-secao'); if (e && t && e.textContent !== t) e.textContent = t; };
+  function openProp() {
+    prop.hidden = false; prop.scrollTop = 0; document.body.classList.add('prop-open');
+    nl3dSecao('Proposta');
+    try { if (location.hash !== '#proposta') history.replaceState(null, '', '#proposta'); } catch (e) {}
+  }
+  function closeProp() {
+    prop.hidden = true; document.body.classList.remove('prop-open');
+    nl3dSecao('Maquete');
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  }
+  document.getElementById('bProp').addEventListener('click', openProp);
+  prop.querySelectorAll('[data-close-prop]').forEach(b => b.addEventListener('click', closeProp));
+  addEventListener('keydown', e => { if (e.key === 'Escape' && !prop.hidden) closeProp(); });
+  if (location.hash === '#proposta') openProp(); else nl3dSecao('Maquete');
+
+  const checklist = () => {
+    const needs = [...document.querySelectorAll('#needList li')].map(li => '☐ ' + li.textContent.trim());
+    return ['Maquete Honda Energy · checklist (NexLayer3D)', '',
+      'Decidir:', '☐ Nível: Essencial (R$ 48.000), Interativa (R$ 72.000) ou Completa (R$ 90.000)',
+      '☐ Totem multimídia opcional (+ R$ 38.000)', '☐ Local de instalação e data-alvo', '',
+      'Enviar para a NexLayer3D:', ...needs].join('\n');
+  };
+  const status = document.getElementById('copyStatus');
+  document.getElementById('copyScope').addEventListener('click', () => {
+    const text = checklist();
+    const done = () => { status.textContent = 'Checklist copiado.'; nl3dSecao('Checklist copiado'); };
+    const fallback = () => {
+      const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(ta); ta.select();
+      let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+      ta.remove(); ok ? done() : (status.textContent = 'Não foi possível copiar automaticamente. Selecione a lista acima e copie.');
+    };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+  });
+})();
+</script>
 
 <script type="module">
 import * as THREE from 'three';
@@ -988,6 +1267,7 @@ let level = 99, tween = null;
 const overview = () => innerWidth > 760 ? { cam: [0, 142, 178], look: [0, -6, 4] } : { cam: [0, 260, 300], look: [0, 0, 10] };
 function flyTo(cam, look, dur = 1.9) { tween = { t: 0, dur, p0: camera.position.clone(), l0: controls.target.clone(), p1: V(...cam), l1: V(...look) }; }
 function go(i) {
+  window.nl3dSecao?.(i < 0 ? 'Vista geral' : `Etapa ${i + 1} · ${STEPS[i].name}`);
   stepEls.forEach((e, k) => e.classList.toggle('active', k === i));
   cardEls.forEach((e, k) => e && e.classList.toggle('active', k === i));
   if (i < 0) { level = 99; const o = overview(); return flyTo(o.cam, o.look); }
@@ -1006,6 +1286,7 @@ $('bRotate').onclick = e => { controls.autoRotate = !controls.autoRotate; e.targ
 $('bLabels').onclick = e => { document.body.classList.toggle('hide-labels'); e.target.classList.toggle('on'); };
 $('bTour').onclick = () => tourTimer ? stopTour() : startTour();
 function startTour() {
+  window.nl3dSecao?.('Apresentação');
   $('bTour').classList.add('on'); $('bTour').textContent = '■ Parar';
   let i = 0; go(0);
   tourTimer = setInterval(() => { i++; if (i >= STEPS.length) { stopTour(); go(-1); } else go(i); }, 5000);
@@ -1019,6 +1300,7 @@ const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const tmp = V(0, 0, 0);
 function animate() {
   const raw = clock.getDelta(), dt = Math.min(raw, 0.05), time = clock.elapsedTime;
+  if (document.body.classList.contains('prop-open')) { requestAnimationFrame(animate); return; } // proposta aberta: pausa o 3D
   rotors.forEach((r, i) => r.rotation.z -= dt * (1.4 + (i % 3) * 0.1));
   const blink = 0.5 + 0.5 * Math.sin(time * 5);
   rings.forEach((r, i) => r.material.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * 4 - i * 0.6)));
