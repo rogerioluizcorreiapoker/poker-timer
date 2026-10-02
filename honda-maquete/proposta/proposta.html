@@ -93,7 +93,7 @@
   ul.dots li::before { content: ""; position: absolute; left: 0; top: 1.9mm; width: 1.6mm; height: 1.6mm; border-radius: 50%; background: var(--teal); }
 
   /* página 3: investimento */
-  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-top: 7mm; }
+  .plans { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4mm; margin-top: 7mm; }
   .plan { border: 1px solid var(--line); border-radius: 3mm; padding: 5mm 5mm 5.5mm; display: flex; flex-direction: column; }
   .plan.rec { border: 1.6px solid var(--red); background: #fff7f7; }
   .plan .badge { align-self: flex-start; font-size: 6.6pt; font-weight: 800; letter-spacing: .12em; color: #fff; background: var(--red); border-radius: 99px; padding: .8mm 2.6mm; margin-bottom: 2.5mm; }
@@ -213,12 +213,12 @@
   <div class="top"><img src="nexlogo-claro.png" alt="NexLayer3D"><span>Maquete <b>Honda Energy</b> · proposta comercial</span></div>
   <div class="pad">
     <div class="eyebrow">Investimento</div>
-    <h2>Três opções, todas com o fluxo de energia completo</h2>
-    <p class="lead">As opções são alternativas, não somas. Todas incluem a maquete física com os aerogeradores girando e o fluxo de energia em LED endereçável.</p>
+    <h2>Duas opções, as duas com o fluxo de energia completo</h2>
+    <p class="lead">As opções são alternativas, não somas. As duas incluem a maquete física com os aerogeradores girando e o fluxo de energia em LED endereçável.</p>
 
     <div class="plans">
-      <div class="plan rec">
-        <span class="badge">RECOMENDADA</span>
+      <div class="plan">
+        <span class="badge ghost">MAQUETE + TELA DE COMANDO</span>
         <h4>Interativa</h4>
         <p class="what">A maquete com a tela de comando.</p>
         <ul>
@@ -232,30 +232,18 @@
         </ul>
         <div class="price"><small>Investimento</small><span class="num">R$ 95.000</span></div>
       </div>
-      <div class="plan">
-        <span class="badge ghost">INTERATIVA + DIGITAL</span>
-        <h4>Completa</h4>
-        <p class="what">Tudo da Interativa, mais a versão digital para usar fora da maquete.</p>
+      <div class="plan rec">
+        <span class="badge">RECOMENDADA</span>
+        <h4>Interativa com totem</h4>
+        <p class="what">A maquete completa, com um totem multimídia ao lado.</p>
         <ul>
           <li>Tudo da opção Interativa</li>
-          <li class="plus">Maquete 3D navegável para web e tablet, com os dados reais</li>
-          <li class="plus">6 imagens renderizadas</li>
-          <li class="plus">1 vídeo de até 60 segundos</li>
-        </ul>
-        <div class="price"><small>Investimento</small><span class="num">R$ 125.000</span></div>
-      </div>
-      <div class="plan">
-        <span class="badge ghost">COMPLETA + TOTEM</span>
-        <h4>Completa com totem</h4>
-        <p class="what">A experiência inteira, com um totem multimídia ao lado.</p>
-        <ul>
-          <li>Tudo da opção Completa</li>
           <li class="plus">Totem com tela touch de aprox. 15″ e computador embarcado</li>
           <li class="plus">Perguntas e respostas em texto e voz, em até 5 idiomas</li>
           <li class="plus">Quiz com pontuação</li>
           <li class="plus">Integração com os comandos da maquete</li>
         </ul>
-        <div class="price"><small>Investimento</small><span class="num">R$ 150.000</span></div>
+        <div class="price"><small>Investimento</small><span class="num">R$ 120.000</span></div>
       </div>
     </div>
 
@@ -301,7 +289,7 @@
       <div>
         <h3>Para formalizar o pedido</h3>
         <ul class="check">
-          <li><div>Opção escolhida<span>Interativa, Completa ou Completa com totem</span></div></li>
+          <li><div>Opção escolhida<span>Interativa ou Interativa com totem</span></div></li>
           <li><div>Pedido de compra (PO)</div></li>
           <li><div>Dados para a nota fiscal<span>razão social, CNPJ, inscrição estadual e endereço de cobrança</span></div></li>
           <li><div>Endereço e contato para a entrega</div></li>

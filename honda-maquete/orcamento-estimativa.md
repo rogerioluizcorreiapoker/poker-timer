@@ -37,9 +37,10 @@ Ponto médio: material + cúpula ≈ R$ 17.500 → R$ 20.100 · execução ≈ R
 
 | Opção (PDF enviado ao cliente em 02/10/2026) | O que inclui | Preço |
 |---|---|---:|
-| **Interativa (recomendada)** | Maquete + LED endereçável do fluxo + 1 tela touch 10″ + conteúdo + base PVC 35 mm + cúpula acrílico 6 mm (frete a combinar, móvel não incluso) | **R$ 95.000** |
-| Completa | Interativa + versão 3D navegável, 6 imagens e 1 vídeo de 60 s | **R$ 125.000** |
-| Completa + totem | Completa + totem multimídia (voz, curiosidades e quiz) | **R$ 150.000** |
+| Interativa | Maquete + LED endereçável do fluxo + 1 tela touch 10″ + conteúdo + base PVC 35 mm + cúpula acrílico 6 mm (frete a combinar, móvel não incluso) | **R$ 95.000** |
+| **Interativa com totem (recomendada)** | Interativa + totem multimídia (voz, curiosidades e quiz) | **R$ 120.000** |
+
+A opção Completa (versão digital, imagens e vídeo) foi retirada: esse serviço não é oferecido.
 
 Prazo: 60 dias de construção após a aprovação da maquete digital online. Proposta em PDF: `proposta/`.
 
