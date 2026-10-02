@@ -37,14 +37,14 @@ Ponto médio: material + cúpula ≈ R$ 17.500 → R$ 20.100 · execução ≈ R
 
 | Opção (PDF enviado ao cliente em 02/10/2026) | O que inclui | Preço |
 |---|---|---:|
-| **Interativa (recomendada)** | Maquete + LED endereçável do fluxo + 1 tela touch 10″ + conteúdo + transporte até unidade Honda em SP | **R$ 88.000** |
-| Completa | Interativa + versão 3D navegável, 6 imagens e 1 vídeo de 60 s | **R$ 105.000** |
-| Completa + totem | Completa + totem multimídia (voz, curiosidades e quiz) | **R$ 130.000** |
+| **Interativa (recomendada)** | Maquete + LED endereçável do fluxo + 1 tela touch 10″ + conteúdo + base PVC 35 mm + cúpula acrílico 6 mm (frete a combinar, móvel não incluso) | **R$ 95.000** |
+| Completa | Interativa + versão 3D navegável, 6 imagens e 1 vídeo de 60 s | **R$ 125.000** |
+| Completa + totem | Completa + totem multimídia (voz, curiosidades e quiz) | **R$ 150.000** |
 
 Prazo: 60 dias de construção após a aprovação da maquete digital online. Proposta em PDF: `proposta/`.
 
 O nível Essencial (sem fluxo endereçável) foi retirado: as turbinas giram e o fluxo de energia é obrigatório.
-Preço revisto para cima para cobrir tributos e transporte.
+Preço revisto para cima para cobrir tributos e a cúpula; frete negociado à parte.
 
 Regras para a conversa (de `08-estrategia-comercial.md`): mandar **um número**, não faixa; se ceder, ceder contra prazo ou pagamento; preferir cortar escopo a cortar preço.
 
