@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Proposta NexLayer3D · Maquete Honda Energy</title>
+<style>
+  @font-face { font-family: "Montserrat"; font-weight: 500; src: url(fontes/montserrat-latin-500-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 600; src: url(fontes/montserrat-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 700; src: url(fontes/montserrat-latin-700-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Montserrat"; font-weight: 800; src: url(fontes/montserrat-latin-800-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 400; src: url(fontes/inter-latin-400-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 500; src: url(fontes/inter-latin-500-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 600; src: url(fontes/inter-latin-600-normal.woff2) format("woff2"); }
+  @font-face { font-family: "Inter"; font-weight: 700; src: url(fontes/inter-latin-700-normal.woff2) format("woff2"); }
+
+  :root {
+    --ink: #13171d;
+    --body: #3d4550;
+    --muted: #6b7480;
+    --line: #dfe3e8;
+    --paper: #ffffff;
+    --tint: #f4f6f8;
+    --night: #10151c;
+    --teal: #4bb1b5;
+    --teal-ink: #1e7c80;
+    --red: #d0101a;
+    --mv: #2f8fe0;
+    --hv: #f09a12;
+    --dv: #1fae5c;
+    --display: "Montserrat", "Liberation Sans", Arial, sans-serif;
+    --sans: "Inter", "Liberation Sans", Arial, sans-serif;
+  }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--sans); color: var(--body); font-size: 9.6pt; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page { width: 210mm; height: 297mm; position: relative; overflow: hidden; page-break-after: always; background: var(--paper); }
+  .page:last-child { page-break-after: auto; }
+  .pad { padding: 16mm 16mm 22mm; }
+  h1, h2, h3, h4 { font-family: var(--display); color: var(--ink); margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  b, strong { color: var(--ink); font-weight: 600; }
+  .eyebrow { font-family: var(--sans); font-weight: 700; font-size: 7.6pt; letter-spacing: .16em; text-transform: uppercase; color: var(--teal-ink); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* header & footer das páginas internas */
+  .top { height: 17mm; background: var(--night); display: flex; align-items: center; justify-content: space-between; padding: 0 16mm; }
+  .top img { height: 8.5mm; }
+  .top span { font-size: 7.6pt; color: #aeb7c2; letter-spacing: .06em; }
+  .top span b { color: #fff; }
+  .foot { position: absolute; left: 16mm; right: 16mm; bottom: 9mm; display: flex; justify-content: space-between; font-size: 7.2pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 3mm; }
+
+  /* capa */
+  .cover { background: var(--night); color: #e9edf2; }
+  .cover .pad { padding: 18mm 16mm 0; }
+  .cover .logo { height: 13mm; }
+  .cover .tag { margin-top: 20mm; font-size: 7.8pt; letter-spacing: .2em; text-transform: uppercase; color: var(--teal); font-weight: 700; }
+  .cover h1 { color: #fff; font-weight: 800; font-size: 32pt; line-height: 1.04; margin-top: 4mm; letter-spacing: -.01em; }
+  .cover h1 em { font-style: normal; color: #ff3b42; }
+  .cover .sub { margin-top: 5mm; font-size: 11pt; line-height: 1.55; color: #b9c2cd; max-width: 150mm; }
+  .cover .hero { margin-top: 12mm; width: 100%; display: block; }
+  .cover .meta { margin: 9mm 16mm 0; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #2c3540; }
+  .cover .meta div { padding: 4mm 0 0; }
+  .cover .meta dt { font-size: 6.8pt; letter-spacing: .14em; text-transform: uppercase; color: #7f8a97; font-weight: 700; }
+  .cover .meta dd { margin: 1mm 0 0; font-family: var(--display); font-weight: 600; font-size: 10.5pt; color: #fff; }
+  .cover .hl { margin: 10mm 16mm 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .cover .hl div { border: 1px solid #2c3540; border-radius: 2.5mm; padding: 4mm 4.5mm; }
+  .cover .hl i { display: block; width: 7mm; height: 1.2mm; border-radius: 1mm; background: var(--c); margin-bottom: 2.5mm; }
+  .cover .hl b { display: block; color: #fff; font-family: var(--display); font-size: 10pt; }
+  .cover .hl span { font-size: 8pt; color: #9aa5b2; }
+  .cover .slogan { position: absolute; left: 16mm; right: 16mm; bottom: 12mm; display: flex; justify-content: space-between; align-items: baseline; font-size: 8pt; color: #7f8a97; }
+  .cover .slogan b { font-family: var(--display); font-weight: 600; font-size: 10pt; color: #e9edf2; }
+  .cover .slogan b i { font-style: normal; color: #3ddc84; }
+
+  /* página 2 */
+  h2 { font-weight: 800; font-size: 19pt; line-height: 1.12; margin-top: 2mm; }
+  .lead { font-size: 10.4pt; line-height: 1.6; margin-top: 4mm; max-width: 165mm; }
+  .pics { display: grid; grid-template-columns: 1.15fr 1fr; gap: 4mm; margin-top: 7mm; }
+  .pics figure { margin: 0; }
+  .pics img { width: 100%; height: 46mm; object-fit: cover; border-radius: 2mm; display: block; }
+  .pics figcaption { font-size: 7.4pt; color: var(--muted); margin-top: 1.6mm; }
+  .flow { margin-top: 6mm; display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 2.5mm; overflow: hidden; }
+  .flow > div { padding: 4mm 4mm 4.5mm; border-right: 1px solid var(--line); position: relative; }
+  .flow > div:last-child { border-right: 0; }
+  .flow > div::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1.4mm; background: var(--c); }
+  .flow .n { font-family: var(--display); font-weight: 800; font-size: 8pt; color: var(--c); letter-spacing: .08em; }
+  .flow h4 { font-size: 10pt; margin: 1.2mm 0 1.4mm; }
+  .flow p { font-size: 8.2pt; line-height: 1.45; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 9mm; margin-top: 6mm; }
+  h3 { font-size: 10.5pt; font-weight: 700; margin-bottom: 2.5mm; }
+  ul.dots { margin: 0; padding: 0; list-style: none; display: grid; gap: 1.8mm; }
+  ul.dots li { padding-left: 4.5mm; position: relative; line-height: 1.45; }
+  ul.dots li::before { content: ""; position: absolute; left: 0; top: 1.9mm; width: 1.6mm; height: 1.6mm; border-radius: 50%; background: var(--teal); }
+
+  /* página 3: investimento */
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; margin-top: 7mm; }
+  .plan { border: 1px solid var(--line); border-radius: 3mm; padding: 5mm 5mm 5.5mm; display: flex; flex-direction: column; }
+  .plan.rec { border: 1.6px solid var(--red); background: #fff7f7; }
+  .plan .badge { align-self: flex-start; font-size: 6.6pt; font-weight: 800; letter-spacing: .12em; color: #fff; background: var(--red); border-radius: 99px; padding: .8mm 2.6mm; margin-bottom: 2.5mm; }
+  .plan .badge.ghost { color: var(--muted); background: none; padding-left: 0; }
+  .plan h4 { font-size: 13pt; font-weight: 800; text-transform: uppercase; letter-spacing: .01em; }
+  .plan .what { font-size: 8.3pt; color: var(--muted); margin-top: 1mm; min-height: 9mm; }
+  .plan ul { margin: 3.5mm 0 0; padding: 0; list-style: none; display: grid; gap: 1.6mm; font-size: 8.4pt; }
+  .plan ul li { padding-left: 4mm; position: relative; line-height: 1.4; }
+  .plan ul li::before { content: "✓"; position: absolute; left: 0; color: var(--teal-ink); font-weight: 700; }
+  .plan ul li.plus::before { content: "+"; color: var(--red); }
+  .plan .price { margin-top: auto; padding-top: 4mm; border-top: 1px solid var(--line); }
+  .plan .price small { display: block; font-size: 7.2pt; color: var(--muted); }
+  .plan .price span { font-family: var(--display); font-weight: 800; font-size: 19pt; color: var(--ink); letter-spacing: -.01em; }
+  .plan.rec .price span { color: var(--red); }
+  .terms { margin-top: 7mm; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+  .terms div { background: var(--tint); border-radius: 2.5mm; padding: 4mm 4.5mm; }
+  .terms dt { font-size: 6.9pt; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  .terms dd { margin: 1.2mm 0 0; font-family: var(--display); font-weight: 700; font-size: 11pt; color: var(--ink); line-height: 1.25; }
+  .terms dd small { display: block; font-family: var(--sans); font-weight: 400; font-size: 7.8pt; color: var(--body); margin-top: 1mm; line-height: 1.4; }
+  .notes { margin-top: 6mm; font-size: 7.9pt; line-height: 1.55; color: var(--muted); }
+  .notes b { color: var(--body); }
+
+  /* página 4 */
+  .timeline { margin-top: 6mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .timeline div { padding: 0 4mm 0 0; }
+  .timeline .bar { height: 1.6mm; background: var(--line); margin: 0 0 3.5mm; border-radius: 1mm; }
+  .timeline div:nth-child(3) .bar { background: var(--red); }
+  .timeline .k { font-family: var(--display); font-weight: 800; font-size: 8pt; color: var(--teal-ink); letter-spacing: .06em; }
+  .timeline div:nth-child(3) .k { color: var(--red); }
+  .timeline h4 { font-size: 10pt; margin: 1mm 0 1.2mm; }
+  .timeline p { font-size: 8.2pt; line-height: 1.45; }
+  .docs { display: grid; grid-template-columns: 1.25fr 1fr; gap: 8mm; margin-top: 9mm; }
+  .check { margin: 0; padding: 0; list-style: none; display: grid; gap: 2mm; }
+  .check li { display: grid; grid-template-columns: 4.5mm 1fr; gap: 2mm; line-height: 1.42; }
+  .check li::before { content: ""; width: 3.1mm; height: 3.1mm; border: 1.3px solid var(--teal-ink); border-radius: .6mm; margin-top: .6mm; }
+  .check li span { display: block; color: var(--muted); font-size: 8pt; }
+  .contact { margin-top: 9mm; background: var(--night); color: #c9d1db; border-radius: 3mm; padding: 6mm 7mm; display: grid; grid-template-columns: 1fr auto; gap: 6mm; align-items: center; }
+  .contact h3 { color: #fff; font-size: 12pt; margin: 0 0 1.5mm; }
+  .contact p { font-size: 8.8pt; line-height: 1.55; }
+  .contact .who { text-align: right; font-size: 8.6pt; line-height: 1.6; }
+  .contact .who b { color: #fff; font-family: var(--display); font-size: 10.5pt; }
+  .contact img { height: 10mm; display: block; margin: 0 0 2mm auto; }
+</style>
+</head>
+<body>
+
+<!-- ============ CAPA ============ -->
+<section class="page cover">
+  <div class="pad">
+    <img class="logo" src="nexlogo-claro.png" alt="NexLayer3D">
+    <div class="tag">Proposta comercial · NL3D-2026-1002-HON</div>
+    <h1>Maquete interativa<br><em>Honda</em> Energy</h1>
+    <p class="sub">O caminho da energia limpa, do parque eólico de Xangri-Lá (RS) até as unidades Honda em São Paulo, em uma maquete física de 2,00 × 1,00 m com o fluxo de energia em movimento.</p>
+  </div>
+  <img class="hero" src="img-overview.jpg" alt="Prévia digital da maquete">
+  <dl class="meta">
+    <div><dt>Cliente</dt><dd>Honda · A/C Henrique</dd></div>
+    <div><dt>Data</dt><dd class="num">02/10/2026</dd></div>
+    <div><dt>Base</dt><dd class="num">2,00 × 1,00 m</dd></div>
+    <div><dt>Construção</dt><dd>60 dias</dd></div>
+  </dl>
+  <div class="hl">
+    <div style="--c: var(--mv)"><i></i><b>10 aerogeradores girando</b><span>9 de 9 cm e 1 de 11 cm, com luz de sinalização</span></div>
+    <div style="--c: var(--hv)"><i></i><b>Fluxo de energia em LED</b><span>azul, laranja e verde, acendendo em sequência</span></div>
+    <div style="--c: var(--dv)"><i></i><b>Tela touch de comando</b><span>apresentação guiada em 8 etapas</span></div>
+  </div>
+  <div class="slogan"><b>Energia que impulsiona o <i>futuro mais sustentável</i></b><span>Imagem: prévia digital, sujeita à aprovação</span></div>
+</section>
+
+<!-- ============ A MAQUETE ============ -->
+<section class="page">
+  <div class="top"><img src="nexlogo-claro.png" alt="NexLayer3D"><span>Maquete <b>Honda Energy</b> · proposta comercial</span></div>
+  <div class="pad">
+    <div class="eyebrow">A maquete</div>
+    <h2>Uma maquete que mostra o caminho da energia, não só o lugar</h2>
+    <p class="lead">Dez aerogeradores girando, as duas subestações, a linha de transmissão e as unidades Itirapina, HSA e Sumaré, todos na mesma base. O fluxo de energia acende em sequência e muda de cor a cada etapa, para qualquer visitante entender, em segundos, de onde vem a energia que move as fábricas.</p>
+
+    <div class="pics">
+      <figure><img src="img-subestacoes.jpg" alt="Subestações"><figcaption>Subestação elevadora e distribuidora, com o fluxo de energia aceso.</figcaption></figure>
+      <figure><img src="img-turbinas.jpg" alt="Aerogeradores"><figcaption>Aerogeradores com rotores girando e rede de média tensão.</figcaption></figure>
+    </div>
+
+    <div class="flow">
+      <div style="--c: var(--mv)"><div class="n">01 · AZUL</div><h4>Geração</h4><p>A energia sai dos 10 aerogeradores pela rede subterrânea de média tensão.</p></div>
+      <div style="--c: var(--hv)"><div class="n">02 · ELEVADORA</div><h4>Subestação coletora</h4><p>Junta a energia das turbinas e eleva a tensão para transmitir com menos perdas.</p></div>
+      <div style="--c: var(--hv)"><div class="n">03 · LARANJA</div><h4>Transmissão</h4><p>A linha aérea leva a energia até a subestação distribuidora.</p></div>
+      <div style="--c: var(--dv)"><div class="n">04 · VERDE</div><h4>Distribuição</h4><p>A distribuidora rebaixa a tensão e abastece as três unidades Honda, que acendem.</p></div>
+    </div>
+
+    <div class="two">
+      <div>
+        <h3>O que a maquete física traz</h3>
+        <ul class="dots">
+          <li>Base de 2,00 × 1,00 m com moldura, acabamento expositivo e placa de identificação</li>
+          <li>10 aerogeradores de fabricante especializado (9 de 9 cm e 1 de 11 cm), com rotores girando e luz de sinalização</li>
+          <li>Subestações com transformadores, pórticos, isoladores e torres de transmissão em detalhe</li>
+          <li>Unidades Honda com fachadas, telhados solares, estacionamentos, docas e paisagismo</li>
+          <li>Fluxo de energia em LED endereçável nas três cores, acendendo em sequência</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Tela de comando touch de 10″</h3>
+        <ul class="dots">
+          <li>Apresentação guiada em 8 etapas, do vento até as fábricas</li>
+          <li>Acionar cada trecho do fluxo: geração, transmissão e distribuição</li>
+          <li>Explicar a diferença entre subestação elevadora e distribuidora</li>
+          <li>História do projeto, curiosidades e informações das unidades, com textos e fotos aprovados pela Honda</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>NexLayer3D · Maquetes técnicas interativas</span><span class="num">2 / 4</span></div>
+</section>
+
+<!-- ============ INVESTIMENTO ============ -->
+<section class="page">
+  <div class="top"><img src="nexlogo-claro.png" alt="NexLayer3D"><span>Maquete <b>Honda Energy</b> · proposta comercial</span></div>
+  <div class="pad">
+    <div class="eyebrow">Investimento</div>
+    <h2>Três opções, todas com o fluxo de energia completo</h2>
+    <p class="lead">As opções são alternativas, não somas. Todas incluem a maquete física com os aerogeradores girando e o fluxo de energia em LED endereçável.</p>
+
+    <div class="plans">
+      <div class="plan rec">
+        <span class="badge">RECOMENDADA</span>
+        <h4>Interativa</h4>
+        <p class="what">A maquete com a tela de comando.</p>
+        <ul>
+          <li>Maquete física 2,00 × 1,00 m</li>
+          <li>10 aerogeradores girando, com luz de sinalização</li>
+          <li>Fluxo de energia em LED endereçável, 3 cores</li>
+          <li>Iluminação das unidades e controladores</li>
+          <li>Tela touch de 10″ com apresentação guiada</li>
+          <li>Conteúdo institucional da tela</li>
+        </ul>
+        <div class="price"><small>Investimento</small><span class="num">R$ 88.000</span></div>
+      </div>
+      <div class="plan">
+        <span class="badge ghost">INTERATIVA + DIGITAL</span>
+        <h4>Completa</h4>
+        <p class="what">Tudo da Interativa, mais a versão digital para usar fora da maquete.</p>
+        <ul>
+          <li>Tudo da opção Interativa</li>
+          <li class="plus">Maquete 3D navegável para web e tablet, com os dados reais</li>
+          <li class="plus">6 imagens renderizadas</li>
+          <li class="plus">1 vídeo de até 60 segundos</li>
+        </ul>
+        <div class="price"><small>Investimento</small><span class="num">R$ 105.000</span></div>
+      </div>
+      <div class="plan">
+        <span class="badge ghost">COMPLETA + TOTEM</span>
+        <h4>Completa com totem</h4>
+        <p class="what">A experiência inteira, com um totem multimídia ao lado.</p>
+        <ul>
+          <li>Tudo da opção Completa</li>
+          <li class="plus">Totem com tela touch de aprox. 15″ e computador embarcado</li>
+          <li class="plus">Perguntas e respostas em texto e voz, em até 5 idiomas</li>
+          <li class="plus">Quiz com pontuação</li>
+          <li class="plus">Integração com os comandos da maquete</li>
+        </ul>
+        <div class="price"><small>Investimento</small><span class="num">R$ 130.000</span></div>
+      </div>
+    </div>
+
+    <dl class="terms">
+      <div><dt>Prazo de construção</dt><dd>60 dias<small>após a aprovação da maquete digital online</small></dd></div>
+      <div><dt>Incluído no valor</dt><dd>Tributos e transporte<small>até uma unidade Honda no estado de São Paulo</small></dd></div>
+      <div><dt>Pagamento</dt><dd>A combinar<small>condições definidas no pedido de compra</small></dd></div>
+    </dl>
+
+    <p class="notes"><b>Não incluído:</b> seguro de transporte, instalação presencial, mesa ou pedestal, cúpula de acrílico e case de viagem (podem ser orçados à parte); hospedagem e manutenção da versão digital; captação de fotos e vídeos; tradução certificada e locução humana. <b>Premissas:</b> distâncias comprimidas para caber na base; tensões, quantidades e dados das placas validados com a Honda; duas rodadas de ajustes na maquete digital antes da aprovação; mudanças após a aprovação são avaliadas à parte. Valores para planejamento, sujeitos à validação dos documentos recebidos. Proposta válida por 30 dias.</p>
+  </div>
+  <div class="foot"><span>NexLayer3D · Maquetes técnicas interativas</span><span class="num">3 / 4</span></div>
+</section>
+
+<!-- ============ PRAZO E DOCUMENTOS ============ -->
+<section class="page">
+  <div class="top"><img src="nexlogo-claro.png" alt="NexLayer3D"><span>Maquete <b>Honda Energy</b> · proposta comercial</span></div>
+  <div class="pad">
+    <div class="eyebrow">Como funciona</div>
+    <h2>Da aprovação online à maquete pronta em 60 dias</h2>
+    <p class="lead">Antes de construir, a Honda aprova a maquete digital online. A partir dessa aprovação, a construção física leva 60 dias.</p>
+
+    <div class="timeline">
+      <div><div class="bar"></div><div class="k">ETAPA 1</div><h4>Documentos</h4><p>A Honda envia os documentos da lista abaixo e o pedido de compra.</p></div>
+      <div><div class="bar"></div><div class="k">ETAPA 2</div><h4>Maquete digital online</h4><p>Ajustamos a prévia com os dados reais. Até duas rodadas de ajustes até a aprovação.</p></div>
+      <div><div class="bar"></div><div class="k">ETAPA 3 · 60 DIAS</div><h4>Construção</h4><p>Fabricação, eletrônica, programação e testes em oficina, a partir da aprovação.</p></div>
+      <div><div class="bar"></div><div class="k">ETAPA 4</div><h4>Entrega</h4><p>Transporte até a unidade Honda e demonstração do funcionamento.</p></div>
+    </div>
+
+    <div class="docs">
+      <div>
+        <h3>Documentos técnicos que precisamos da Honda</h3>
+        <ul class="check">
+          <li><div>Plantas de implantação ou imagens aéreas das unidades<span>Itirapina, HSA e Sumaré (PDF, DWG ou imagens)</span></div></li>
+          <li><div>Dados do parque eólico de Xangri-Lá<span>layout das turbinas, quantidade e modelo</span></div></li>
+          <li><div>Dados das subestações e da conexão<span>tensões (geração, transmissão e distribuição) e diagrama unifilar simplificado</span></div></li>
+          <li><div>Fotos das fachadas e dos telhados das unidades</div></li>
+          <li><div>Manual de marca e logotipos em vetor</div></li>
+          <li><div>Textos, fotos e números aprovados para a tela de comando</div></li>
+          <li><div>Fotos e medidas do local onde a maquete vai ficar<span>incluindo a posição da tela e do totem, se contratado</span></div></li>
+          <li><div>Para o totem: idiomas, materiais de referência e responsável pela aprovação</div></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Para formalizar o pedido</h3>
+        <ul class="check">
+          <li><div>Opção escolhida<span>Interativa, Completa ou Completa com totem</span></div></li>
+          <li><div>Pedido de compra (PO)</div></li>
+          <li><div>Dados para a nota fiscal<span>razão social, CNPJ, inscrição estadual e endereço de cobrança</span></div></li>
+          <li><div>Endereço e contato para a entrega</div></li>
+          <li><div>Responsável pela aprovação da maquete digital</div></li>
+          <li><div>Data-alvo de entrega<span>evento, inauguração ou visita prevista</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="contact">
+      <div>
+        <h3>Próximo passo</h3>
+        <p>Escolher a opção e enviar os documentos. Com eles, liberamos a maquete digital online para a aprovação da Honda e iniciamos a contagem dos 60 dias de construção.</p>
+      </div>
+      <div class="who">
+        <img src="nexlogo-claro.png" alt="NexLayer3D">
+        <b>Rogério Correia</b><br>vendas@nexlayer3d.net<br>nexlayer3d.net
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>NexLayer3D · Maquetes técnicas interativas</span><span class="num">4 / 4</span></div>
+</section>
+
+</body>
+</html>

@@ -35,11 +35,13 @@ Mesma regra do projeto Siemens: **15% sobre material** (o cliente consegue confe
 
 Ponto médio: material + cúpula ≈ R$ 17.500 → R$ 20.100 · execução ≈ R$ 22.500 → R$ 32.600 → **R$ 52.700 + imposto ≈ R$ 55.800**.
 
-| Nível (enviado ao cliente em 02/10/2026) | O que inclui | Preço |
+| Opção (PDF enviado ao cliente em 02/10/2026) | O que inclui | Preço |
 |---|---|---:|
-| **Interativa (recomendada)** | Maquete + LED endereçável do fluxo + 1 tela touch 10″ + conteúdo + transporte até unidade Honda em SP | **R$ 90.000** |
-| Completa | Interativa + versão 3D navegável, 6 imagens e 1 vídeo de 60 s | **R$ 110.000** |
-| Totem multimídia (opcional) | Voz, curiosidades e quiz, até 5 idiomas | **+ R$ 40.000** |
+| **Interativa (recomendada)** | Maquete + LED endereçável do fluxo + 1 tela touch 10″ + conteúdo + transporte até unidade Honda em SP | **R$ 88.000** |
+| Completa | Interativa + versão 3D navegável, 6 imagens e 1 vídeo de 60 s | **R$ 105.000** |
+| Completa + totem | Completa + totem multimídia (voz, curiosidades e quiz) | **R$ 130.000** |
+
+Prazo: 60 dias de construção após a aprovação da maquete digital online. Proposta em PDF: `proposta/`.
 
 O nível Essencial (sem fluxo endereçável) foi retirado: as turbinas giram e o fluxo de energia é obrigatório.
 Preço revisto para cima para cobrir tributos e transporte.
