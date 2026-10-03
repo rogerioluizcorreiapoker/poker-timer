@@ -1,96 +1,218 @@
-"""Gera img/desenho_tecnico.png — corte cotado e vista de cima da peça de canto.
-Mantenha os valores iguais aos de canto_pe_cupula.scad."""
+"""Gera img/desenho_tecnico.png a partir do próprio modelo.
+
+Exporta o STL de canto_sama3.scad e corta a malha em planos, então o
+desenho sempre bate com a peça impressa. Cotas lidas dos parâmetros do .scad.
+
+Uso:  python3 desenho_tecnico.py      (precisa de openscad e matplotlib)
+"""
+import os, re, subprocess, tempfile
+from collections import defaultdict
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon, Rectangle, Circle
+from matplotlib.patches import Polygon, Rectangle
 
-espessura_base, espessura_cupula = 3, 3
-folga_base, folga_cupula = 0.4, 0.4
-altura_pe, A = 30, 45
-parede_externa, parede_interna = 3, 3
-largura_apoio_base, profundidade_canal = 12, 10
-ch, altura_acima_base = 1, 9
+AQUI = os.path.dirname(os.path.abspath(__file__))
+SCAD = os.path.join(AQUI, "canto_sama3.scad")
 
-g = espessura_cupula + folga_cupula
-u0, u1 = parede_externa, parede_externa + g
-ub = u1 + parede_interna
-W = ub + largura_apoio_base
-zt = altura_pe + espessura_base + folga_base + altura_acima_base
-zc = zt - profundidade_canal
+# ---------- parâmetros do .scad ----------
+P = {}
+for m in re.finditer(r"^(\w+)\s*=\s*([-\d.]+)\s*;", open(SCAD, encoding="utf-8").read(), re.M):
+    P[m.group(1)] = float(m.group(2))
+t, braco, Hb, Hp = P["parede"], P["braco"], P["altura_base"], P["altura_pe"]
+L = braco - t
+z_top = Hb + P["luva_acima"]
+z_fun = z_top - P["funil_v"]
+z_bol = Hb + P["bolsa_acima"]
 
-PLA, BASE, CUP = "#3b6ea8", "#d2a86e", "#9fd3f5"
+# ---------- malha ----------
+def carregar_stl():
+    f = os.path.join(tempfile.mkdtemp(), "peca.stl")
+    subprocess.run(["openscad", "-o", f, SCAD], check=True, capture_output=True)
+    v = [list(map(float, l.split()[1:])) for l in open(f) if l.strip().startswith("vertex")]
+    tri = np.array(v).reshape(-1, 3, 3)
+    tri[:, :, 2] -= Hp          # volta para origem no fundo da base
+    return tri
 
-def cota(ax, p1, p2, txt, off, vertical=False):
+def cortar(tri, eixo, valor):
+    """Retorna laços (listas de pontos 2D) da seção no plano eixo=valor."""
+    outros = [i for i in range(3) if i != eixo]
+    segs = []
+    for T in tri:
+        d = T[:, eixo] - valor
+        pts = []
+        for i in range(3):
+            a, b = T[i], T[(i + 1) % 3]
+            da, db = d[i], d[(i + 1) % 3]
+            if (da < 0) != (db < 0):
+                p = a + (b - a) * (da / (da - db))
+                pts.append(tuple(np.round(p[outros], 4)))
+        if len(pts) == 2 and pts[0] != pts[1]:
+            segs.append(pts)
+    viz = defaultdict(list)
+    for s in segs:
+        viz[s[0]].append(s[1]); viz[s[1]].append(s[0])
+    usados, lacos = set(), []
+    for ini in list(viz):
+        if ini in usados:
+            continue
+        laco, atual, ant = [ini], ini, None
+        usados.add(ini)
+        while True:
+            prox = [q for q in viz[atual] if q != ant and q not in usados]
+            if not prox:
+                break
+            ant, atual = atual, prox[0]
+            usados.add(atual); laco.append(atual)
+        if len(laco) > 2:
+            lacos.append(laco)
+    return lacos
+
+def desenhar_secao(ax, lacos, **kw):
+    for l in lacos:
+        ax.add_patch(Polygon(l, closed=True, **kw))
+
+def cota(ax, p1, p2, txt, off, vertical=False, fs=8):
     (x1, y1), (x2, y2) = p1, p2
     if vertical:
         x = x1 + off
-        ax.annotate("", (x, y1), (x, y2), arrowprops=dict(arrowstyle="<->", lw=.8))
-        ax.plot([x1, x], [y1, y1], "k:", lw=.5); ax.plot([x2, x], [y2, y2], "k:", lw=.5)
-        ax.text(x + (1 if off > 0 else -1), (y1 + y2) / 2, txt, rotation=90,
-                va="center", ha="left" if off > 0 else "right", fontsize=8)
+        ax.annotate("", (x, y1), (x, y2), arrowprops=dict(arrowstyle="<->", lw=.7))
+        ax.plot([x1, x], [y1, y1], "k:", lw=.4); ax.plot([x2, x], [y2, y2], "k:", lw=.4)
+        ax.text(x + (.8 if off > 0 else -.8), (y1 + y2) / 2, txt, rotation=90, va="center",
+                ha="left" if off > 0 else "right", fontsize=fs)
     else:
         y = y1 + off
-        ax.annotate("", (x1, y), (x2, y), arrowprops=dict(arrowstyle="<->", lw=.8))
-        ax.plot([x1, x1], [y1, y], "k:", lw=.5); ax.plot([x2, x2], [y2, y], "k:", lw=.5)
-        ax.text((x1 + x2) / 2, y + (0.8 if off > 0 else -0.8), txt, ha="center",
-                va="bottom" if off > 0 else "top", fontsize=8)
+        ax.annotate("", (x1, y), (x2, y), arrowprops=dict(arrowstyle="<->", lw=.7))
+        ax.plot([x1, x1], [y1, y], "k:", lw=.4); ax.plot([x2, x2], [y2, y], "k:", lw=.4)
+        ax.text((x1 + x2) / 2, y + (.6 if off > 0 else -.6), txt, ha="center",
+                va="bottom" if off > 0 else "top", fontsize=fs)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8.5), gridspec_kw=dict(width_ratios=[1.15, 1]))
+PLA, ALU, MDF, ACR = "#3a3f47", "#b9bec4", "#d9b98c", "#a9d8f5"
 
-# ---------------- CORTE ----------------
-perfil = [(0, 0), (W, 0), (W, altura_pe), (ub, altura_pe), (ub, zt), (u1 + ch, zt),
-          (u1, zt - ch), (u1, zc), (u0, zc), (u0, zt - ch), (u0 - ch, zt), (0, zt)]
-ax1.add_patch(Polygon(perfil, fc=PLA, ec="k", lw=1.2, alpha=.9, label="Peça de canto (PLA)"))
-ax1.add_patch(Rectangle((ub, altura_pe), W - ub + 18, espessura_base, fc=BASE, ec="k", lw=.8,
-                        label=f"Base ({espessura_base} mm)"))
-ax1.add_patch(Rectangle((u0 + folga_cupula / 2, zc + .2), espessura_cupula, 30, fc=CUP, ec="k",
-                        lw=.8, alpha=.8, label=f"Parede da cúpula ({espessura_cupula} mm)"))
-ax1.text(-4, 15, "LADO DE FORA", rotation=90, va="center", ha="right", fontsize=9, color="gray")
-ax1.text(W + 10, altura_pe + 12, "LADO DE DENTRO\n(interior da maquete)", ha="center", fontsize=9, color="gray")
+def contexto(ax):
+    """Base + perfil + acrílico na seção (desenho ilustrativo)."""
+    perf = 1.5
+    ax.add_patch(Rectangle((perf, 0), 34, Hb - .3, fc=MDF, ec="none"))
+    ax.add_patch(Rectangle((0, 0), perf, Hb, fc=ALU, ec="k", lw=.5))
+    ax.add_patch(Rectangle((P["recuo"], Hb + .15), 6, z_top + 12 - Hb, fc=ACR, ec="k", lw=.5, alpha=.85))
 
-cota(ax1, (0, 0), (W, 0), f"{W:.1f}", -5)
-cota(ax1, (0, zt), (u0, zt), f"{u0:g}", 6)
-cota(ax1, (u0, zt), (u1, zt), f"{g:.1f}", 10)
-cota(ax1, (u1, zt), (ub, zt), f"{parede_interna:g}", 6)
-cota(ax1, (ub, altura_pe + espessura_base), (W, altura_pe + espessura_base), f"apoio {largura_apoio_base:g}", 14)
-cota(ax1, (W, 0), (W, altura_pe), f"pé {altura_pe:g}", 4, vertical=True)
-cota(ax1, (0, 0), (0, zt), f"total {zt:.1f}", -9, vertical=True)
-cota(ax1, (u0, zc), (u0, zt), f"canal {profundidade_canal:g}", -4.5, vertical=True)
-ax1.annotate(f"chanfro {ch:g}×45°", (u1 + ch / 2, zt - ch / 2), (u1 + 9, zt + 18),
-             fontsize=8, arrowprops=dict(arrowstyle="->", lw=.7))
-ax1.annotate(f"folga {folga_base:g} acima da base", (ub + .3, altura_pe + espessura_base + .2),
-             (ub + 10, altura_pe - 9), fontsize=8, arrowprops=dict(arrowstyle="->", lw=.7))
-ax1.set_xlim(-20, W + 25); ax1.set_ylim(-12, zt + 30)
-ax1.set_aspect("equal"); ax1.axis("off")
-ax1.set_title("CORTE de um braço (escala 1:1 em mm)", fontsize=12, weight="bold")
-ax1.legend(loc="upper right", fontsize=8, frameon=False)
+def main():
+    tri = carregar_stl()
+    fig = plt.figure(figsize=(17, 11))
+    gs = fig.add_gridspec(2, 3, height_ratios=[1.25, 1], hspace=.25, wspace=.15)
 
-# ---------------- VISTA DE CIMA ----------------
-L = [(0, 0), (A, 0), (A, W), (W, W), (W, A), (0, A)]
-ax2.add_patch(Polygon(L, fc=PLA, ec="k", lw=1.2, alpha=.35))
-ax2.add_patch(Polygon([(0, 0), (A, 0), (A, ub), (ub, ub), (ub, A), (0, A)], fc=PLA, ec="k", lw=1, alpha=.9))
-ax2.add_patch(Polygon([(u0, u0), (A, u0), (A, u1), (u1, u1), (u1, A), (u0, A)], fc="white", ec="k", lw=.8))
-c = ub + largura_apoio_base / 2
-ax2.add_patch(Circle((c, c), 3.2 / 2, fc="white", ec="k"))
-ax2.add_patch(Circle((c, c), 6.5 / 2, fc="none", ec="k", ls="--", lw=.6))
-ax2.text(c + 5, c + 1, "furo Ø3,2\n(rebaixo Ø6,5 por baixo)", fontsize=7.5)
-ax2.text(A - 6, u0 + g / 2, "canaleta da cúpula", fontsize=7.5, ha="right", va="center")
-ax2.text((ub + W) / 2, A - 3, "degrau: base apoia aqui", fontsize=7.5, rotation=90, ha="center", va="top")
-cota(ax2, (0, 0), (A, 0), f"braço {A:g}", -5)
-cota(ax2, (0, 0), (0, W), f"{W:.1f}", -5, vertical=True)
-cota(ax2, (0, A), (ub, A), f"{ub:.1f}", 4)
-ax2.annotate("CANTO EXTERNO = canto da maquete", (-0.5, -0.5), (-13, -13), fontsize=8, color="gray",
-             arrowprops=dict(arrowstyle="->", color="gray", lw=.6))
-ax2.set_xlim(-14, A + 8); ax2.set_ylim(-16, A + 10)
-ax2.set_aspect("equal"); ax2.axis("off")
-ax2.set_title("VISTA DE CIMA (1 peça — imprimir 4)", fontsize=12, weight="bold")
+    # ---- CORTE A: no meio do braço (plano x = 30) -> coordenadas (y, z)
+    ax = fig.add_subplot(gs[0, 0])
+    contexto(ax)
+    desenhar_secao(ax, cortar(tri, 0, 30.0), fc=PLA, ec="k", lw=1, alpha=.92)
+    cota(ax, (-t, -Hp), (0, -Hp), f"{t:g}", -4)
+    cota(ax, (0, -Hp), (L, -Hp), f"{L:g}", -4)
+    cota(ax, (L, -Hp), (L, 0), f"pé {Hp:g}", 3, vertical=True)
+    cota(ax, (L, 0), (L, Hb), f"base {Hb:g}", 3, vertical=True)
+    cota(ax, (L, Hb), (L, z_top), f"luva {z_top - Hb:g}", 3, vertical=True)
+    cota(ax, (-t, -Hp), (-t, z_top), f"total {z_top + Hp:g}", -5, vertical=True)
+    cota(ax, (0, -P["faixa_prof"]), (P["faixa_larg"], -P["faixa_prof"]),
+         f"rebaixo {P['faixa_larg']:g}×{P['faixa_prof']:g}", -3, fs=7)
+    ax.annotate(f"funil {P['funil_h']:g}×{P['funil_v']:g}", (-P["funil_h"] / 2, z_top - 2),
+                (8, z_top + 9), fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=.6))
+    ax.annotate("PLANO DE REFERÊNCIA\nperfil e acrílico encostam\nna MESMA face → rente",
+                (0, 20), (10, 12), fontsize=7.5, color="#b00020",
+                arrowprops=dict(arrowstyle="->", lw=.8, color="#b00020"))
+    ax.text(-t - 1, z_top + 6, "FORA", ha="right", fontsize=8, color="gray")
+    ax.text(L - 2, z_top + 6, "DENTRO", ha="right", fontsize=8, color="gray")
+    ax.set_title("CORTE A — meio do braço", fontsize=11, weight="bold")
+    ax.set_xlim(-16, L + 9); ax.set_ylim(-Hp - 10, z_top + 14)
+    ax.set_aspect("equal"); ax.axis("off")
 
-fig.suptitle("Maquete — pé de canto com encaixe da cúpula  ·  medidas em mm  ·  PLA",
-             fontsize=14, weight="bold")
-fig.text(.5, .02,
-         f"Base fica recuada {ub:.1f} mm da face externa  →  Cúpula (medida externa) = Base + "
-         f"{2 * (ub - u0 - folga_cupula / 2):.1f} mm em cada direção  ·  "
-         f"Canaleta em L a 90° força a cúpula no esquadro",
-         ha="center", fontsize=10)
-plt.savefig("img/desenho_tecnico.png", dpi=130, bbox_inches="tight")
+    # ---- CORTE B: perto da quina (plano x = 6) -> bolsa da esquadria
+    ax = fig.add_subplot(gs[0, 1])
+    contexto(ax)
+    desenhar_secao(ax, cortar(tri, 0, 6.0), fc=PLA, ec="k", lw=1, alpha=.92)
+    cota(ax, (-P["bolsa_prof"], 15), (0, 15), f"{P['bolsa_prof']:g}", 0, fs=7)
+    cota(ax, (-t, -P["faixa_prof"]), (-t, z_bol), f"bolsa até {z_bol:g}", -5, vertical=True, fs=7)
+    ax.annotate("teto 45° (sem suporte)", (-1, z_bol + 1), (8, z_bol + 13), fontsize=7.5,
+                arrowprops=dict(arrowstyle="->", lw=.6))
+    ax.annotate("bolsa: a quina torta do perfil\nNÃO encosta na peça", (-1, 6), (9, 2),
+                fontsize=7.5, color="#b00020", arrowprops=dict(arrowstyle="->", lw=.8, color="#b00020"))
+    ax.set_title(f"CORTE B — a 6 mm da quina (dentro da bolsa de {P['bolsa_comp']:g} mm)",
+                 fontsize=11, weight="bold")
+    ax.set_xlim(-16, L + 9); ax.set_ylim(-Hp - 10, z_top + 14)
+    ax.set_aspect("equal"); ax.axis("off")
+
+    # ---- PLANTA 1: corte horizontal na altura do perfil (z = 20)
+    ax = fig.add_subplot(gs[0, 2])
+    desenhar_secao(ax, cortar(tri, 2, 20.0), fc=PLA, ec="k", lw=1, alpha=.92)
+    ax.add_patch(Rectangle((0, 0), L + 6, L + 6, fc=MDF, ec="none", alpha=.35, zorder=0))
+    cota(ax, (-t, -t), (L, -t), f"braço {braco:g}", -5)
+    cota(ax, (-t, -t), (-t, L), f"{braco:g}", -5, vertical=True)
+    cota(ax, (0, 0), (P["bolsa_comp"], 0), f"bolsa {P['bolsa_comp']:g}", 6, fs=7)
+    ax.annotate(f"quina externa R{P['raio_quina']:g}", (-t + .6, -t + .6), (-12, -14),
+                fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=.6))
+    ax.text(L / 2 + 4, L / 2 + 6, "BASE", fontsize=10, color="#8a6b3f", ha="center")
+    ax.set_title("PLANTA — corte na altura do perfil (z = 20)", fontsize=11, weight="bold")
+    ax.set_xlim(-17, L + 8); ax.set_ylim(-17, L + 8)
+    ax.set_aspect("equal"); ax.axis("off")
+
+    # ---- PLANTA 2: topo do pé (z = -1.5)
+    ax = fig.add_subplot(gs[1, 0])
+    desenhar_secao(ax, cortar(tri, 2, -1.5), fc=PLA, ec="k", lw=1, alpha=.55)
+    desenhar_secao(ax, cortar(tri, 2, -P["faixa_prof"] - 1), fc="none", ec="k", lw=.6, ls="--")
+    a0 = P["faixa_larg"]
+    ch = P["chanfro_pe"]
+    ax.add_patch(Polygon([(a0, a0), (L, a0), (L, L - ch), (L - ch, L), (a0, L)],
+                         fc="none", ec="#b00020", lw=1.2, hatch="///"))
+    ax.text((a0 + L) / 2, (a0 + L) / 2, f"apoio da base\n{L - a0:g} × {L - a0:g}",
+            ha="center", va="center", fontsize=8, color="#b00020",
+            bbox=dict(fc="white", ec="none", alpha=.8))
+    cota(ax, (0, -t), (a0, -t), f"rebaixo {a0:g}", -4, fs=7)
+    ax.set_title("PLANTA — topo do pé", fontsize=11, weight="bold")
+    ax.set_xlim(-12, L + 6); ax.set_ylim(-12, L + 6)
+    ax.set_aspect("equal"); ax.axis("off")
+
+    # ---- PLANTA 3: altura da luva do acrílico (z = base + 7)
+    ax = fig.add_subplot(gs[1, 1])
+    zl = Hb + 7
+    ax.add_patch(Rectangle((P["recuo"], P["recuo"]), L + 6, 6, fc=ACR, ec="k", lw=.5, zorder=0))
+    ax.add_patch(Rectangle((P["recuo"], P["recuo"]), 6, L + 6, fc=ACR, ec="k", lw=.5, zorder=0))
+    desenhar_secao(ax, cortar(tri, 2, zl), fc=PLA, ec="k", lw=1, alpha=.92)
+    ax.annotate(f"entalhe {P['entalhe_prof']:g}×{P['entalhe_comp']:g}\n(aresta/cola da caixa)",
+                (-.6, -.6), (12, 18), fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=.6))
+    ax.text(L / 2 + 6, 3, "acrílico 6", fontsize=8, ha="center", va="center")
+    ax.set_title(f"PLANTA — altura do acrílico (z = {zl:g})", fontsize=11, weight="bold")
+    ax.set_xlim(-12, L + 6); ax.set_ylim(-12, L + 6)
+    ax.set_aspect("equal"); ax.axis("off")
+
+    # ---- texto: requisitos e como imprimir
+    ax = fig.add_subplot(gs[1, 2])
+    ax.axis("off")
+    txt = (
+        "SAMA 3 · base 1000 × 800 × 35 com perfil\n"
+        "de alumínio · cúpula de acrílico 6 mm\n\n"
+        "• 4 peças IGUAIS em PLA (servem nos 4 cantos)\n"
+        f"• Pé de {Hp:g} mm. A base apoia em {L - a0:g} × {L - a0:g} mm,\n"
+        "  longe do perfil.\n"
+        f"• Parede de {t:g} mm cobre a quina do perfil\n"
+        f"  em toda a altura e {L:g} mm para cada lado.\n"
+        "• A cúpula desce pelo funil e APOIA NA BASE.\n"
+        "  Encosta na mesma face que o perfil:\n"
+        "  fica RENTE e nunca passa para fora.\n"
+        f"• Só a peça fica {t:g} mm para fora, nos cantos.\n"
+        "• Cúpula menor que a base em D mm:\n"
+        "  recuo = D/2 (máx. 2) e reimprimir.\n\n"
+        "IMPRESSÃO: em pé, SEM suporte, 0,2 mm,\n"
+        "4 perímetros, 15% infill. Costura (seam)\n"
+        "na ponta dos braços, NUNCA na face interna.\n"
+        "Primeiro o TESTE RÁPIDO (fatia 25 mm).\n"
+        "Peça: 87 cm³ → estim. ≈ 40 g / ≈ 3,5 h."
+    )
+    ax.text(-.05, 1, txt, va="top", fontsize=9, family="DejaVu Sans", linespacing=1.35)
+
+    fig.suptitle("Maquete SAMA 3 — peça de canto (pé + capa do perfil + luva da cúpula) · medidas em mm",
+                 fontsize=15, weight="bold")
+    out = os.path.join(AQUI, "img", "desenho_tecnico.png")
+    plt.savefig(out, dpi=120, bbox_inches="tight")
+    print("ok", out)
+
+if __name__ == "__main__":
+    main()
