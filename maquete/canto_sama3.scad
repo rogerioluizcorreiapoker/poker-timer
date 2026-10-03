@@ -20,7 +20,7 @@
 // =====================================================================
 
 /* [Maquete (medidas reais)] */
-altura_base = 35;          // base com perfil
+altura_base = 35;          // do fundo da base até o PONTO MAIS ALTO do perfil/tampo
 altura_pe   = 30;          // "pezinho de 3 cm": levanta a base da mesa
 
 /* [Peça] */
@@ -37,7 +37,7 @@ bolsa_acima = 2;           // bolsa sobe até topo da base + isto (depois teto 4
 faixa_larg  = 15;          // rebaixo no topo do pé (aba de baixo do perfil / rebarba)
 faixa_prof  = 3;
 entalhe_prof = 1.2;        // entalhe vertical na quina (cola/aresta da caixa de acrílico)
-entalhe_comp = 4;
+entalhe_comp = 8.5;        // > espessura do acrílico + 2 (emenda colada de topo)
 
 /* [Ajuste se o acrílico for MENOR que a base] */
 recuo = 0;                 // 0 = rente. Caixa menor em D (total) -> recuo = D/2. Máx 2.
@@ -68,7 +68,8 @@ L     = braco - parede;               // comprimento da face de referência (46)
 z_top = altura_base + luva_acima;     // topo da peça (50)
 z_fun = z_top - funil_v;              // início do funil (45)
 z_bol = altura_base + bolsa_acima;    // topo reto da bolsa (37)
-z_rec = altura_base + bolsa_acima;    // início do recuo (37), sempre acima do perfil
+// início do recuo: depois que o teto da bolsa fecha, para não ter ponte solta
+z_rec = altura_base + bolsa_acima + (recuo > 0 ? bolsa_prof : 0);
 G     = L + 10;                       // cavidade passa das pontas dos braços
 
 assert(recuo >= 0 && recuo <= 2, "recuo deve ficar entre 0 e 2 mm");
@@ -141,12 +142,17 @@ module bolsa_quina() {          // bolsa da quina do perfil, com teto a 45°
 }
 
 module entalhe_quina() {        // entalhe vertical para a aresta colada do acrílico
-    em_L(-entalhe_prof, e, entalhe_comp, -faixa_prof, z_rec + recuo + e);
-    if (recuo > 0)
-        translate([recuo, recuo, 0])
-            em_L(-entalhe_prof, e, entalhe_comp, z_rec, z_top + 1);
-    else
-        em_L(-entalhe_prof, e, entalhe_comp, z_rec, z_top + 1);
+    em_L(-entalhe_prof, e, entalhe_comp, -faixa_prof, z_rec + e);
+    // com recuo: acompanha o degrau a 45° (cada braço é convexo, hull separado)
+    for (m = [0, 1]) mirror(m ? [1, -1, 0] : [0, 0, 0])
+        hull() {
+            translate([-entalhe_prof, -entalhe_prof, z_rec])
+                cube([entalhe_prof + e, entalhe_comp + entalhe_prof, e]);
+            translate([recuo - entalhe_prof, recuo - entalhe_prof, z_rec + recuo])
+                cube([entalhe_prof + e, entalhe_comp + entalhe_prof, e]);
+        }
+    translate([recuo, recuo, 0])
+        em_L(-entalhe_prof, e, entalhe_comp, z_rec + recuo, z_top + 1);
 }
 
 module faixa_pe() {             // rebaixo no topo do pé, junto ao perfil
@@ -178,9 +184,13 @@ module peca() {
 
 if (teste_rapido)
     translate([0, 0, -teste_z0])
-    intersection() {
-        peca();
-        translate([-50, -50, teste_z0]) cube([200, 200, 100]);
+    difference() {
+        intersection() {
+            peca();
+            translate([-50, -50, teste_z0]) cube([200, 200, 100]);
+        }
+        // chanfro na borda de baixo das faces que encostam no perfil
+        hull() { quadrante(teste_z0 - e, -chanfro_base); quadrante(teste_z0 + chanfro_base, 0); }
     }
 else
     translate([0, 0, altura_pe]) peca();   // mesa em z=0 para exportar

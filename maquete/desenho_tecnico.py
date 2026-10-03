@@ -11,7 +11,8 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon, Rectangle
+from matplotlib.patches import Polygon, Rectangle, PathPatch
+from matplotlib.path import Path
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 SCAD = os.path.join(AQUI, "canto_sama3.scad")
@@ -34,6 +35,10 @@ def carregar_stl():
     tri = np.array(v).reshape(-1, 3, 3)
     tri[:, :, 2] -= Hp          # volta para origem no fundo da base
     return tri
+
+def volume(tri):
+    a, b, c = tri[:, 0], tri[:, 1], tri[:, 2]
+    return np.einsum("ij,ij->i", a, np.cross(b, c)).sum() / 6000.0   # cm³
 
 def cortar(tri, eixo, valor):
     """Retorna laços (listas de pontos 2D) da seção no plano eixo=valor."""
@@ -70,8 +75,19 @@ def cortar(tri, eixo, valor):
     return lacos
 
 def desenhar_secao(ax, lacos, **kw):
-    for l in lacos:
-        ax.add_patch(Polygon(l, closed=True, **kw))
+    """Preenche a seção; laços dentro de outros laços viram furos."""
+    def area(l):
+        a = np.array(l); x, y = a[:, 0], a[:, 1]
+        return (np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1))) / 2
+    verts, codes = [], []
+    for i, l in enumerate(lacos):
+        dentro = sum(Path(o).contains_point(l[0]) for j, o in enumerate(lacos) if j != i)
+        furo = dentro % 2 == 1
+        l = list(l) if (area(l) > 0) != furo else list(l)[::-1]   # externo anti-horário, furo horário
+        verts += l + [l[0]]
+        codes += [Path.MOVETO] + [Path.LINETO] * (len(l) - 1) + [Path.CLOSEPOLY]
+    if verts:
+        ax.add_patch(PathPatch(Path(verts, codes), **kw))
 
 def cota(ax, p1, p2, txt, off, vertical=False, fs=8):
     (x1, y1), (x2, y2) = p1, p2
@@ -99,6 +115,7 @@ def contexto(ax):
 
 def main():
     tri = carregar_stl()
+    vol = volume(tri)
     fig = plt.figure(figsize=(17, 11))
     gs = fig.add_gridspec(2, 3, height_ratios=[1.25, 1], hspace=.25, wspace=.15)
 
@@ -114,7 +131,7 @@ def main():
     cota(ax, (-t, -Hp), (-t, z_top), f"total {z_top + Hp:g}", -5, vertical=True)
     cota(ax, (0, -P["faixa_prof"]), (P["faixa_larg"], -P["faixa_prof"]),
          f"rebaixo {P['faixa_larg']:g}×{P['faixa_prof']:g}", -3, fs=7)
-    ax.annotate(f"funil {P['funil_h']:g}×{P['funil_v']:g}", (-P["funil_h"] / 2, z_top - 2),
+    ax.annotate(f"funil {P['funil_h']:g}×{P['funil_v']:g}", (P["recuo"] - P["funil_h"] / 2, z_top - 2),
                 (8, z_top + 9), fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=.6))
     ax.annotate("PLANO DE REFERÊNCIA\nperfil e acrílico encostam\nna MESMA face → rente",
                 (0, 20), (10, 12), fontsize=7.5, color="#b00020",
@@ -162,7 +179,7 @@ def main():
     ch = P["chanfro_pe"]
     ax.add_patch(Polygon([(a0, a0), (L, a0), (L, L - ch), (L - ch, L), (a0, L)],
                          fc="none", ec="#b00020", lw=1.2, hatch="///"))
-    ax.text((a0 + L) / 2, (a0 + L) / 2, f"apoio da base\n{L - a0:g} × {L - a0:g}",
+    ax.text((a0 + L) / 2 - 2, L - 7, f"apoio da base\n{L - a0:g} × {L - a0:g}",
             ha="center", va="center", fontsize=8, color="#b00020",
             bbox=dict(fc="white", ec="none", alpha=.8))
     cota(ax, (0, -t), (a0, -t), f"rebaixo {a0:g}", -4, fs=7)
@@ -177,7 +194,7 @@ def main():
     ax.add_patch(Rectangle((P["recuo"], P["recuo"]), 6, L + 6, fc=ACR, ec="k", lw=.5, zorder=0))
     desenhar_secao(ax, cortar(tri, 2, zl), fc=PLA, ec="k", lw=1, alpha=.92)
     ax.annotate(f"entalhe {P['entalhe_prof']:g}×{P['entalhe_comp']:g}\n(aresta/cola da caixa)",
-                (-.6, -.6), (12, 18), fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=.6))
+                (P["recuo"] - .6, P["recuo"] - .6), (12, 18), fontsize=7.5, arrowprops=dict(arrowstyle="->", lw=.6))
     ax.text(L / 2 + 6, 3, "acrílico 6", fontsize=8, ha="center", va="center")
     ax.set_title(f"PLANTA — altura do acrílico (z = {zl:g})", fontsize=11, weight="bold")
     ax.set_xlim(-12, L + 6); ax.set_ylim(-12, L + 6)
@@ -198,13 +215,15 @@ def main():
         "  Encosta na mesma face que o perfil:\n"
         "  fica RENTE e nunca passa para fora.\n"
         f"• Só a peça fica {t:g} mm para fora, nos cantos.\n"
-        "• Cúpula menor que a base em D mm:\n"
+        "• Cúpula menor que a base: D = a MENOR das\n"
+        "  diferenças (comprimento, largura);\n"
         "  recuo = D/2 (máx. 2) e reimprimir.\n\n"
         "IMPRESSÃO: em pé, SEM suporte, 0,2 mm,\n"
         "4 perímetros, 15% infill. Costura (seam)\n"
         "na ponta dos braços, NUNCA na face interna.\n"
         "Primeiro o TESTE RÁPIDO (fatia 25 mm).\n"
-        "Peça: 87 cm³ → estim. ≈ 40 g / ≈ 3,5 h."
+        f"Peça: {vol:.0f} cm³ → estim. ≈ {vol * 0.55:.0f} g / ≈ 3,5 h\n"
+        "(depende do fatiador)."
     )
     ax.text(-.05, 1, txt, va="top", fontsize=9, family="DejaVu Sans", linespacing=1.35)
 
