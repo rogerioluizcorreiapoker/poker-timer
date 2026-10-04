@@ -21,15 +21,19 @@ Case para o **adaptador de bornes ESP32 30 pinos (MRD068A)** com o **ESP32 DevKi
   - Nas **duas paredes dos bornes:** um rasgo comprido (56 mm) na frente de cada fileira de 15 bornes, começando logo acima da placa, na altura da entrada dos fios.
   - Nas **duas pontas:** um rasgo de 15 mm para o **USB do ESP32**. Tem dos dois lados, então a placa entra em qualquer sentido.
 - **Fixação:** 4 orelhas com furo escareado por baixo. O parafuso entra de baixo para cima na maquete. Com a maquete nos pés só sobram 4 mm embaixo da case, então **para colocar ou tirar a case é preciso levantar a base** (veja Montagem). Ao soltar, a case sai inteira, com a placa e os fios.
-- **Texto** "SAMA 3 / ESP32" gravado no fundo, em duas linhas.
+- **Logo NEX LAYER3D** gravado no fundo (0,6 mm), lendo certo olhando por baixo da maquete.
 
 ## Antes de imprimir: conferir a furação
 
-As lojas não concordam na distância entre os furos da placa. Ao longo dos bornes as fontes dão de 57,5 a 59 mm; entre um lado de bornes e o outro, de 60 a 63,7 mm. O modelo usa **61 × 58,5 mm**.
+Furos medidos na placa: **65 × 60 mm por fora dos furos** (nas extremidades). Com furos de 3 mm, isso dá **62 × 57 mm de centro a centro**:
+- **62 mm** entre um lado de bornes e o outro (`furo_dx`);
+- **57 mm** ao longo dos bornes (`furo_dy`).
+
+Antes da case, confirme com o gabarito:
 
 1. Imprima o **`stl/gabarito_furos.stl`** (moldura fina com 4 pinos, uns 15 minutos).
 2. Encaixe a placa nos pinos. Se ela entrar nos 4 pinos sem forçar e descer até as colunas por dentro da moldura (que tem a medida interna da case), a furação e o tamanho estão certos.
-3. Se não entrar, meça com paquímetro a distância **de centro a centro** dos furos (borda interna de um furo até a borda interna do outro, mais 3 mm). Ajuste `furo_dx` (entre os lados de bornes) e `furo_dy` (ao longo dos bornes) no `case_mrd068a.scad` e gere de novo.
+3. Se não entrar, meça com paquímetro a distância **de centro a centro** dos furos: por fora dos furos menos 3 mm, ou por dentro mais 3 mm. Ajuste `furo_dx` (entre os lados de bornes) e `furo_dy` (ao longo dos bornes) no `case_mrd068a.scad` e gere de novo.
 
 Confira também:
 - se a placa tem **15 bornes de cada lado** (versão 30 pinos, cerca de 66 × 63 mm). Se tiver 19, é a versão de 38 pinos, maior, e as medidas mudam;
@@ -52,7 +56,7 @@ openscad -o stl/gabarito_furos.stl -D gabarito=true case_mrd068a.scad
 
 - Com o fundo na mesa (como no arquivo), **sem suporte**. As orelhas têm mão-francesa a 45°.
 - 0,2 mm de camada, 3 perímetros, 15–20% de preenchimento.
-- O texto fica gravado 0,6 mm no fundo (3 primeiras camadas). Se não sair bem, use `texto = []` ou ligue a compensação de pé de elefante do fatiador.
+- O logo fica gravado 0,6 mm no fundo (3 primeiras camadas), largura de 50 mm (`logo_larg`). Se não sair bem, ligue a compensação de pé de elefante do fatiador, ou use `logo = false`. O texto do logo fica em `logo_l1` e `logo_l2`.
 
 ## Montagem
 

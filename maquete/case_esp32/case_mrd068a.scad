@@ -25,8 +25,8 @@
 placa_x       = 66.2;   // de um lado de bornes até o outro
 placa_y       = 63.1;   // ao longo do ESP32 (lado dos bornes)
 placa_esp     = 1.6;    // espessura do PCB
-furo_dx       = 61.0;   // centro a centro dos furos entre os lados de bornes (fontes: 60 a 63,7)
-furo_dy       = 58.5;   // centro a centro dos furos ao longo dos bornes (fontes: 57,5 a 59)
+furo_dx       = 62.0;   // centro a centro dos furos entre os lados de bornes (medido: 65 por fora dos furos - 3)
+furo_dy       = 57.0;   // centro a centro dos furos ao longo dos bornes (medido: 60 por fora dos furos - 3)
 altura_conjunto = 20;   // altura total medida: pinos de baixo até topo do ESP32
 pinos_baixo   = 2.5;    // quanto os pinos/soldas passam por baixo do PCB
 usb_altura    = 14;     // centro do USB do ESP32 acima do topo do PCB do adaptador
@@ -59,7 +59,11 @@ cabeca_orelha = 7.5;    // escareado (cabeça chata 90°) por baixo
 
 /* [Saída] */
 gabarito = false;       // só uma placa com pinos nos furos, para testar a furação
-texto    = ["SAMA 3", "ESP32"];   // uma linha por item; [] = sem texto
+logo     = true;        // logo NEX LAYER3D gravado no fundo
+logo_l1  = "NEX";
+logo_l2  = "LAYER3D";
+logo_larg = 50;         // largura do logo no fundo
+logo_prof = 0.6;        // profundidade da gravação (3 camadas de 0,2)
 
 $fn = 48;
 e = 0.01;
@@ -124,6 +128,16 @@ module em_cada_orelha() {
         translate([sx*orelha_x, sy*ex_y/2, 0]) mirror([0, sy < 0 ? 1 : 0, 0]) children();
 }
 
+// logo: NEX grande, traço, LAYER3D embaixo, as duas linhas com a mesma largura
+module logo2d() {
+    fonte = "Liberation Sans:style=Bold";
+    translate([0, 7]) resize([logo_larg, 0], auto = true)
+        text(logo_l1, size = 16, font = fonte, halign = "center", valign = "center");
+    translate([0, -5.5]) square([logo_larg, 1.2], center = true);
+    translate([0, -12]) resize([logo_larg, 0], auto = true)
+        text(logo_l2, size = 8, font = fonte, halign = "center", valign = "center");
+}
+
 module case() {
     difference() {
         union() {
@@ -145,12 +159,8 @@ module case() {
             translate([0, sy*(ex_y/2 - parede/2), 0]) saida(usb_larg, z_saida_usb, parede + 2);
         // furos das orelhas
         em_cada_orelha() furo_orelha();
-        // texto gravado no fundo (lê certo olhando por baixo)
-        n = len(texto);
-        for (i = [0 : 1 : n - 1])
-            translate([0, ((n - 1) / 2 - i) * 12, -e]) linear_extrude(0.6)
-                mirror([1, 0, 0]) text(texto[i], size = 8, font = "Liberation Sans:style=Bold",
-                                       halign = "center", valign = "center");
+        // logo gravado no fundo (lê certo olhando por baixo)
+        if (logo) translate([0, 0, -e]) linear_extrude(logo_prof + e) mirror([1, 0, 0]) logo2d();
     }
 }
 
