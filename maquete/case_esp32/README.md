@@ -3,7 +3,8 @@
 Case para o **adaptador de bornes ESP32 30 pinos (MRD068A)** com o **ESP32 DevKit** já encaixado. Ela fica presa embaixo da maquete Sama 3.
 
 - O conjunto montado mede **20 mm** de altura. A case tem **26 mm** de altura total: com o pé de 30 mm, sobram **4 mm** até a mesa. Os 3,5 mm acima do ESP32 deixam espaço para o plugue do cabo USB.
-- Medida externa: **72 × 69 mm**, mais as 4 orelhas de fixação (91 mm no total, nas pontas).
+- Placa medida: **70 × 64 mm**, furos a **65 × 60 mm** de centro a centro.
+- Medida externa da case: **76 × 70 mm**, mais as 4 orelhas de fixação (92 mm no total, nas pontas).
 
 | Case | Com a placa | Por baixo | Gabarito de teste |
 |---|---|---|---|
@@ -23,21 +24,15 @@ Case para o **adaptador de bornes ESP32 30 pinos (MRD068A)** com o **ESP32 DevKi
 - **Fixação:** 4 orelhas com furo escareado por baixo. O parafuso entra de baixo para cima na maquete. Com a maquete nos pés só sobram 4 mm embaixo da case, então **para colocar ou tirar a case é preciso levantar a base** (veja Montagem). Ao soltar, a case sai inteira, com a placa e os fios.
 - **Logo NEX LAYER3D** gravado no fundo (0,6 mm), lendo certo olhando por baixo da maquete.
 
-## Antes de imprimir: conferir a furação
+## Medidas da placa
 
-Furos medidos na placa: **65 × 60 mm por fora dos furos** (nas extremidades). Com furos de 3 mm, isso dá **62 × 57 mm de centro a centro**:
-- **62 mm** entre um lado de bornes e o outro (`furo_dx`);
-- **57 mm** ao longo dos bornes (`furo_dy`).
+Medidas na placa:
+- **70 mm** de um lado de bornes até o outro, com furos a **65 mm** de centro a centro (`placa_x`, `furo_dx`);
+- **64 mm** ao longo dos bornes e do ESP32, com furos a **60 mm** de centro a centro (`placa_y`, `furo_dy`).
 
-Antes da case, confirme com o gabarito:
+Se quiser conferir antes de imprimir a case, imprima o **`stl/gabarito_furos.stl`** (moldura fina com 4 pinos, uns 15 minutos). A placa tem que entrar nos 4 pinos sem forçar e descer até as colunas por dentro da moldura, que tem a medida interna da case.
 
-1. Imprima o **`stl/gabarito_furos.stl`** (moldura fina com 4 pinos, uns 15 minutos).
-2. Encaixe a placa nos pinos. Se ela entrar nos 4 pinos sem forçar e descer até as colunas por dentro da moldura (que tem a medida interna da case), a furação e o tamanho estão certos.
-3. Se não entrar, meça com paquímetro a distância **de centro a centro** dos furos: por fora dos furos menos 3 mm, ou por dentro mais 3 mm. Ajuste `furo_dx` (entre os lados de bornes) e `furo_dy` (ao longo dos bornes) no `case_mrd068a.scad` e gere de novo.
-
-Confira também:
-- se a placa tem **15 bornes de cada lado** (versão 30 pinos, cerca de 66 × 63 mm). Se tiver 19, é a versão de 38 pinos, maior, e as medidas mudam;
-- quanto os pinos passam por baixo da placa (`pinos_baixo = 2,5`; a coluna tem 3 mm).
+Confira também quanto os pinos passam por baixo da placa (`pinos_baixo = 2,5`; a coluna tem 3 mm).
 
 ## Arquivos
 

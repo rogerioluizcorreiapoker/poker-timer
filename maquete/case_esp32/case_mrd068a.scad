@@ -15,18 +15,18 @@
 //      entrando na maquete. Para colocar/tirar os parafusos é preciso levantar
 //      a base (com o pé de 30 só sobra 4 mm embaixo da case).
 //
-//  Eixos: X = de uma fileira de bornes até a outra (66,2 mm),
-//         Y = ao longo do ESP32 / USB (63,1 mm).
+//  Eixos: X = de uma fileira de bornes até a outra (70 mm),
+//         Y = ao longo do ESP32 / USB e dos bornes (64 mm).
 //  Origem: centro da placa, Z=0 na face de baixo (externa) da case.
-//  Medidas em mm. CONFIRA a furação com o gabarito antes de imprimir a case.
+//  Medidas em mm. Placa 70 x 64, furos 65 x 60 centro a centro (medidos).
 // =====================================================================
 
 /* [Placa MRD068A (conferir)] */
-placa_x       = 66.2;   // de um lado de bornes até o outro
-placa_y       = 63.1;   // ao longo do ESP32 (lado dos bornes)
+placa_x       = 70;     // de um lado de bornes até o outro (medido)
+placa_y       = 64;     // ao longo do ESP32 (lado dos bornes) (medido)
 placa_esp     = 1.6;    // espessura do PCB
-furo_dx       = 62.0;   // centro a centro dos furos entre os lados de bornes (medido: 65 por fora dos furos - 3)
-furo_dy       = 57.0;   // centro a centro dos furos ao longo dos bornes (medido: 60 por fora dos furos - 3)
+furo_dx       = 65;     // centro a centro dos furos entre os lados de bornes (medido)
+furo_dy       = 60;     // centro a centro dos furos ao longo dos bornes (medido)
 altura_conjunto = 20;   // altura total medida: pinos de baixo até topo do ESP32
 pinos_baixo   = 2.5;    // quanto os pinos/soldas passam por baixo do PCB
 usb_altura    = 14;     // centro do USB do ESP32 acima do topo do PCB do adaptador
@@ -38,7 +38,7 @@ fundo         = 2.0;
 folga_topo    = 3.5;    // entre o topo do ESP32 e a maquete (espaço para o plugue USB)
 raio_canto    = 3;
 altura_coluna = 3.0;    // coluna sob a placa (>= pinos_baixo + 0.5)
-diam_coluna   = 7.0;    // larga: apoia a placa mesmo se a furação variar
+diam_coluna   = 7.4;    // larga; nas medidas atuais encosta e funde na parede
 furo_coluna   = 2.2;    // parafuso M2.5 x 5 auto-atarraxante no PLA (M3: 2.6)
 fundo_piloto  = 0.6;    // fundo que sobra embaixo do furo-piloto
 
@@ -145,7 +145,11 @@ module case() {
                 linear_extrude(altura) ret_arred(ex_x, ex_y, raio_canto);
                 translate([0, 0, fundo]) linear_extrude(altura) ret_arred(in_x, in_y, max(raio_canto - parede, 0.5));
             }
-            em_cada_furo() cylinder(d = diam_coluna, h = z_pcb_base);
+            // colunas, ligadas ao canto da parede (sem frestas entre coluna e canto)
+            for (sx = [-1, 1], sy = [-1, 1]) hull() {
+                translate([sx*furo_dx/2, sy*furo_dy/2, 0]) cylinder(d = diam_coluna, h = z_pcb_base);
+                translate([sx*(in_x/2 - 0.5), sy*(in_y/2 - 0.5), z_pcb_base/2]) cube([1, 1, z_pcb_base], center = true);
+            }
             em_cada_orelha() orelha();
         }
         // furo-piloto das colunas
