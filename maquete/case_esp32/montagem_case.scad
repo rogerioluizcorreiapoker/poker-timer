@@ -1,6 +1,6 @@
 // Visualização (não imprimir): case + placa MRD068A + ESP32, presa embaixo da maquete.
 // vista = "case"     -> case com a placa dentro
-// vista = "maquete"  -> case presa embaixo de um pedaço da base, com um pé de canto
+// vista = "maquete"  -> case presa embaixo de um pedaço da base
 use <case_mrd068a.scad>
 include <case_mrd068a.scad>   // traz os parâmetros (desenha a case também)
 
@@ -19,7 +19,7 @@ module placa_mock() {
     translate([-28.3/2, -51.5/2, z_pcb_topo + 8.5 + 2.5]) {
         color("#1a1a1a") cube([28.3, 51.5, 1.6]);
         color("silver") translate([5, 10, 1.6]) cube([18, 25.5, 3.2]);
-        color("silver") translate([28.3/2 - 4, 51.5 - 5, -1.5]) cube([8, 6, 3]);   // USB
+        color("silver") translate([28.3/2 - 4, 51.5 - 5, usb_altura - 8.5 - 2.5 - 1.5]) cube([8, 6, 3]);   // USB (centro em usb_altura)
     }
 }
 

@@ -3,8 +3,8 @@
 //  Fica presa EMBAIXO da maquete Sama 3 (pé de 30 mm).
 //
 //  Ideia: bandeja aberta em cima. A face de baixo da maquete fecha a case.
-//    - a placa fica sobre 4 colunas, componentes para cima (para a maquete);
-//      com a case montada, a gravidade segura a placa nas colunas;
+//    - a placa fica sobre 4 colunas, componentes para cima (para a maquete),
+//      presa com 4 parafusos M2.5 x 5;
 //    - saídas em U abertas a partir da borda:
 //        * paredes dos BORNES: rasgo comprido na frente das 2 fileiras de
 //          15 bornes, na altura da entrada dos fios;
@@ -12,8 +12,8 @@
 //          a placa pode entrar em qualquer sentido);
 //      dá para deitar os fios (até com conector) e depois parafusar a case;
 //    - 4 orelhas com furo escareado por baixo: parafuso de baixo para cima
-//      entrando na maquete. Para mexer, solta 4 parafusos e a case desce
-//      com a placa e os fios.
+//      entrando na maquete. Para colocar/tirar os parafusos é preciso levantar
+//      a base (com o pé de 30 só sobra 4 mm embaixo da case).
 //
 //  Eixos: X = de uma fileira de bornes até a outra (66,2 mm),
 //         Y = ao longo do ESP32 / USB (63,1 mm).
@@ -35,11 +35,12 @@ usb_altura    = 14;     // centro do USB do ESP32 acima do topo do PCB do adapta
 folga_placa   = 1.0;    // folga entre placa e parede (cada lado)
 parede        = 2.0;
 fundo         = 2.0;
-folga_topo    = 1.5;    // entre o topo do ESP32 e a maquete
+folga_topo    = 3.5;    // entre o topo do ESP32 e a maquete (espaço para o plugue USB)
 raio_canto    = 3;
 altura_coluna = 3.0;    // coluna sob a placa (>= pinos_baixo + 0.5)
 diam_coluna   = 7.0;    // larga: apoia a placa mesmo se a furação variar
-furo_coluna   = 2.2;    // parafuso M2.5 auto-atarraxante no PLA (M3: 2.6)
+furo_coluna   = 2.2;    // parafuso M2.5 x 5 auto-atarraxante no PLA (M3: 2.6)
+fundo_piloto  = 0.6;    // fundo que sobra embaixo do furo-piloto
 
 /* [Saídas em U (abertas na borda de cima)] */
 saida_bornes_larg = 56;  // fileira de 15 bornes passo 3,5 = 52,5 mm
@@ -58,7 +59,7 @@ cabeca_orelha = 7.5;    // escareado (cabeça chata 90°) por baixo
 
 /* [Saída] */
 gabarito = false;       // só uma placa com pinos nos furos, para testar a furação
-texto    = "SAMA 3 · ESP32";
+texto    = ["SAMA 3", "ESP32"];   // uma linha por item; [] = sem texto
 
 $fn = 48;
 e = 0.01;
@@ -134,7 +135,7 @@ module case() {
             em_cada_orelha() orelha();
         }
         // furo-piloto das colunas
-        em_cada_furo() translate([0, 0, fundo - 1]) cylinder(d = furo_coluna, h = h_col + 2);
+        em_cada_furo() translate([0, 0, fundo_piloto]) cylinder(d = furo_coluna, h = z_pcb_base);
         // rasgos dos bornes (paredes em ±X)
         for (sx = [-1, 1])
             translate([sx*(ex_x/2 - parede/2), 0, 0]) rotate([0, 0, 90])
@@ -145,9 +146,11 @@ module case() {
         // furos das orelhas
         em_cada_orelha() furo_orelha();
         // texto gravado no fundo (lê certo olhando por baixo)
-        if (texto != "")
-            translate([0, 0, -e]) linear_extrude(0.6)
-                mirror([1, 0, 0]) text(texto, size = 6, halign = "center", valign = "center");
+        n = len(texto);
+        for (i = [0 : 1 : n - 1])
+            translate([0, ((n - 1) / 2 - i) * 12, -e]) linear_extrude(0.6)
+                mirror([1, 0, 0]) text(texto[i], size = 8, font = "Liberation Sans:style=Bold",
+                                       halign = "center", valign = "center");
     }
 }
 
@@ -163,10 +166,11 @@ module gabarito_furos() {
         cylinder(d = pino, h = 3 + placa_esp + 1);
         translate([0, 0, 3 + placa_esp + 1]) cylinder(d1 = pino, d2 = pino - 1, h = 0.5);
     }
-    // degrau na medida interna da case: a placa tem que caber dentro
+    // moldura na medida interna da case, até o topo da placa: a placa tem que
+    // descer dentro dela e assentar nas colunas
     translate([0, 0, 1]) difference() {
-        linear_extrude(1.2) ret_arred(in_x + 4, in_y + 4, raio_canto);
-        translate([0, 0, -1]) linear_extrude(3) square([in_x, in_y], center = true);
+        linear_extrude(3 + placa_esp - 1) ret_arred(in_x + 4, in_y + 4, raio_canto);
+        translate([0, 0, -1]) linear_extrude(10) square([in_x, in_y], center = true);
     }
 }
 
