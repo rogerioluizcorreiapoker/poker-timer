@@ -59,11 +59,28 @@ Fatie com **2 paredes, 15% de preenchimento, sem suporte**. Por ser fina, trate 
 |---|---|---|
 | ![](img/deitado_uso.png) | ![](img/deitado_lado.png) | ![](img/deitado_impressao.png) |
 
+## Versão de mesa, pequena e bem deitada (30°)
+
+`stl/suporte_tela10_mesa.stl` (`suporte_tela10_mesa.scad`, que usa o `suporte_tela10_fino.scad` com outros valores):
+- tela a **30° da mesa** (60° para trás da vertical), só **84 mm de altura**;
+- paredes finas (0,9 mm) e face de 1,8 mm, sem logo;
+- **233 × 156 × 84 mm** em uso; mesmo encaixe da tela, sem parafuso;
+- fundo com 3 janelas de topo em Λ.
+
+**Já vem girado para imprimir de costas** (a traseira na mesa da impressora): a face fica a 30° da vertical e **imprime sem suporte**. Não gire a peça no fatiador.
+- Estimativa (PrusaSlicer, velocidades de Bambu): **camada 0,28 mm ~2 h 25 min**; camada 0,2 mm ~2 h 55 min; cerca de 100 g.
+- Impressa de costas a peça fica com 156 mm de altura na impressora, por isso demora um pouco mais que a fina de 50°.
+
+| Em uso | De lado | Posição de impressão |
+|---|---|---|
+| ![](img/mesa_uso.png) | ![](img/mesa_lado.png) | ![](img/mesa_impressao.png) |
+
 ## Arquivos
 
 - `stl/suporte_tela10.stl`: o suporte (peça única, versão completa).
 - `stl/suporte_tela10_fino.stl`: versão fina, impressão rápida.
 - `stl/suporte_tela10_deitado.stl`: versão mais deitada (35°) e mais grossa, já girada para imprimir de costas.
+- `stl/suporte_tela10_mesa.stl`: versão de mesa pequena, 30°, fina, já girada para imprimir de costas.
 - `suporte_tela10.scad`: modelo paramétrico (OpenSCAD).
 - `montagem_suporte.scad`: só para ver o suporte com a tela (não imprimir).
 - `JC8012P4A1_desenho_guition.pdf`: desenho mecânico da Guition.
