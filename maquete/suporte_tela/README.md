@@ -75,12 +75,29 @@ Fatie com **2 paredes, 15% de preenchimento, sem suporte**. Por ser fina, trate 
 |---|---|---|
 | ![](img/mesa_uso.png) | ![](img/mesa_lado.png) | ![](img/mesa_impressao.png) |
 
+## Versão para a Bambu A1 (duas metades, impressas deitadas)
+
+`stl/suporte_tela10_a1_ambas.stl` (`suporte_tela10_a1.scad`): o suporte de mesa a **30°**, em **duas metades**, feito para a A1 (mesa móvel). Cada metade imprime **deitada sobre a lateral externa**: todas as paredes ficam verticais, sem peça alta e fina balançando e sem suporte.
+- paredes de **1,6 mm** e face de **2,4 mm**; mesmo encaixe da tela, sem parafuso;
+- as metades se unem no meio por uma **lingueta de 10 mm** que sai da metade direita e entra por dentro da esquerda (folga de 0,15 mm por lado). Depois de encaixar, **cole com cola instantânea** por dentro da junta. A tela encaixada também segura as duas;
+- fundo aberto (só a moldura);
+- montado: **233 × 156 × 84 mm**.
+
+Impressão: o `_ambas.stl` já traz as duas metades lado a lado, na posição certa (168 × 156 mm na mesa, 126 mm de altura). **Não gire as peças.** Sem suporte, 2 paredes, 15% de preenchimento.
+- Estimativa (PrusaSlicer, velocidades de Bambu): as duas juntas **~2 h 56 min** com camada de 0,28 mm (~3 h 45 min com 0,2 mm), cerca de 152 g. Cada metade sozinha (`_direita.stl` / `_esquerda.stl`) leva mais ou menos a metade disso, então dá para imprimir uma em cada impressora.
+- Os degraus de 0,5 mm na ponta do reforço da lingueta são de propósito: fazem o reforço afinar a 45°.
+
+| Posição de impressão | As duas metades | Montado |
+|---|---|---|
+| ![](img/a1_impressao.png) | ![](img/a1_junta.png) | ![](img/a1_montado.png) |
+
 ## Arquivos
 
 - `stl/suporte_tela10.stl`: o suporte (peça única, versão completa).
 - `stl/suporte_tela10_fino.stl`: versão fina, impressão rápida.
 - `stl/suporte_tela10_deitado.stl`: versão mais deitada (35°) e mais grossa, já girada para imprimir de costas.
 - `stl/suporte_tela10_mesa.stl`: versão de mesa pequena, 30°, fina, já girada para imprimir de costas.
+- `stl/suporte_tela10_a1_ambas.stl` (e `_direita` / `_esquerda`): versão para a A1 em duas metades, deitadas na posição de impressão.
 - `suporte_tela10.scad`: modelo paramétrico (OpenSCAD).
 - `montagem_suporte.scad`: só para ver o suporte com a tela (não imprimir).
 - `JC8012P4A1_desenho_guition.pdf`: desenho mecânico da Guition.

@@ -36,6 +36,8 @@ furo_tras_d = 22;
 furo_tras_z = 20;
 imprimir_de_costas = false;   // true: peça girada com a traseira na mesa (para ângulos baixos)
 janelas_fundo = 0;            // >0: fundo com N janelas de topo em Λ (em vez de um vão só)
+pastilha_rampa = 0;           // >0: lado externo da pastilha a 45° (para imprimir deitado na lateral)
+desenhar = true;              // false: só define os módulos (para outro arquivo montar as peças)
 
 $fn = 40;
 e = 0.01;
@@ -99,17 +101,18 @@ module casca() {
 module pastilha_em(u, v) {
     s0 = v2s(v) - pastilha/2;  s1 = v2s(v) + pastilha/2;
     p = encaixe_prof + 1;
+    r = pastilha_rampa > 0 ? p : 0;          // rampa a 45° no lado de fora (|u| maior)
+    du = u > 0 ? 0 : -r;
     intersection() {
         hull() {
             na_face() translate([u - pastilha/2, s0, -e]) cube([pastilha, s1 - s0, e]);
-            na_face() translate([u - pastilha/2, s0 - p*k45, -p]) cube([pastilha, s1 - s0 + p*k45 + p*k45c, e]);
+            na_face() translate([u - pastilha/2 + du, s0 - p*k45, -p]) cube([pastilha + r, s1 - s0 + p*k45 + p*k45c, e]);
         }
         translate([-W/2, 0, 0]) rotate([90, 0, 90]) linear_extrude(W) perfil();
     }
 }
 
-module suporte() {
-    difference() {
+module corpo() {
         union() {
             casca();
             // face mais grossa que as outras paredes
@@ -119,6 +122,9 @@ module suporte() {
             }
             for (f = encaixes) pastilha_em(f[0], f[1]);
         }
+}
+
+module cortes() {
         // abertura da caixa: borda de cima a 45°
         hull() {
             na_face() translate([-abre_u, v2s(-abre_v), 0]) cube([2*abre_u, 2*abre_v, 1]);
@@ -129,10 +135,15 @@ module suporte() {
         for (f = encaixes) na_face() translate([f[0], v2s(f[1]), -encaixe_prof]) cylinder(d = encaixe_d, h = encaixe_prof + 1);
         // furo do cabo atrás
         translate([0, y_tras + parede/2, furo_tras_z]) rotate([90, 0, 0]) cylinder(d = furo_tras_d, h = parede + 2, center = true);
-    }
 }
 
-if (imprimir_de_costas)
-    rotate([90, 0, 0]) translate([0, -y_tras, 0]) mirror([0, 0, 1]) mirror([0, 0, 1]) suporte();
-else
-    suporte();
+module suporte() {
+    difference() { corpo(); cortes(); }
+}
+
+if (desenhar) {
+    if (imprimir_de_costas)
+        rotate([90, 0, 0]) translate([0, -y_tras, 0]) suporte();
+    else
+        suporte();
+}
