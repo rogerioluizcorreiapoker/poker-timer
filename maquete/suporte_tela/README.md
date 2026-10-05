@@ -15,8 +15,8 @@ Tiradas do desenho oficial da Guition (`JC8012P4A1_desenho_guition.pdf`, nesta p
 
 ## Como é
 
-- **Tamanho:** 237 × 99 × 148 mm. Cabe na mesa de 256 × 256 (Bambu P1/X1/A1). Não cabe na A1 mini.
-- **Inclinação:** a tela fica deitada (paisagem), a **65°** da mesa (`angulo`).
+- **Tamanho:** 237 × 137 × 127 mm. Cabe na mesa de 256 × 256 (Bambu P1/X1/A1). Não cabe na A1 mini.
+- **Inclinação:** a tela fica deitada (paisagem), a **50°** da mesa (`angulo`), ou seja, 40° para trás da vertical. Mais deitado que isso não dá para imprimir sem suporte (mínimo 45°).
 - **Sem parafuso:** a borda da abertura tem **8 encaixes** (Ø8,2 × 5 mm). As colunas de latão da tela entram neles e a chapa de trás apoia na borda, então a tela fica presa pelo próprio peso. Para tirar, é só levantar.
   - São 8 encaixes porque cabem os 6 da tela também com ela virada 180°.
 - **Caixa da tela:** a caixa preta de trás entra na abertura. Sobram 5 mm nas pontas e 10 mm em cima e embaixo, onde ficam os USB-C. A borda de cima é chanfrada a 45°, então em cima a folga cai para uns 8 mm no lado de dentro da borda. Por isso, **monte a tela com o lado dos USB-C para baixo**, onde ficam os 10 mm inteiros.
@@ -31,11 +31,11 @@ Tiradas do desenho oficial da Guition (`JC8012P4A1_desenho_guition.pdf`, nesta p
 - só uma pastilha em volta de cada encaixe, no lugar da borda grossa;
 - fundo vazado (só uma moldura na mesa);
 - sem logo, sem túnel na frente e sem furos para a mesa (o cabo sai pelo furo de trás);
-- **232,8 × 88 × 145 mm**, cerca de **106 g**.
+- **233 × 116 × 124 mm**, cerca de **103 g**, mesma inclinação de **50°**.
 
 Tempo estimado no PrusaSlicer com velocidades de Bambu P1S/X1 (bico 0,4):
-- **camada 0,28 mm: ~1 h 53 min** (use o perfil "0.28mm Extra Draft");
-- camada 0,2 mm: ~2 h 23 min.
+- **camada 0,28 mm: ~1 h 57 min** (use o perfil "0.28mm Extra Draft");
+- camada 0,2 mm: ~2 h 28 min.
 
 Fatie com **2 paredes, 15% de preenchimento, sem suporte**. Por ser fina, trate com cuidado e não aperte a face.
 
@@ -60,7 +60,7 @@ openscad -o stl/suporte_tela10.stl suporte_tela10.scad
 
 - Em pé, com o fundo na mesa (como no arquivo), **sem suporte**. A face, o chanfro de cima e a borda de cima da abertura ficam a no máximo 45° da vertical.
 - A borda de cima da abertura começa com uma ponte de uns 150 mm. Pode ficar um pouco irregular, mas fica escondida atrás da tela. Se sobrar algum fio pendurado, corte com estilete antes de encaixar o plugue.
-- 0,2 mm de camada, 3 perímetros, 15% de preenchimento. Volume de 349 cm³: é uma impressão longa, parecida com a do suporte de 7".
+- 0,2 mm de camada, 3 perímetros, 15% de preenchimento. Volume de 366 cm³: é uma impressão longa (versão completa).
 
 ## Montagem
 
@@ -72,7 +72,7 @@ Se quiser a tela mais firme (por exemplo, para transportar), uma gota de cola qu
 
 ## Ajustes no `.scad`
 
-- `angulo`: inclinação (padrão 65°). Por exemplo, 55° fica mais deitada e 75° mais em pé. Entre 50° e 80° continua imprimindo sem suporte.
+- `angulo`: inclinação (padrão 50°). Valores maiores deixam a tela mais em pé (65° era a versão anterior). Imprime sem suporte entre 45° e 80°.
 - `fundo_atras`: quanto a traseira fica atrás do topo. Mais fundo dá mais estabilidade ao tocar na tela.
 - `encaixe_d`: diâmetro dos encaixes. Aumente se as colunas entrarem justas demais.
 - `furo_tras_d`, `rebaixo_frente_r`: passagem do cabo (furo de trás e túnel da frente; `rebaixo_frente_r = 0` tira o túnel).

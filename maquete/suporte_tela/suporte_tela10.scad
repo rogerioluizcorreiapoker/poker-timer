@@ -36,7 +36,7 @@ coluna_d    = 7.5;      // colunas de latão da tela
 coluna_alt  = 4.5;
 
 /* [Suporte] */
-angulo      = 65;       // inclinação da tela em relação à mesa
+angulo      = 50;       // inclinação da tela em relação à mesa (mínimo 45 para imprimir sem suporte)
 recuo_face  = 3;        // a borda fica menor que a tela isto (cada lado)
 esp_borda   = 6;        // espessura da borda onde a tela apoia
 parede      = 3;        // laterais, fundo e traseira

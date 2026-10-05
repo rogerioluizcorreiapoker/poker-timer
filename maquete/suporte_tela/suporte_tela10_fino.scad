@@ -19,12 +19,12 @@ caixa_l     = 138.35;
 caixa_a     = 93.5;
 
 /* [Suporte] */
-angulo      = 65;
+angulo      = 50;       // inclinação da tela em relação à mesa (mínimo 45 para imprimir sem suporte)
 recuo_face  = 5;
 parede      = 0.9;      // laterais, traseira e fundo (2 linhas de bico 0,4)
 esp_face    = 1.8;      // face onde a tela apoia (mais grossa)
 altura_frente = 10;
-fundo_atras = 20;
+fundo_atras = 12;
 moldura_fundo = 12;     // largura da moldura do fundo (o meio é vazado)
 encaixe_d   = 8.2;
 encaixe_prof = 5;
