@@ -35,18 +35,24 @@ coluna_alt  = 4.5;      // colunas de latão da tela
 
 /* [Suporte] */
 angulo      = 65;       // inclinação da tela em relação à mesa
-espacador   = 13;       // altura dos espaçadores impressos
+espacador   = 14;       // altura dos espaçadores impressos (1 mm entra no rebaixo da face)
+rebaixo_esp = 1;        // rebaixo na face onde o espaçador encaixa
+rebaixo_d   = 8.3;      // diâmetro do rebaixo (espaçador de 8 entra justo)
 recuo_face  = 3;        // a face fica menor que a tela isto (cada lado)
 esp_face    = 5;        // espessura da face
 esp_lateral = 4;
 altura_frente = 5;      // altura da borda de baixo da face acima da mesa
-bico_frente = 10;       // quanto a base avança para a frente
+bico_frente = 15;       // quanto a base avança para a frente
 cauda       = 45;       // quanto a base vai para trás da face (estabilidade no toque)
 barra_alt   = 6;        // barras do chão (frente e trás)
 barra_larg  = 20;
 furo_fixar  = 4.0;      // furos nas barras do chão: parafuso de madeira 3,5 (mesa ou maquete)
 cabeca_fixar = 7.5;     // escareado por cima
-margem_usb  = 10;       // folga da abertura além da caixa (plugue USB em L)
+margem_usb  = 10;       // folga da abertura além da caixa
+rasgo_usb_u = [28, 68]; // rasgos extras para o plugue USB em L (dos dois lados, em cima e embaixo)
+rasgo_usb_v = 72;       // até onde vão os rasgos (a partir do centro da tela)
+nervura_u   = 25;       // nervuras na abertura (a ponte de cima fica com vãos de ~50 mm)
+nervura_l   = 3;
 
 /* [Parafusos] */
 furo_parafuso = 2.9;    // M2,5 passa folgado
@@ -74,12 +80,12 @@ v2s = function(v) v + L/2;           // v (centro da tela) -> s (na face)
 z_topo = altura_frente + L*sa;
 y_topo = -L*ca;
 y_cauda = y_topo - cauda;
-vao = coluna_alt + espacador;        // chapa da tela até a face
+vao = coluna_alt + espacador - rebaixo_esp;   // chapa da tela até a face
 
 assert(vao >= caixa_prof + 1, "espaçador curto: a caixa da tela encosta na face");
-echo(str("Suporte: ", W, " x ", bico_frente - y_cauda, " x ", round(z_topo + esp_face*ca), " mm (L x P x A)"));
+echo(str("Suporte: ", W, " x ", bico_frente - y_cauda, " x ", round(z_topo), " mm (L x P x A)"));
 echo(str("Vão entre a tela e a face: ", vao, " mm (caixa ", caixa_prof, " mm)"));
-echo(str("Parafuso M2,5 de ", esp_face + espacador + 4, " mm (entra 4 mm na coluna)"));
+echo(str("Parafuso M2,5 de ", esp_face + espacador - rebaixo_esp + 4, " mm (entra 4 mm na coluna)"));
 
 // furos na tela (coordenadas u, v a partir do centro da tela, tela deitada)
 fu = tela_l/2 - furo_borda;          // 106,4
@@ -105,18 +111,35 @@ module face() {
         na_face() translate([-W/2, 0, -esp_face]) cube([W, L, esp_face]);
         // furos dos parafusos, perpendiculares à face
         for (f = furos) na_face() translate([f[0], v2s(f[1]), -esp_face - 1]) cylinder(d = furo_parafuso, h = esp_face + 2);
-        // abertura do meio: cortada a 45° para trás/baixo, assim a borda de cima
-        // da abertura fica a 45° (imprime sem suporte) e o corte desloca pouco
-        hull() for (k = [0, 14])
-            translate([0, -k, -k]) na_face()
-                translate([-abre_u, v2s(-abre_v), 0.5]) cube([2*abre_u, 2*abre_v, e]);
+        // rebaixos onde os espaçadores encaixam
+        for (f = furos) na_face() translate([f[0], v2s(f[1]), -rebaixo_esp]) cylinder(d = rebaixo_d, h = rebaixo_esp + 1);
+        // abertura do meio e rasgos do USB: cortados a 45° para trás/baixo, assim a
+        // borda de cima fica a 45° (imprime sem suporte) e o corte desloca pouco
+        corte_45(-abre_u, abre_u, -abre_v, abre_v);
+        for (su = [-1, 1], sv = [-1, 1]) {
+            u0 = su > 0 ? rasgo_usb_u[0] : -rasgo_usb_u[1];
+            u1 = su > 0 ? rasgo_usb_u[1] : -rasgo_usb_u[0];
+            v0 = sv > 0 ? 0 : -rasgo_usb_v;
+            v1 = sv > 0 ? rasgo_usb_v : 0;
+            corte_45(u0, u1, v0, v1);
+        }
     }
+    // nervuras na abertura: quebram a ponte da borda de cima em vãos de ~50 mm
+    for (su = [-1, 1])
+        na_face() translate([su*nervura_u - nervura_l/2, v2s(-abre_v) - 3, -esp_face])
+            cube([nervura_l, 2*abre_v + 6, esp_face]);
+}
+
+module corte_45(u0, u1, v0, v1) {
+    hull() for (k = [0, 14])
+        translate([0, -k, -k]) na_face()
+            translate([u0, v2s(v0), 0.5]) cube([u1 - u0, v1 - v0, e]);
 }
 
 // perfil da lateral (no plano YZ)
 module perfil_lateral() {
     polygon([[bico_frente, 0], [bico_frente, barra_alt], [0, altura_frente],
-             [y_topo, z_topo], [y_topo - esp_face*sa, z_topo + esp_face*ca - esp_face*ca],
+             [y_topo, z_topo], [y_topo - esp_face*sa, z_topo - esp_face*ca],
              [y_cauda, barra_alt], [y_cauda, 0]]);
 }
 
@@ -154,7 +177,7 @@ module suporte() {
             translate([-W/2, y_cauda, 0]) cube([W, barra_larg, barra_alt]);
         }
         // 4 furos escareados para parafusar na mesa ou na maquete (opcional)
-        for (sx = [-1, 1], yb = [bico_frente - barra_larg/2, y_cauda + barra_larg/2])
+        for (sx = [-1, 1], yb = [bico_frente - 7, y_cauda + barra_larg/2])
             translate([sx*(W/2 - 25), yb, 0]) {
                 translate([0, 0, -1]) cylinder(d = furo_fixar, h = barra_alt + 2);
                 translate([0, 0, barra_alt - (cabeca_fixar - furo_fixar)/2])

@@ -6,8 +6,8 @@ module tela_mock() {
         // espaçadores + colunas de latão
         for (f = furos) if (!(furos_dos_dois_lados && f[0] == furo_meio))
             translate([f[0], f[1], 0]) {
-                color("white") cylinder(d = 8, h = espacador);
-                color("gold") translate([0, 0, espacador]) cylinder(d = 7.5, h = coluna_alt);
+                color("white") translate([0, 0, -rebaixo_esp]) cylinder(d = 8, h = espacador);
+                color("gold") translate([0, 0, espacador - rebaixo_esp]) cylinder(d = 7.5, h = coluna_alt);
             }
         // caixa da eletrônica
         color("#222") translate([-caixa_l/2, -caixa_a/2, vao - caixa_prof]) cube([caixa_l, caixa_a, caixa_prof]);
