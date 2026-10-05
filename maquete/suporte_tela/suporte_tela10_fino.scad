@@ -34,6 +34,8 @@ margem_a    = 10;
 encaixes_dos_dois_lados = true;
 furo_tras_d = 22;
 furo_tras_z = 20;
+imprimir_de_costas = false;   // true: peça girada com a traseira na mesa (para ângulos baixos)
+janelas_fundo = 0;            // >0: fundo com N janelas de topo em Λ (em vez de um vão só)
 
 $fn = 40;
 e = 0.01;
@@ -49,7 +51,8 @@ z_tras = z_topo - fundo_atras;
 bico_frente = altura_frente * ca / sa;
 abre_u = caixa_l/2 + margem_l;
 abre_v = caixa_a/2 + margem_a;
-k45 = max(0, tan(angulo - 45));      // recuo por mm de profundidade p/ ficar a 45°
+k45 = max(0, tan(angulo - 45));      // recuo por mm de profundidade p/ ficar a 45° (impressão em pé)
+k45c = imprimir_de_costas ? max(0, tan(45 - angulo)) : 0;   // idem, impressão de costas
 
 fu = tela_l/2 - furo_borda;
 fv = tela_a/2 - furo_borda;
@@ -78,9 +81,17 @@ module casca() {
         translate([-W/2, 0, 0]) rotate([90, 0, 90]) linear_extrude(W) perfil();
         translate([-W/2 + parede, 0, 0]) rotate([90, 0, 90]) linear_extrude(W - 2*parede)
             offset(delta = -parede) perfil();
-        // fundo vazado: fica só a moldura
-        translate([-W/2 + moldura_fundo, y_tras + moldura_fundo, -1])
-            cube([W - 2*moldura_fundo, bico_frente - y_tras - 2*moldura_fundo, parede + 2]);
+        // fundo vazado: fica só a moldura (ou N janelas com topo em Λ a 45°)
+        if (janelas_fundo == 0)
+            translate([-W/2 + moldura_fundo, y_tras + moldura_fundo, -1])
+                cube([W - 2*moldura_fundo, bico_frente - y_tras - 2*moldura_fundo, parede + 2]);
+        else {
+            jl = (W - (janelas_fundo + 1) * moldura_fundo) / janelas_fundo;
+            y0 = y_tras + moldura_fundo;  y1 = bico_frente - moldura_fundo;
+            for (i = [0 : janelas_fundo - 1])
+                translate([-W/2 + moldura_fundo + i * (jl + moldura_fundo), 0, -1])
+                    linear_extrude(parede + 2) polygon([[0, y0], [jl, y0], [jl, y1 - jl/2], [jl/2, y1], [0, y1 - jl/2]]);
+        }
     }
 }
 
@@ -91,7 +102,7 @@ module pastilha_em(u, v) {
     intersection() {
         hull() {
             na_face() translate([u - pastilha/2, s0, -e]) cube([pastilha, s1 - s0, e]);
-            na_face() translate([u - pastilha/2, s0 - p*k45, -p]) cube([pastilha, s1 - s0 + p*k45, e]);
+            na_face() translate([u - pastilha/2, s0 - p*k45, -p]) cube([pastilha, s1 - s0 + p*k45 + p*k45c, e]);
         }
         translate([-W/2, 0, 0]) rotate([90, 0, 90]) linear_extrude(W) perfil();
     }
@@ -111,8 +122,8 @@ module suporte() {
         // abertura da caixa: borda de cima a 45°
         hull() {
             na_face() translate([-abre_u, v2s(-abre_v), 0]) cube([2*abre_u, 2*abre_v, 1]);
-            na_face() translate([-abre_u, v2s(-abre_v), -esp_face - 1])
-                cube([2*abre_u, 2*abre_v - (esp_face + 1) * k45, e]);
+            na_face() translate([-abre_u, v2s(-abre_v) + (esp_face + 1) * k45c, -esp_face - 1])
+                cube([2*abre_u, 2*abre_v - (esp_face + 1) * (k45 + k45c), e]);
         }
         // encaixes das colunas de latão
         for (f = encaixes) na_face() translate([f[0], v2s(f[1]), -encaixe_prof]) cylinder(d = encaixe_d, h = encaixe_prof + 1);
@@ -121,4 +132,7 @@ module suporte() {
     }
 }
 
-suporte();
+if (imprimir_de_costas)
+    rotate([90, 0, 0]) translate([0, -y_tras, 0]) mirror([0, 0, 1]) mirror([0, 0, 1]) suporte();
+else
+    suporte();
