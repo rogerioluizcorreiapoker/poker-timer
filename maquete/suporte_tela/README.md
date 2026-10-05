@@ -24,9 +24,29 @@ Tiradas do desenho oficial da Guition (`JC8012P4A1_desenho_guition.pdf`, nesta p
 - **Fixação na mesa (opcional):** 2 furos no fundo, escareados por dentro, embaixo da abertura (com a tela fora, a chave entra na vertical).
 - **Logo NEX LAYER3D** gravado nas duas laterais.
 
+## Versão fina (impressão rápida, ~2 h)
+
+`stl/suporte_tela10_fino.stl` (`suporte_tela10_fino.scad`): mesmo formato fechado e mesmo encaixe da tela, mas:
+- paredes de **0,9 mm** (2 linhas) e face de **1,8 mm**;
+- só uma pastilha em volta de cada encaixe, no lugar da borda grossa;
+- fundo vazado (só uma moldura na mesa);
+- sem logo, sem túnel na frente e sem furos para a mesa (o cabo sai pelo furo de trás);
+- **232,8 × 88 × 145 mm**, cerca de **106 g**.
+
+Tempo estimado no PrusaSlicer com velocidades de Bambu P1S/X1 (bico 0,4):
+- **camada 0,28 mm: ~1 h 53 min** (use o perfil "0.28mm Extra Draft");
+- camada 0,2 mm: ~2 h 23 min.
+
+Fatie com **2 paredes, 15% de preenchimento, sem suporte**. Por ser fina, trate com cuidado e não aperte a face.
+
+| Frente | Trás |
+|---|---|
+| ![](img/fino_frente.png) | ![](img/fino_tras.png) |
+
 ## Arquivos
 
-- `stl/suporte_tela10.stl`: o suporte (peça única).
+- `stl/suporte_tela10.stl`: o suporte (peça única, versão completa).
+- `stl/suporte_tela10_fino.stl`: versão fina, impressão rápida.
 - `suporte_tela10.scad`: modelo paramétrico (OpenSCAD).
 - `montagem_suporte.scad`: só para ver o suporte com a tela (não imprimir).
 - `JC8012P4A1_desenho_guition.pdf`: desenho mecânico da Guition.
