@@ -33,7 +33,9 @@ margem_l    = 5;
 margem_a    = 10;
 encaixes_dos_dois_lados = true;
 furo_tras_d = 22;
-furo_tras_z = 20;
+furo_tras_z = 20;           // furo_tras_d = 0 tira o furo (traseira colada na parede)
+rasgo_cabo_lado = 0;        // >0: rasgo em U embaixo das laterais, perto da traseira, com esta largura
+rasgo_cabo_alt  = 10;
 imprimir_de_costas = false;   // true: peça girada com a traseira na mesa (para ângulos baixos)
 janelas_fundo = 0;            // >0: fundo com N janelas de topo em Λ (em vez de um vão só)
 pastilha_rampa = 0;           // >0: lado externo da pastilha a 45° (para imprimir deitado na lateral)
@@ -134,7 +136,15 @@ module cortes() {
         // encaixes das colunas de latão
         for (f = encaixes) na_face() translate([f[0], v2s(f[1]), -encaixe_prof]) cylinder(d = encaixe_d, h = encaixe_prof + 1);
         // furo do cabo atrás
-        translate([0, y_tras + parede/2, furo_tras_z]) rotate([90, 0, 0]) cylinder(d = furo_tras_d, h = parede + 2, center = true);
+        if (furo_tras_d > 0)
+            translate([0, y_tras + parede/2, furo_tras_z]) rotate([90, 0, 0]) cylinder(d = furo_tras_d, h = parede + 2, center = true);
+        // rasgos do cabo embaixo das laterais, perto da traseira
+        if (rasgo_cabo_lado > 0) for (sx = [-1, 1])
+            translate([sx*(W/2 - parede/2), y_tras + moldura_fundo + 2 + rasgo_cabo_lado/2, 0])
+                hull() {
+                    translate([0, 0, rasgo_cabo_alt - rasgo_cabo_lado/2]) rotate([0, 90, 0]) cylinder(d = rasgo_cabo_lado, h = parede + 2, center = true);
+                    translate([0, 0, -1]) cube([parede + 2, rasgo_cabo_lado, e], center = true);
+                }
 }
 
 module suporte() {

@@ -91,6 +91,23 @@ Impressão: o `_ambas.stl` já traz as duas metades lado a lado, na posição ce
 |---|---|---|
 | ![](img/a1_impressao.png) | ![](img/a1_junta.png) | ![](img/a1_montado.png) |
 
+## Versão para colar na parede (36°, paredes de 2 mm)
+
+Para o suporte ficar com a **traseira colada na parede** (ou no balcão), com a tela um pouco mais em pé que a de mesa:
+- tela a **36° da mesa**, **97 mm** de altura (a de mesa tinha 30° e 84 mm);
+- paredes de **2 mm** e face de **3 mm**;
+- **traseira fechada**, sem o furo do cabo: a área inteira serve para colar (fita dupla face forte ou cola);
+- o cabo (USB-C em L, portas para baixo) desce pela abertura e sai por um **rasgo de 12 mm embaixo de cada lateral**, perto da parede;
+- montado: **233 × 144 × 97 mm**; mesmo encaixe da tela, sem parafuso.
+
+Dois arquivos, mesma peça:
+- `stl/suporte_tela10_parede.stl` (`suporte_tela10_parede.scad`): **peça única**, já girada de costas para imprimir sem suporte. Não gire no fatiador. Estimativa: **~4 h 00 min** com camada de 0,28 mm (~4 h 45 min a 0,2 mm), 173 g.
+- `stl/suporte_tela10_parede_a1_ambas.stl` (`suporte_tela10_parede_a1.scad`): **duas metades** deitadas para a A1, com a mesma lingueta da versão A1 (cola na junta). Estimativa: **~3 h 35 min** as duas juntas a 0,28 mm, 173 g. Também há `_direita` e `_esquerda` separadas.
+
+| Em uso | De lado (rasgo do cabo embaixo) | Peça única, posição de impressão | Metades para a A1 |
+|---|---|---|---|
+| ![](img/parede_uso.png) | ![](img/parede_lado.png) | ![](img/parede_impressao.png) | ![](img/parede_a1_impressao.png) |
+
 ## Arquivos
 
 - `stl/suporte_tela10.stl`: o suporte (peça única, versão completa).
@@ -98,6 +115,7 @@ Impressão: o `_ambas.stl` já traz as duas metades lado a lado, na posição ce
 - `stl/suporte_tela10_deitado.stl`: versão mais deitada (35°) e mais grossa, já girada para imprimir de costas.
 - `stl/suporte_tela10_mesa.stl`: versão de mesa pequena, 30°, fina, já girada para imprimir de costas.
 - `stl/suporte_tela10_a1_ambas.stl` (e `_direita` / `_esquerda`): versão para a A1 em duas metades, deitadas na posição de impressão.
+- `stl/suporte_tela10_parede.stl` e `stl/suporte_tela10_parede_a1_ambas.stl` (e `_direita` / `_esquerda`): versão para colar na parede, 36°, paredes de 2 mm, em peça única (de costas) ou em metades para a A1.
 - `suporte_tela10.scad`: modelo paramétrico (OpenSCAD).
 - `montagem_suporte.scad`: só para ver o suporte com a tela (não imprimir).
 - `JC8012P4A1_desenho_guition.pdf`: desenho mecânico da Guition.
