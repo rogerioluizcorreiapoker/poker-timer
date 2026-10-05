@@ -18,7 +18,7 @@
 //      chapa de trás da tela apoia na borda: a tela fica presa pelo próprio
 //      peso, sem parafuso (tira e põe na mão);
 //    - a caixa da tela entra na abertura; o cabo USB-C (de preferência em L)
-//      sai pelo furo de trás ou pelo rebaixo da frente.
+//      sai pelo furo de trás ou pelo túnel da frente, embaixo da tela.
 //
 //  Eixos: X = largura (tela deitada), Y = profundidade (+Y para a frente),
 //  Z para cima. Medidas em mm.
@@ -148,17 +148,19 @@ module suporte() {
         hull() {
             na_face() translate([-abre_u, v2s(-abre_v), 0]) cube([2*abre_u, 2*abre_v, 1]);
             na_face() translate([-abre_u, v2s(-abre_v), -esp_borda - 1])
-                cube([2*abre_u, 2*abre_v - (esp_borda + 1) * 0.365, e]);
+                cube([2*abre_u, 2*abre_v - (esp_borda + 1) * max(0, tan(angulo - 45)), e]);
         }
         // encaixes das colunas de latão
         for (f = encaixes) na_face() translate([f[0], v2s(f[1]), -encaixe_prof]) cylinder(d = encaixe_d, h = encaixe_prof + 1);
         // furo do cabo atrás
         translate([0, y_tras + parede/2, furo_tras_z]) rotate([90, 0, 0]) cylinder(d = furo_tras_d, h = parede + 2, center = true);
-        // rebaixo do cabo na frente, embaixo
+        // passagem do cabo na frente, embaixo: túnel do lado de dentro até a frente
         if (rebaixo_frente_r > 0)
-            translate([0, bico_frente, 0]) rotate([90, 0, 0]) cylinder(r = rebaixo_frente_r, h = 4*parede + 2*bico_frente, center = true);
+            translate([0, -esp_borda - 5, 0]) rotate([-90, 0, 0])
+                cylinder(r = rebaixo_frente_r, h = esp_borda + 5 + bico_frente + 1);
         // furos para prender na mesa (escareados por dentro)
-        if (furos_mesa) for (sx = [-1, 1]) translate([sx*(W/2 - 25), y_tras + parede + 12, 0]) {
+        // (embaixo da abertura: com a tela fora, a chave entra na vertical)
+        if (furos_mesa) for (sx = [-1, 1]) translate([sx*55, -40, 0]) {
             translate([0, 0, -1]) cylinder(d = furo_mesa_d, h = parede + 2);
             translate([0, 0, parede - (cabeca_mesa - furo_mesa_d)/2]) cylinder(d1 = furo_mesa_d, d2 = cabeca_mesa, h = (cabeca_mesa - furo_mesa_d)/2 + e);
         }
