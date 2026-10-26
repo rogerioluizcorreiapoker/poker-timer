@@ -285,3 +285,38 @@ describe('visões', () => {
     expect(t.privateState('b').legalActions).toBeNull();
   });
 });
+
+describe('run-out carta a carta', () => {
+  it('com autoRunout desligado, o board só avança por advanceRunout e as cartas ficam abertas', () => {
+    const t = new Table({ blinds: { sb: 50, bb: 100 }, autoRunout: false });
+    seat(t, [['a', 500], ['b', 500]]);
+    t.startHand();
+    t.act('a', { type: 'allin' });
+    t.act('b', { type: 'call' });
+    expect(t.stage).toBe('preflop');
+    expect(t.runout).toBe(true);
+    expect(t.currentPlayer()).toBeNull();
+    expect(t.publicState().players.every((p) => p.cards?.length === 2)).toBe(true);
+    expect(t.advanceRunout()).toBe(true);
+    expect(t.stage).toBe('flop');
+    t.advanceRunout();
+    expect(t.stage).toBe('turn');
+    t.advanceRunout();
+    expect(t.stage).toBe('finished');
+    expect(t.lastResult.type).toBe('showdown');
+    expect(t.advanceRunout()).toBe(false);
+  });
+
+  it('run-out iniciado no river faz o showdown na primeira chamada', () => {
+    const t = new Table({ blinds: { sb: 50, bb: 100 }, autoRunout: false });
+    seat(t, [['a', 500], ['b', 500]]);
+    t.startHand();
+    t.act('a', { type: 'call' });
+    t.act('b', { type: 'check' });
+    for (let i = 0; i < 2; i++) { t.act('b', { type: 'check' }); t.act('a', { type: 'check' }); }
+    expect(t.stage).toBe('river');
+    t.act('b', { type: 'allin' });
+    t.act('a', { type: 'call' });
+    expect(t.stage).toBe('finished');
+  });
+});

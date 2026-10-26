@@ -4,6 +4,8 @@
 import { randomBytes } from 'node:crypto';
 import { Table } from '../engine/table.js';
 import { buildSchedule, stateAt, cumulativeBefore, nextLevel } from '../blinds/levels.js';
+import { equity } from '../engine/equity.js';
+import { classifyStartingHand, assessAction, requiredEquity } from '../learn/coach.js';
 
 export const DEFAULT_CONFIG = {
   mode: 'torneio', // 'torneio' (blinds sobem com o tempo) | 'cash' (blinds fixos)
@@ -16,6 +18,8 @@ export const DEFAULT_CONFIG = {
   showdownSeconds: 8,
   foldSeconds: 3,
   maxTimeouts: 3, // depois disso o jogador senta fora
+  runoutSeconds: 2.5, // intervalo entre cartas quando todos estão all-in
+  learnMode: false, // modo aprendiz: chances, pot odds e veredito das jogadas no celular
 };
 
 export class Room {
@@ -28,15 +32,20 @@ export class Room {
     this.status = 'lobby'; // lobby | running | paused | ended
     this.hostId = null;
     this.tokens = new Map(); // token -> playerId
-    this.table = new Table({ blinds: { sb: this.config.sb, bb: this.config.bb, bbAnte: this.config.bbAnte } });
+    this.table = new Table({ blinds: { sb: this.config.sb, bb: this.config.bb, bbAnte: this.config.bbAnte }, autoRunout: false });
     this.schedule = buildSchedule(this.config.levelMinutes);
     this.clock = { running: false, startedAt: null, pausedElapsed: 0 };
     this.actionDeadline = null;
     this.actionTimer = null;
     this.handTimer = null;
     this.levelTimer = null;
+    this.runoutTimer = null;
     this.createdAt = this.now();
     this.message = null;
+    this.highlight = null; // destaque da última mão (bad beat etc.)
+    this.equities = null; // { playerId: equity } durante o run-out e no showdown
+    this.runoutStartEquities = null;
+    this.learn = new Map(); // playerId -> { cache: Map, feedback, history }
   }
 
   // ---------- jogadores ----------
@@ -72,6 +81,7 @@ export class Room {
   kick(playerId) {
     this.table.removePlayer(playerId);
     for (const [token, id] of this.tokens) if (id === playerId) this.tokens.delete(token);
+    this.learn.delete(playerId);
     if (this.hostId === playerId) {
       const next = this.table.seatedInOrder().find((p) => !p.leaving);
       this.hostId = next ? next.id : null;
@@ -105,7 +115,7 @@ export class Room {
   setConfig(partial) {
     if (this.status !== 'lobby') {
       // Em jogo só aceita o que não bagunça a mão em andamento.
-      const allowed = ['actionSeconds', 'showdownSeconds', 'bbAnte', 'sb', 'bb', 'mode'];
+      const allowed = ['actionSeconds', 'showdownSeconds', 'bbAnte', 'sb', 'bb', 'mode', 'learnMode', 'runoutSeconds'];
       partial = Object.fromEntries(Object.entries(partial).filter(([k]) => allowed.includes(k)));
     }
     this.config = { ...this.config, ...sanitizeConfig(partial) };
@@ -220,6 +230,10 @@ export class Room {
     }
     this.table.startHand();
     this.message = null;
+    this.highlight = null;
+    this.equities = null;
+    this.runoutStartEquities = null;
+    for (const l of this.learn.values()) { l.cache = new Map(); l.feedback = null; l.history = []; }
     this.afterTableChange();
   }
 
@@ -235,18 +249,130 @@ export class Room {
 
   playerAction(playerId, action) {
     const p = this.table.player(playerId);
+    const feedback = this.config.learnMode && this.table.legalActions(playerId) ? this.assess(playerId, action) : null;
     this.table.act(playerId, action);
     p.timeouts = 0;
+    if (feedback) {
+      const l = this.learnFor(playerId);
+      l.feedback = feedback;
+      l.history.push(feedback);
+    }
     this.afterTableChange();
+  }
+
+  // ---------- modo aprendiz ----------
+
+  learnFor(playerId) {
+    if (!this.learn.has(playerId)) this.learn.set(playerId, { cache: new Map(), feedback: null, history: [] });
+    return this.learn.get(playerId);
+  }
+
+  // Equity do jogador contra os oponentes ainda na mão, com cartas desconhecidas. Cache por rua.
+  playerEquity(playerId) {
+    const p = this.table.players.get(playerId);
+    if (!p || !p.inHand || p.folded || p.cards.length !== 2) return null;
+    const key = `${this.table.handNumber}:${this.table.stage}`;
+    const l = this.learnFor(playerId);
+    if (l.cache.has(key)) return l.cache.get(key);
+    const opponents = this.table.activePlayers().filter((o) => o.id !== playerId).length;
+    const value = opponents === 0 ? 1 : equity({ players: [{ id: playerId, cards: p.cards }], community: this.table.community, unknown: opponents, samples: 400 })[playerId].equity;
+    const entry = { equity: value, opponents };
+    l.cache.set(key, entry);
+    return entry;
+  }
+
+  assess(playerId, action) {
+    const p = this.table.player(playerId);
+    const eq = this.playerEquity(playerId);
+    const toCall = Math.max(0, this.table.highestBet - p.bet);
+    return {
+      stage: this.table.stage,
+      action: action.type,
+      ...assessAction({
+        stage: this.table.stage,
+        action,
+        equity: eq?.equity ?? 0,
+        toCall,
+        pot: this.table.totalPot(),
+        handClass: classifyStartingHand(p.cards),
+        opponents: eq?.opponents ?? 1,
+        stack: p.stack,
+      }),
+    };
+  }
+
+  learnSnapshot(playerId) {
+    if (!this.config.learnMode) return null;
+    const p = this.table.players.get(playerId);
+    const l = this.learnFor(playerId);
+    const out = { feedback: l.feedback, history: l.history };
+    if (p && p.cards.length === 2 && p.inHand && !p.folded) {
+      const eq = this.playerEquity(playerId);
+      const toCall = Math.max(0, this.table.highestBet - p.bet);
+      out.handClass = classifyStartingHand(p.cards);
+      out.equity = eq?.equity ?? null;
+      out.opponents = eq?.opponents ?? 0;
+      out.toCall = toCall;
+      out.required = requiredEquity(toCall, this.table.totalPot());
+    }
+    return out;
+  }
+
+  // ---------- run-out (todos all-in): board carta a carta, com as chances na TV ----------
+
+  computeEquities() {
+    const t = this.table;
+    const players = t.activePlayers().filter((p) => p.cards.length === 2).map((p) => ({ id: p.id, cards: p.cards }));
+    if (players.length < 2) return null;
+    const r = equity({ players, community: t.community, samples: 2000 });
+    return Object.fromEntries(players.map((p) => [p.id, r[p.id].equity]));
+  }
+
+  scheduleRunout() {
+    if (this.runoutTimer) return;
+    this.runoutTimer = this.timers.set(() => {
+      this.runoutTimer = null;
+      this.table.advanceRunout();
+      this.afterTableChange();
+    }, this.config.runoutSeconds * 1000);
+  }
+
+  finishHandExtras() {
+    const r = this.table.lastResult;
+    if (!r) return;
+    if (r.type === 'showdown') {
+      const final = {};
+      for (const w of r.winners) final[w.playerId] = 1;
+      this.equities = Object.keys(r.revealed).length > 1 ? { ...Object.fromEntries(Object.keys(r.revealed).map((id) => [id, 0])), ...final } : null;
+      // Bad beat: quem venceu tinha menos de 25% quando as fichas foram para o meio.
+      if (this.runoutStartEquities) {
+        const winner = r.winners[0];
+        const start = this.runoutStartEquities[winner?.playerId];
+        if (winner && start !== undefined && start < 0.25) {
+          this.highlight = `BAD BEAT! ${this.table.player(winner.playerId).name} tinha ${Math.round(start * 100)}% e virou`;
+        } else if (winner && start !== undefined && start >= 0.75) {
+          this.highlight = null;
+        }
+      }
+    } else {
+      this.equities = null;
+    }
   }
 
   afterTableChange() {
     this.clearTimer('actionTimer');
     this.actionDeadline = null;
     if (this.table.handInProgress()) {
-      const current = this.table.currentPlayer();
-      if (current) this.armActionTimer(current.id);
+      if (this.table.runout) {
+        this.equities = this.computeEquities();
+        this.runoutStartEquities ??= this.equities;
+        this.scheduleRunout();
+      } else {
+        const current = this.table.currentPlayer();
+        if (current) this.armActionTimer(current.id);
+      }
     } else if (this.table.stage === 'finished' && !this.handTimer) {
+      this.finishHandExtras();
       const delay = this.table.lastResult?.type === 'showdown' ? this.config.showdownSeconds : this.config.foldSeconds;
       this.handTimer = this.timers.set(() => {
         this.handTimer = null;
@@ -280,6 +406,7 @@ export class Room {
     this.clearTimer('actionTimer');
     this.clearTimer('handTimer');
     this.clearTimer('levelTimer');
+    this.clearTimer('runoutTimer');
   }
 
   changed() {
@@ -296,6 +423,8 @@ export class Room {
       hostId: this.hostId,
       config: this.config,
       message: this.message,
+      highlight: this.highlight,
+      equities: this.equities,
       serverNow: this.now(),
       actionDeadline: this.actionDeadline,
       actionSeconds: this.config.actionSeconds,
@@ -316,7 +445,7 @@ export class Room {
   }
 
   snapshotFor(playerId) {
-    return { ...this.publicSnapshot(), me: this.table.privateState(playerId), myId: playerId, isHost: playerId === this.hostId };
+    return { ...this.publicSnapshot(), me: this.table.privateState(playerId), learn: this.learnSnapshot(playerId), myId: playerId, isHost: playerId === this.hostId };
   }
 }
 
@@ -345,5 +474,7 @@ function sanitizeConfig(partial) {
   num('levelMinutes', 0, 600);
   num('showdownSeconds', 2, 60);
   if (partial.bbAnte !== undefined) out.bbAnte = Boolean(partial.bbAnte);
+  if (partial.learnMode !== undefined) out.learnMode = Boolean(partial.learnMode);
+  num('runoutSeconds', 1, 10);
   return out;
 }

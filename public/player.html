@@ -50,6 +50,25 @@
   @keyframes pulse { from { opacity: .7; } to { opacity: 1; } }
   .me .best { color: var(--muted); font-size: 14px; }
   .me .result { background: #0c2b14; border: 1px solid var(--green); color: #fff; padding: 10px 14px; border-radius: 12px; text-align: center; font-size: 15px; }
+  /* modo aprendiz */
+  .learn { background: var(--panel); border-radius: 14px; padding: 10px 12px; font-size: 14px; width: 100%; max-width: 420px; }
+  .learn .cls { font-weight: 800; color: var(--cream); }
+  .learn .cls b { color: var(--orange); }
+  .learn .odds { display: flex; justify-content: space-between; gap: 8px; margin: 6px 0; }
+  .learn .odds div { flex: 1; background: #000; border-radius: 10px; padding: 6px; text-align: center; }
+  .learn .odds b { display: block; font-size: 20px; color: var(--green); }
+  .learn .odds small { color: var(--muted); font-size: 11px; }
+  .learn .tip { color: #ddd; }
+  .learn .street { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  .fb { border-radius: 12px; padding: 10px 12px; width: 100%; max-width: 420px; font-size: 14px; border-left: 5px solid #888; background: #141414; }
+  .fb.boa { border-left-color: var(--green); }
+  .fb.ok { border-left-color: #ffd34d; }
+  .fb.erro { border-left-color: var(--red); }
+  .fb b { display: block; margin-bottom: 3px; }
+  .fb ul { margin: 6px 0 0; padding-left: 16px; }
+  .fb li { margin: 2px 0; }
+  .fb li.boa { color: var(--green); } .fb li.ok { color: #ffd34d; } .fb li.erro { color: var(--red); }
+  .board td.eq { color: var(--orange); font-weight: 800; }
   .timerbar { width: 100%; max-width: 360px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
   .timerbar i { display: block; height: 100%; width: 100%; background: var(--orange); }
   .timerbar i.low { background: var(--red); }
@@ -117,6 +136,8 @@
     <div class="best" id="best"></div>
     <div class="stack"><span id="myStack">0</span> <small id="myBet"></small></div>
     <div class="result hidden" id="result"></div>
+    <div class="learn hidden" id="learn"></div>
+    <div class="fb hidden" id="fb"></div>
   </div>
 
   <div class="actions" id="actions">
@@ -167,6 +188,10 @@
         <div class="row">
           <label>Segundos por ação<input name="actionSeconds" type="number" min="5" max="600" /></label>
           <label>Minutos por nível (0 = tabela)<input name="levelMinutes" type="number" min="0" max="600" /></label>
+        </div>
+        <div class="row">
+          <label>Modo aprendiz<select name="learnMode"><option value="false">Desligado</option><option value="true">Ligado: chances e dicas</option></select></label>
+          <label>Segundos entre cartas no all-in<input name="runoutSeconds" type="number" min="1" max="10" /></label>
         </div>
         <button class="btn" type="submit">Salvar configuração</button>
       </form>
@@ -283,6 +308,7 @@ $('cfgForm').onsubmit = (e) => {
   const f = new FormData(e.target);
   const cfg = Object.fromEntries(f.entries());
   cfg.bbAnte = cfg.bbAnte === 'true';
+  cfg.learnMode = cfg.learnMode === 'true';
   socket.emit('host:config', cfg, (res) => toast(res.ok ? 'Configuração salva' : res.error, res.ok ? 'info' : 'error'));
 };
 let cfgFilled = false;
@@ -308,7 +334,7 @@ function render() {
   // topo
   $('topCode').textContent = snap.code;
   $('topBlinds').textContent = blindsText(t.blinds);
-  $('topPot').textContent = fmt(t.pot);
+  $('topPot').textContent = fmtShort(t.pot);
   $('toggleBoard').textContent = showBoard ? 'Esconder mesa' : 'Ver mesa';
 
   // board compacto
@@ -328,7 +354,9 @@ function render() {
       const cls = [p.id === t.currentPlayerId ? 'current' : '', p.folded || p.sittingOut ? 'folded' : ''].join(' ');
       const cards = p.cards ? p.cards.map((x) => x[0].replace('T', '10') + {s:'♠',h:'♥',d:'♦',c:'♣'}[x[1]]).join(' ') : '';
       const st = p.sittingOut ? 'fora' : p.allIn ? 'ALL-IN' : p.folded ? 'fold' : (inProgress(t) && p.lastAction ? ACTION_PT[p.lastAction] : '');
-      return `<tr class="${cls}"><td>${p.seat === t.dealerSeat ? 'Ⓓ ' : ''}${esc(p.name)}${p.id === snap.myId ? ' (você)' : ''}</td><td>${cards}</td><td class="r">${st}</td><td class="r bet">${p.bet ? fmt(p.bet) : ''}</td><td class="r">${fmt(p.stack)}</td></tr>`;
+      const eq = snap.equities?.[p.id];
+      const eqTxt = eq !== undefined && p.cards ? Math.round(eq * 100) + '%' : '';
+      return `<tr class="${cls}"><td>${p.seat === t.dealerSeat ? 'Ⓓ ' : ''}${esc(p.name)}${p.id === snap.myId ? ' (você)' : ''}</td><td>${cards}</td><td class="eq">${eqTxt}</td><td class="r">${st}</td><td class="r bet">${p.bet ? fmt(p.bet) : ''}</td><td class="r">${fmt(p.stack)}</td></tr>`;
     }).join('');
   }
 
@@ -360,6 +388,8 @@ function render() {
   if (t.stage === 'finished' && t.lastResult) { result.textContent = resultText(t); result.classList.remove('hidden'); }
   else result.classList.add('hidden');
 
+  renderLearn(t, me, myTurn);
+
   // ações
   const raising = !$('raisebox').classList.contains('hidden');
   $('actions').classList.toggle('hidden', !myTurn || raising);
@@ -384,6 +414,54 @@ function render() {
     $('hostPlayers').querySelectorAll('[data-add]').forEach((b) => (b.onclick = () => { const v = prompt('Quantas fichas adicionar?', String(snap.config.startingStack)); if (v) socket.emit('host:addChips', { playerId: b.dataset.add, amount: Number(v) }); }));
     $('hostPlayers').querySelectorAll('[data-kick]').forEach((b) => (b.onclick = () => { if (confirm('Remover este jogador?')) socket.emit('host:kick', { playerId: b.dataset.kick }); }));
   }
+}
+
+const STREET_TIP = {
+  preflop: 'Pré-flop: só as suas duas cartas. Decida pela força da mão inicial e pela posição (agir por último é vantagem).',
+  flop: 'Flop: três cartas na mesa. Pergunte: minha mão já é a melhor? Se não, quantas cartas (outs) me salvam?',
+  turn: 'Turn: quarta carta. Resta uma. Cada out vale cerca de 2% de chance agora.',
+  river: 'River: última carta. Não há mais sorte: ou você tem a melhor mão, ou blefa, ou desiste.',
+};
+
+function renderLearn(t, me, myTurn) {
+  const L = snap.learn;
+  const learnEl = $('learn');
+  const fbEl = $('fb');
+  if (!L) { learnEl.classList.add('hidden'); fbEl.classList.add('hidden'); return; }
+
+  // painel de chances (enquanto estou na mão)
+  if (L.handClass && inProgress(t) && !me.folded) {
+    const hc = L.handClass;
+    const eqPct = L.equity !== null ? Math.round(L.equity * 100) : null;
+    const reqPct = Math.round(L.required * 100);
+    let tip = '';
+    if (t.stage === 'preflop') tip = hc.advice;
+    else if (myTurn && L.toCall > 0) tip = L.equity >= L.required ? `Pagar vale a pena: ${eqPct}% de chance contra ${reqPct}% necessários.` : `Pagar sai caro: ${eqPct}% de chance, precisa de ${reqPct}%.`;
+    else if (myTurn) tip = L.equity >= 0.6 ? 'Você é favorito: apostar faz o pote crescer a seu favor.' : 'Mão média: ver a próxima carta de graça é bom.';
+    else tip = eqPct !== null ? `Chance estimada de ${eqPct}% contra ${L.opponents} ${L.opponents === 1 ? 'oponente' : 'oponentes'}.` : '';
+    learnEl.innerHTML = `
+      <div class="cls">${esc(hc.pretty)} · <b>${esc(hc.label)}</b> <small>(grupo ${hc.group} de 9)</small></div>
+      <div class="odds">
+        <div><b>${eqPct ?? '–'}%</b><small>chance de ganhar (estimada, contra ${L.opponents} ${L.opponents === 1 ? 'oponente' : 'oponentes'})</small></div>
+        <div><b>${L.toCall > 0 ? reqPct + '%' : '0%'}</b><small>${L.toCall > 0 ? 'precisa para pagar ' + fmt(L.toCall) : 'nada a pagar'}</small></div>
+      </div>
+      <div class="tip">${esc(tip)}</div>
+      <div class="street">${STREET_TIP[t.stage] ?? ''}</div>`;
+    learnEl.classList.remove('hidden');
+  } else learnEl.classList.add('hidden');
+
+  // veredito da última jogada e resumo da mão
+  const STAGE = { preflop: 'pré-flop', flop: 'flop', turn: 'turn', river: 'river' };
+  if (t.stage === 'finished' && L.history?.length) {
+    fbEl.className = 'fb';
+    fbEl.innerHTML = `<b>Resumo das suas jogadas</b><ul>${L.history.map((h) => `<li class="${h.verdict}">${STAGE[h.stage] ?? h.stage}: ${esc(h.title)}</li>`).join('')}</ul>`;
+    fbEl.classList.remove('hidden');
+  } else if (L.feedback && inProgress(t)) {
+    const f = L.feedback;
+    fbEl.className = 'fb ' + f.verdict;
+    fbEl.innerHTML = `<b>${f.verdict === 'boa' ? '✔' : f.verdict === 'erro' ? '✘' : '•'} ${esc(f.title)}</b>${esc(f.text)}`;
+    fbEl.classList.remove('hidden');
+  } else fbEl.classList.add('hidden');
 }
 
 function resultText(t) {

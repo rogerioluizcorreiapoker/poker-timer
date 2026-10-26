@@ -20,6 +20,17 @@ Registro curto do porquê de cada escolha. Acrescente no fim; não apague o hist
 - **Tabela de blinds copiada do timer original.** Mesmos níveis, mesmo intervalo, para a experiência
   ser a que o grupo já conhece.
 
+## 2026-10-26 · Modo aprendiz
+
+- **Avaliador próprio para simulações.** O pokersolver é lento demais para milhares de amostras. O
+  `evaluator.js` faz ~1 milhão de mãos por segundo. Teste de 3.000 confrontos garante que concordam.
+- **Equity contra mãos aleatórias, não contra ranges.** É uma simplificação assumida e dita na tela.
+  Modelar ranges de verdade é outro projeto; para ensinar pot odds, aleatório basta.
+- **Grupos de Sklansky para o pré-flop.** Tabela conhecida, fácil de explicar ("grupo 2 de 9").
+- **Veredito em três níveis (boa, ok, erro).** Mais granularidade vira falsa precisão.
+- **Run-out com cartas abertas sempre, veredito só no modo aprendiz.** A emoção do all-in é para todos;
+  a aula é opcional.
+
 ## Pendências conhecidas
 
 - `server/src/engine/table.js` está com ~540 linhas, acima do teto de 350. Dividir em `betting.js` e `showdown.js` na próxima rodada, com os testes atuais como rede de segurança.

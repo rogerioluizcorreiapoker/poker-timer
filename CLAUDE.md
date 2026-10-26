@@ -20,6 +20,10 @@ npm run dev        # reinicia sozinho ao salvar
 - **`server/src/rooms/room.js`** liga o motor ao tempo real: timer de ação, relógio de blinds,
   troca automática de mão, reconexão por token. Timers e relógio são injetáveis (ver `room.test.js`).
 - **`server/src/index.js`** só faz Socket.IO e HTTP. Eventos documentados no topo do arquivo.
+- **Dois avaliadores de mão, de propósito.** `hand-rank.js` (pokersolver) decide o showdown e dá o nome
+  da mão. `evaluator.js` é o rápido, usado só nas simulações de chance. Um teste confirma que concordam.
+- **Run-out carta a carta.** A `Room` cria a mesa com `autoRunout: false` e avança o board com timer
+  quando todos estão all-in. Nos testes do motor, o padrão `autoRunout: true` corre tudo de uma vez.
 - **Cada tela recebe só o que pode ver.** `publicState()` para a TV, `privateState(id)` com as cartas
   do jogador. As cartas dos outros só aparecem no `lastResult.revealed` do showdown.
 - **Front sem build.** HTML + CSS + JS puro em `public/`. Socket.IO client vem do próprio servidor.
@@ -39,7 +43,8 @@ npm run dev        # reinicia sozinho ao salvar
 ## Mapa
 
 ```
-server/src/engine/   deck.js, pot.js, hand-rank.js (pokersolver), table.js
+server/src/engine/   deck.js, pot.js, hand-rank.js (pokersolver), evaluator.js (rápido), equity.js, table.js
+server/src/learn/    coach.js (grupos de mãos, pot odds, veredito)
 server/src/blinds/   levels.js (tabela do torneio)
 server/src/rooms/    room.js (sala = mesa + timers + relógio)
 server/src/index.js  servidor HTTP + Socket.IO

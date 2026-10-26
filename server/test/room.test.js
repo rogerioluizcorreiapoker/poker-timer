@@ -150,3 +150,49 @@ describe('Room', () => {
     expect(room.message).toMatch(/venceu/);
   });
 });
+
+describe('run-out e modo aprendiz', () => {
+  it('todos all-in: o board corre carta a carta com as chances e as cartas abertas', () => {
+    const { room, world, ids } = roomWith(['Ana', 'Bia'], { mode: 'cash', actionSeconds: 10, runoutSeconds: 2 });
+    room.start();
+    const cur = room.table.currentPlayer().id;
+    room.playerAction(cur, { type: 'allin' });
+    const other = ids.find((i) => i !== cur);
+    room.playerAction(other, { type: 'call' });
+    expect(room.table.runout).toBe(true);
+    expect(room.table.stage).toBe('preflop');
+    const snap = room.publicSnapshot();
+    expect(snap.equities[ids[0]] + snap.equities[ids[1]]).toBeCloseTo(1, 5);
+    expect(snap.table.players.every((p) => p.cards?.length === 2)).toBe(true);
+    world.advance(2000);
+    expect(room.table.stage).toBe('flop');
+    world.advance(2000);
+    expect(room.table.stage).toBe('turn');
+    world.advance(2000);
+    expect(room.table.stage).toBe('finished');
+    const done = room.publicSnapshot();
+    expect(Object.values(done.equities).sort()).toEqual([0, 1]);
+  });
+
+  it('modo aprendiz: cada ação recebe um veredito e o snapshot traz chance e pot odds', () => {
+    const { room, ids } = roomWith(['Ana', 'Bia', 'Caio'], { mode: 'cash', learnMode: true, actionSeconds: 30 });
+    room.start();
+    const cur = room.table.currentPlayer().id;
+    const before = room.snapshotFor(cur);
+    expect(before.learn.handClass.group).toBeGreaterThanOrEqual(1);
+    expect(before.learn.equity).toBeGreaterThan(0);
+    expect(before.learn.required).toBeCloseTo(200 / 500, 5);
+    room.playerAction(cur, { type: 'fold' });
+    const after = room.snapshotFor(cur);
+    expect(['boa', 'ok', 'erro']).toContain(after.learn.feedback.verdict);
+    expect(after.learn.history).toHaveLength(1);
+    expect(after.learn.feedback.action).toBe('fold');
+    expect(room.snapshotFor(ids[0]).learn).not.toBeNull();
+  });
+
+  it('sem modo aprendiz, o snapshot não traz dados de aprendizado', () => {
+    const { room, ids } = roomWith(['Ana', 'Bia']);
+    room.start();
+    expect(room.snapshotFor(ids[0]).learn).toBeNull();
+  });
+});

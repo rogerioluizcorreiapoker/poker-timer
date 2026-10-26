@@ -19,8 +19,10 @@ import { pickWinners, evaluate } from './hand-rank.js';
 export const STAGES = ['preflop', 'flop', 'turn', 'river'];
 
 export class Table {
-  constructor({ maxSeats = 9, rng = Math.random, blinds = { sb: 100, bb: 200, bbAnte: false } } = {}) {
+  constructor({ maxSeats = 9, rng = Math.random, blinds = { sb: 100, bb: 200, bbAnte: false }, autoRunout = true } = {}) {
     this.maxSeats = maxSeats;
+    this.autoRunout = autoRunout; // false: quem chama avança o board carta a carta com advanceRunout()
+    this.runout = false;
     this.rng = rng;
     this.blinds = { sb: blinds.sb, bb: blinds.bb, bbAnte: Boolean(blinds.bbAnte) };
     this.players = new Map(); // id -> player
@@ -127,6 +129,7 @@ export class Table {
     this.lastResult = null;
     this.log = [];
     this.community = [];
+    this.runout = false;
     this.deck = this.nextDeck ? this.nextDeck.slice() : shuffledDeck(this.rng);
     this.nextDeck = null;
 
@@ -368,13 +371,15 @@ export class Table {
       this.showdown();
       return;
     }
-    this.dealNextStreet();
     if (everyoneDone) {
-      // Ninguém mais pode apostar: corre o board até o river.
+      // Ninguém mais pode apostar: o board corre até o river, de uma vez ou carta a carta.
+      this.runout = true;
+      if (!this.autoRunout) return;
       while (this.stage !== 'river') this.dealNextStreet();
       this.showdown();
       return;
     }
+    this.dealNextStreet();
     this.openRound(this.nextSeat(this.dealerSeat, actable));
   }
 
@@ -389,6 +394,18 @@ export class Table {
       this.community.push(this.deck.pop());
       this.stage = 'river';
     }
+  }
+
+  // Modo carta a carta (autoRunout = false): cada chamada vira a próxima rua; no river, faz o showdown.
+  advanceRunout() {
+    if (!this.runout || !this.handInProgress()) return false;
+    if (this.stage === 'river') {
+      this.showdown();
+      return true;
+    }
+    this.dealNextStreet();
+    if (this.stage === 'river') this.showdown();
+    return true;
   }
 
   // ---------- fim da mão ----------
@@ -472,6 +489,7 @@ export class Table {
 
   closeHand() {
     this.stage = 'finished';
+    this.runout = false;
     this.currentSeat = null;
     this.toAct = new Set();
     for (const p of [...this.players.values()]) {
@@ -499,6 +517,7 @@ export class Table {
     return {
       handNumber: this.handNumber,
       stage: this.stage,
+      runout: this.runout,
       community: this.community,
       pot: this.totalPot(),
       pots: this.handInProgress() ? buildPots(this.contributions()).map((p) => p.amount) : [],
@@ -520,7 +539,8 @@ export class Table {
         sittingOut: p.sittingOut,
         connected: p.connected,
         lastAction: p.lastAction,
-        cards: this.lastResult?.revealed?.[p.id]?.cards ?? null,
+        // Cartas abertas: no showdown, ou durante o run-out (todos all-in, como na TV).
+        cards: this.lastResult?.revealed?.[p.id]?.cards ?? (this.runout && p.inHand && !p.folded ? p.cards : null),
       })),
       lastResult: this.lastResult,
       log: this.log,

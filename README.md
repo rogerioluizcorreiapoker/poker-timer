@@ -66,6 +66,23 @@ O comando imprime um endereço `https://....trycloudflare.com`. Reinicie o servi
 `https://....trycloudflare.com/j/CODIGO` para o amigo remoto. No celular dele, o botão **Ver mesa**
 mostra o board completo.
 
+## Modo aprendiz e all-in com as cartas abertas
+
+Quando todos os que restam estão all-in, o board corre **carta por carta** na TV, com as mãos abertas e a
+chance de cada um atualizada a cada carta, como nas transmissões. Se quem vence tinha menos de 25% quando
+as fichas foram para o meio, a TV anuncia o **bad beat**.
+
+Com **Modo aprendiz** ligado (menu ⚙ do anfitrião), o celular de cada jogador passa a mostrar:
+
+- a classe da mão inicial (de "Premium" a "Para desistir", em 9 grupos) e o conselho para ela;
+- a chance estimada de ganhar contra os oponentes que ainda estão na mão (estimativa contra mãos aleatórias);
+- quanto de chance é preciso para pagar a aposta atual (pot odds);
+- um veredito depois de cada jogada: **boa**, **ok** ou **erro**, com a explicação em uma frase;
+- no fim da mão, o resumo das suas jogadas.
+
+Os números são estimativas e dizem isso na tela. Servem para ensinar a lógica de chance contra custo,
+não para substituir a leitura dos adversários.
+
 ## Configuração
 
 No menu ⚙ do anfitrião:
@@ -78,6 +95,8 @@ No menu ⚙ do anfitrião:
 | Ante do BB | O big blind paga um ante igual ao BB a cada mão. |
 | Segundos por ação | Tempo para agir. Padrão 30. |
 | Minutos por nível | 0 usa a tabela (15/17/20/25 min). Outro valor iguala todos os níveis. |
+| Modo aprendiz | Liga chances, pot odds e veredito das jogadas nos celulares. |
+| Segundos entre cartas no all-in | Ritmo do run-out na TV. Padrão 2,5. |
 
 Durante o torneio o anfitrião pode avançar ou voltar nível. O intervalo da tabela pausa a distribuição
 de mãos sozinho.

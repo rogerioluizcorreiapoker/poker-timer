@@ -34,6 +34,7 @@
     background: rgba(10,10,10,.85); border: .25vw solid #333; border-radius: 1vw; padding: .6vh .6vw;
     text-align: center; font-family: 'Segoe UI', Roboto, sans-serif; transition: border-color .2s, box-shadow .2s;
   }
+  .seat.hasEq { padding-top: 1.5vw; }
   .seat.current { border-color: var(--orange); box-shadow: 0 0 25px var(--orange); }
   .seat.folded { opacity: .45; }
   .seat.out { opacity: .3; }
@@ -42,6 +43,13 @@
   .seat .name .dot { display: inline-block; width: .7vw; height: .7vw; border-radius: 50%; background: var(--red); margin-right: .3vw; vertical-align: middle; }
   .seat .name .dot.on { background: var(--green); }
   .seat .stack { font-size: 1.7vw; color: var(--green); font-weight: 900; }
+  .seat .eq { position: absolute; top: -1.2vw; left: 50%; transform: translateX(-50%); background: #111; color: #fff; border: .2vw solid var(--orange);
+    border-radius: 1vw; padding: .2vh .9vw; font-size: 1.5vw; font-weight: 900; white-space: nowrap; }
+  .seat .eq.hot { border-color: var(--green); color: var(--green); }
+  .seat .eq.cold { border-color: var(--red); color: var(--red); }
+  .learnBadge { position: fixed; left: 1vw; top: 12vh; font-family: 'Segoe UI', sans-serif; font-size: 1vw; color: var(--orange); border: 1px solid var(--orange); border-radius: .5vw; padding: .2vh .6vw; }
+  .msg.alert { color: var(--red); animation: blink 1s infinite alternate; }
+  @keyframes blink { from { opacity: .6; } to { opacity: 1; } }
   .seat .cards { display: flex; gap: .3vw; justify-content: center; margin: .5vh 0; --card-w: 3.2vw; min-height: calc(3.2vw * 1.4); }
   .seat .status { font-size: 1.1vw; color: var(--cream); min-height: 1.4vw; text-transform: uppercase; letter-spacing: .05em; }
   .seat .status.allin { color: var(--red); font-weight: 900; }
@@ -129,6 +137,7 @@
   </footer>
 </div>
 <div class="hint">F = tela cheia</div>
+<div class="learnBadge hidden" id="learnBadge">MODO APRENDIZ</div>
 <script src="/socket.io/socket.io.js"></script>
 <script type="module">
 import { cardEl, fmt, fmtShort, fmtMMSS, ACTION_PT, toast, syncClock, serverNow, blindsText } from '/shared/common.js';
@@ -198,6 +207,8 @@ function render() {
     $('nextBlinds').textContent = String(t.players.filter((p) => !p.sittingOut).length);
   }
 
+  $('learnBadge').classList.toggle('hidden', !snap.config.learnMode);
+
   // lobby x mesa
   const lobby = snap.status === 'lobby';
   $('lobby').classList.toggle('hidden', !lobby);
@@ -236,8 +247,10 @@ function render() {
   else ov.classList.add('hidden');
 
   const msg = $('msg');
-  msg.classList.remove('big');
+  msg.classList.remove('big', 'alert');
   if (snap.message) { msg.textContent = snap.message; msg.classList.add('big'); }
+  else if (t.stage === 'finished' && snap.highlight) { msg.textContent = snap.highlight; msg.classList.add('big', 'alert'); }
+  else if (t.runout) { msg.textContent = 'Todos all-in! Correndo o board…'; msg.classList.add('big'); }
   else if (t.stage === 'finished' && t.lastResult) {
     const r = t.lastResult;
     const names = r.winners.map((w) => `${nameOf(t, w.playerId)} (+${fmt(w.amount)})`).join(', ');
@@ -303,9 +316,9 @@ function renderSeats(t) {
     let status = '';
     let statusClass = '';
     if (p.sittingOut) status = 'Fora';
+    else if (t.stage === 'finished' && t.lastResult?.revealed?.[p.id]) status = t.lastResult.revealed[p.id].handName;
     else if (p.allIn) { status = 'ALL-IN'; statusClass = 'allin'; }
     else if (p.lastAction && inProgress(t)) status = ACTION_PT[p.lastAction] ?? p.lastAction;
-    else if (t.stage === 'finished' && t.lastResult?.revealed?.[p.id]) status = t.lastResult.revealed[p.id].handName;
     if (p.stack === 0 && !p.inHand && !p.allIn) status = 'Eliminado';
 
     el.innerHTML = `
@@ -313,6 +326,14 @@ function renderSeats(t) {
       <div class="stack">${fmt(p.stack)}</div>
     `;
     el.appendChild(cardsHtml);
+    const eq = snap.equities?.[p.id];
+    if (eq !== undefined && showCards) {
+      const e = document.createElement('div');
+      e.className = 'eq ' + (eq >= 0.6 ? 'hot' : eq <= 0.25 ? 'cold' : '');
+      e.textContent = Math.round(eq * 100) + '%';
+      el.appendChild(e);
+      el.classList.add('hasEq');
+    }
     const st = document.createElement('div');
     st.className = 'status ' + statusClass;
     st.textContent = status;
