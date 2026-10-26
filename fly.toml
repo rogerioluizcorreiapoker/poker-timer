@@ -1,0 +1,19 @@
+# Fly.io: uma máquina só, sempre ligada (o estado das mesas fica na memória).
+app = "poker-semipresencial"
+primary_region = "gru"
+
+[build]
+
+[env]
+  PORT = "3000"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

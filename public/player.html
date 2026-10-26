@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#000000" />
+<title>Poker · Jogador</title>
+<link rel="stylesheet" href="/shared/common.css" />
+<style>
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; min-height: 100dvh; -webkit-tap-highlight-color: transparent; }
+  .screen { flex: 1; display: flex; flex-direction: column; padding: 12px 14px; gap: 10px; }
+
+  /* entrada */
+  #join { justify-content: center; align-items: center; text-align: center; }
+  #join h1 { color: var(--orange); font-size: 26px; margin: 0; }
+  #join .code { font-size: 44px; color: var(--green); font-weight: 900; letter-spacing: .2em; }
+  #join input { width: 100%; max-width: 320px; padding: 16px; font-size: 20px; border-radius: 12px; border: 1px solid #444; background: #111; color: #fff; text-align: center; }
+  #join button { width: 100%; max-width: 320px; padding: 16px; font-size: 20px; font-weight: 800; background: var(--orange); color: #000; }
+  #join p { color: var(--muted); font-size: 14px; }
+
+  /* topo */
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .top > div:first-child { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top > div:last-child { flex-shrink: 0; white-space: nowrap; }
+  .top b { color: #fff; }
+  .top .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--red); margin-right: 4px; }
+  .top .dot.on { background: var(--green); }
+  .top button { background: var(--panel-2); color: #fff; padding: 6px 10px; font-size: 13px; }
+
+  /* board compacto (modo remoto) */
+  .board { background: var(--panel); border-radius: 14px; padding: 10px; }
+  .board .community { display: flex; gap: 5px; justify-content: center; --card-w: 46px; }
+  .board .potline { text-align: center; color: var(--cream); margin: 8px 0 6px; font-size: 15px; }
+  .board .potline b { color: var(--green); }
+  .board table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .board td { padding: 3px 4px; border-top: 1px solid #222; }
+  .board tr.current td { color: var(--orange); font-weight: 800; }
+  .board tr.folded td { color: #555; }
+  .board td.r { text-align: right; }
+  .board .bet { color: #ffd34d; }
+
+  /* minha mão */
+  .me { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .me .cards { display: flex; gap: 12px; --card-w: 110px; }
+  .me .stack { font-size: 22px; font-weight: 900; color: var(--green); }
+  .me .stack small { color: var(--muted); font-weight: 400; font-size: 14px; }
+  .me .status { font-size: 18px; color: var(--cream); text-align: center; min-height: 24px; }
+  .me .status.turn { color: var(--orange); font-weight: 900; font-size: 24px; animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { opacity: .7; } to { opacity: 1; } }
+  .me .best { color: var(--muted); font-size: 14px; }
+  .me .result { background: #0c2b14; border: 1px solid var(--green); color: #fff; padding: 10px 14px; border-radius: 12px; text-align: center; font-size: 15px; }
+  .timerbar { width: 100%; max-width: 360px; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
+  .timerbar i { display: block; height: 100%; width: 100%; background: var(--orange); }
+  .timerbar i.low { background: var(--red); }
+
+  /* ações */
+  .actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .actions button { padding: 18px 6px; font-size: 17px; font-weight: 800; color: #fff; background: var(--panel-2); }
+  .actions .fold { background: #5a1212; }
+  .actions .call { background: #0f5a2a; }
+  .actions .raise { background: #8a4a00; }
+  .actions .allin { background: #7a0d0d; grid-column: 1 / -1; padding: 12px; font-size: 15px; }
+  .raisebox { background: var(--panel); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .raisebox .amount { font-size: 30px; font-weight: 900; color: var(--orange); text-align: center; }
+  .raisebox input[type=range] { width: 100%; }
+  .raisebox .presets { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .raisebox .presets button { background: var(--panel-2); color: #fff; padding: 10px 2px; font-size: 13px; }
+  .raisebox .confirm { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+  .raisebox .confirm button { padding: 16px; font-size: 17px; font-weight: 800; }
+  .raisebox .ok { background: var(--orange); color: #000; }
+  .raisebox .cancel { background: var(--panel-2); color: #fff; }
+
+  /* painel do anfitrião */
+  .sheet { position: fixed; inset: 0; background: rgba(0,0,0,.7); display: flex; align-items: flex-end; z-index: 20; }
+  .sheet .inner { background: #111; width: 100%; max-height: 90dvh; overflow: auto; border-radius: 18px 18px 0 0; padding: 16px; }
+  .sheet h2 { margin: 0 0 10px; color: var(--orange); font-size: 18px; }
+  .sheet h3 { margin: 16px 0 6px; color: var(--muted); font-size: 13px; text-transform: uppercase; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+  .row.three { grid-template-columns: 1fr 1fr 1fr; }
+  .sheet label { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); gap: 3px; min-width: 0; }
+  .sheet input, .sheet select { width: 100%; min-width: 0; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #000; color: #fff; }
+  .sheet .btn { padding: 14px; font-weight: 800; color: #fff; background: var(--panel-2); width: 100%; }
+  .sheet .btn.primary { background: var(--orange); color: #000; }
+  .sheet .btn.danger { background: #5a1212; }
+  .sheet table { width: 100%; font-size: 14px; border-collapse: collapse; }
+  .sheet td { padding: 6px 4px; border-top: 1px solid #222; }
+  .sheet td button { padding: 6px 8px; font-size: 12px; background: var(--panel-2); color: #fff; margin-left: 4px; }
+  .sheet .close { margin-top: 14px; }
+</style>
+</head>
+<body>
+<div class="screen" id="join">
+  <h1>POKER</h1>
+  <div class="code" id="joinCode"></div>
+  <input id="name" placeholder="Seu nome" maxlength="16" autocomplete="nickname" />
+  <button id="joinBtn">Entrar na mesa</button>
+  <p>Suas cartas aparecem aqui. Deixe a tela ligada.</p>
+</div>
+
+<div class="screen hidden" id="game">
+  <div class="top">
+    <div><span class="dot" id="conn"></span><b id="topCode"></b> · <span id="topBlinds"></span> · Pote <b id="topPot">0</b></div>
+    <div><span id="topClock"></span> <button id="toggleBoard">Ver mesa</button> <button id="menuBtn">⚙</button></div>
+  </div>
+
+  <div class="board hidden" id="board">
+    <div class="community" id="community"></div>
+    <div class="potline" id="boardMsg"></div>
+    <table><tbody id="boardPlayers"></tbody></table>
+  </div>
+
+  <div class="me">
+    <div class="status" id="status"></div>
+    <div class="timerbar hidden" id="timerbar"><i></i></div>
+    <div class="cards" id="myCards"></div>
+    <div class="best" id="best"></div>
+    <div class="stack"><span id="myStack">0</span> <small id="myBet"></small></div>
+    <div class="result hidden" id="result"></div>
+  </div>
+
+  <div class="actions" id="actions">
+    <button class="fold" id="btnFold">Desistir</button>
+    <button class="call" id="btnCall">Check</button>
+    <button class="raise" id="btnRaise">Subir</button>
+    <button class="allin" id="btnAllin">ALL-IN</button>
+  </div>
+  <div class="raisebox hidden" id="raisebox">
+    <div class="amount" id="raiseAmount">0</div>
+    <input type="range" id="raiseSlider" />
+    <div class="presets">
+      <button data-k="min">Mín</button><button data-k="2.5x">2,5x</button><button data-k="half">½ pote</button><button data-k="pot">Pote</button><button data-k="max">Tudo</button>
+    </div>
+    <div class="confirm"><button class="cancel" id="raiseCancel">Voltar</button><button class="ok" id="raiseOk">Subir para 0</button></div>
+  </div>
+</div>
+
+<div class="sheet hidden" id="menu">
+  <div class="inner">
+    <h2>Menu</h2>
+    <div class="row">
+      <button class="btn" id="sitBtn">Sentar fora</button>
+      <button class="btn" id="renameBtn">Trocar nome</button>
+    </div>
+    <div id="hostPanel" class="hidden">
+      <h3>Anfitrião · Jogo</h3>
+      <div class="row three">
+        <button class="btn primary" id="startBtn">Iniciar</button>
+        <button class="btn" id="pauseBtn">Pausar</button>
+        <button class="btn" id="resumeBtn">Retomar</button>
+      </div>
+      <div class="row" id="levelRow">
+        <button class="btn" id="prevLevel">◀ Nível anterior</button>
+        <button class="btn" id="nextLevel">Próximo nível ▶</button>
+      </div>
+      <h3>Configuração</h3>
+      <form id="cfgForm">
+        <div class="row">
+          <label>Modo<select name="mode"><option value="torneio">Torneio (blinds sobem)</option><option value="cash">Cash (blinds fixos)</option></select></label>
+          <label>Stack inicial<input name="startingStack" type="number" min="100" /></label>
+        </div>
+        <div class="row three">
+          <label>Small blind<input name="sb" type="number" min="1" /></label>
+          <label>Big blind<input name="bb" type="number" min="1" /></label>
+          <label>Ante do BB<select name="bbAnte"><option value="false">Não</option><option value="true">Sim</option></select></label>
+        </div>
+        <div class="row">
+          <label>Segundos por ação<input name="actionSeconds" type="number" min="5" max="600" /></label>
+          <label>Minutos por nível (0 = tabela)<input name="levelMinutes" type="number" min="0" max="600" /></label>
+        </div>
+        <button class="btn" type="submit">Salvar configuração</button>
+      </form>
+      <h3>Jogadores</h3>
+      <table><tbody id="hostPlayers"></tbody></table>
+    </div>
+    <button class="btn close" id="closeMenu">Fechar</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module">
+import { cardEl, fmt, fmtShort, fmtMMSS, ACTION_PT, STAGE_PT, toast, syncClock, serverNow, blindsText } from '/shared/common.js';
+
+const $ = (id) => document.getElementById(id);
+const code = location.pathname.split('/').pop().toUpperCase();
+const KEY = `poker:${code}`;
+const store = {
+  get: (k) => { try { return localStorage.getItem(`${KEY}:${k}`); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(`${KEY}:${k}`, v); } catch {} },
+};
+
+$('joinCode').textContent = code;
+$('name').value = store.get('name') ?? (() => { try { return localStorage.getItem('poker:name') ?? ''; } catch { return ''; } })();
+
+const socket = io();
+let snap = null;
+let joined = false;
+let lastTurnHand = null;
+let showBoard = store.get('board') === '1';
+
+function join() {
+  const name = $('name').value.trim();
+  if (!name) return toast('Digite seu nome', 'error');
+  store.set('name', name);
+  try { localStorage.setItem('poker:name', name); } catch {}
+  socket.emit('player:join', { code, name, token: store.get('token') }, (res) => {
+    if (!res.ok) return toast(res.error, 'error');
+    store.set('token', res.token);
+    joined = true;
+    $('join').classList.add('hidden');
+    $('game').classList.remove('hidden');
+    requestWakeLock();
+  });
+}
+$('joinBtn').onclick = join;
+$('name').addEventListener('keydown', (e) => e.key === 'Enter' && join());
+if (store.get('token') && $('name').value) socket.on('connect', () => !joined && join());
+
+socket.on('connect', () => { $('conn').classList.add('on'); if (joined) join(); });
+socket.on('disconnect', () => $('conn').classList.remove('on'));
+socket.on('toast', (t) => toast(t.text, t.kind));
+socket.on('kicked', () => { toast('Você foi removido da mesa', 'error', 6000); store.set('token', ''); joined = false; setTimeout(() => location.reload(), 3000); });
+socket.on('state', (s) => { snap = s; syncClock(s.serverNow); render(); });
+
+function act(type, amount) {
+  socket.emit('player:action', { type, amount }, (res) => { if (!res.ok) toast(res.error, 'error'); });
+  $('raisebox').classList.add('hidden');
+}
+
+$('btnFold').onclick = () => act('fold');
+$('btnCall').onclick = () => { const l = snap?.me?.legalActions; if (!l) return; act(l.check ? 'check' : 'call'); };
+$('btnAllin').onclick = () => { if (confirm('Ir de ALL-IN com tudo?')) act('allin'); };
+$('btnRaise').onclick = () => openRaise();
+$('raiseCancel').onclick = () => { $('raisebox').classList.add('hidden'); $('actions').classList.remove('hidden'); };
+$('raiseOk').onclick = () => act('raise', Number($('raiseSlider').value));
+$('raiseSlider').oninput = () => updateRaise();
+document.querySelectorAll('.presets button').forEach((b) => (b.onclick = () => preset(b.dataset.k)));
+
+function openRaise() {
+  const l = snap?.me?.legalActions;
+  if (!l?.raise) return;
+  const s = $('raiseSlider');
+  s.min = l.raise.min; s.max = l.raise.max; s.step = Math.max(1, snap.table.blinds.sb);
+  s.value = l.raise.min;
+  updateRaise();
+  $('raisebox').classList.remove('hidden');
+  $('actions').classList.add('hidden');
+}
+function preset(k) {
+  const l = snap.me.legalActions;
+  const t = snap.table;
+  const me = t.players.find((p) => p.id === snap.myId);
+  const toCall = l.call;
+  const potAfterCall = t.pot + toCall;
+  let v = l.raise.min;
+  if (k === 'min') v = l.raise.min;
+  if (k === '2.5x') v = Math.max(l.raise.min, Math.round(t.highestBet * 2.5) || t.blinds.bb * 2.5);
+  if (k === 'half') v = me.bet + toCall + Math.round(potAfterCall / 2);
+  if (k === 'pot') v = me.bet + toCall + potAfterCall;
+  if (k === 'max') v = l.raise.max;
+  v = Math.min(l.raise.max, Math.max(l.raise.min, Math.round(v)));
+  $('raiseSlider').value = v;
+  updateRaise();
+}
+function updateRaise() {
+  const v = Number($('raiseSlider').value);
+  $('raiseAmount').textContent = fmt(v);
+  $('raiseOk').textContent = v >= snap.me.legalActions.raise.max ? 'ALL-IN ' + fmt(v) : 'Subir para ' + fmt(v);
+}
+
+$('toggleBoard').onclick = () => { showBoard = !showBoard; store.set('board', showBoard ? '1' : '0'); render(); };
+$('menuBtn').onclick = () => { $('menu').classList.remove('hidden'); fillConfig(); };
+$('closeMenu').onclick = () => $('menu').classList.add('hidden');
+$('sitBtn').onclick = () => { const me = myPlayer(); socket.emit('player:sit', { out: !me.sittingOut }); $('menu').classList.add('hidden'); };
+$('renameBtn').onclick = () => { const n = prompt('Novo nome', myPlayer()?.name ?? ''); if (n) { socket.emit('player:rename', { name: n }); store.set('name', n); } };
+$('startBtn').onclick = () => { socket.emit('host:start'); $('menu').classList.add('hidden'); };
+$('pauseBtn').onclick = () => socket.emit('host:pause');
+$('resumeBtn').onclick = () => { socket.emit('host:resume'); $('menu').classList.add('hidden'); };
+$('prevLevel').onclick = () => socket.emit('host:level', { delta: -1 });
+$('nextLevel').onclick = () => socket.emit('host:level', { delta: 1 });
+$('cfgForm').onsubmit = (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  const cfg = Object.fromEntries(f.entries());
+  cfg.bbAnte = cfg.bbAnte === 'true';
+  socket.emit('host:config', cfg, (res) => toast(res.ok ? 'Configuração salva' : res.error, res.ok ? 'info' : 'error'));
+};
+let cfgFilled = false;
+function fillConfig() {
+  if (!snap || cfgFilled) return;
+  const f = $('cfgForm');
+  for (const [k, v] of Object.entries(snap.config)) if (f.elements[k]) f.elements[k].value = String(v);
+  cfgFilled = true;
+}
+
+function myPlayer() { return snap?.table.players.find((p) => p.id === snap.myId); }
+function inProgress(t) { return ['preflop', 'flop', 'turn', 'river'].includes(t.stage); }
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+function render() {
+  if (!snap || !joined) return;
+  const t = snap.table;
+  const me = myPlayer();
+  if (!me) return;
+  const legal = snap.me?.legalActions;
+  const myTurn = Boolean(legal);
+
+  // topo
+  $('topCode').textContent = snap.code;
+  $('topBlinds').textContent = blindsText(t.blinds);
+  $('topPot').textContent = fmt(t.pot);
+  $('toggleBoard').textContent = showBoard ? 'Esconder mesa' : 'Ver mesa';
+
+  // board compacto
+  $('board').classList.toggle('hidden', !showBoard);
+  if (showBoard) {
+    const c = $('community');
+    c.innerHTML = '';
+    for (let i = 0; i < 5; i++) c.appendChild(t.community[i] ? cardEl(t.community[i]) : cardEl(null, { placeholder: true }));
+    let msg = STAGE_PT[t.stage] ?? '';
+    if (snap.status === 'lobby') msg = 'Aguardando o anfitrião iniciar';
+    else if (snap.status === 'paused') msg = 'PAUSADO';
+    else if (snap.clock?.inBreak && !inProgress(t)) msg = 'INTERVALO';
+    else if (t.stage === 'finished' && t.lastResult) msg = resultText(t);
+    else if (inProgress(t)) { const cur = t.players.find((p) => p.id === t.currentPlayerId); msg = cur ? `Vez de ${cur.name}` : ''; }
+    $('boardMsg').innerHTML = `${esc(msg)} · Pote <b>${fmt(t.pot)}</b>`;
+    $('boardPlayers').innerHTML = t.players.map((p) => {
+      const cls = [p.id === t.currentPlayerId ? 'current' : '', p.folded || p.sittingOut ? 'folded' : ''].join(' ');
+      const cards = p.cards ? p.cards.map((x) => x[0].replace('T', '10') + {s:'♠',h:'♥',d:'♦',c:'♣'}[x[1]]).join(' ') : '';
+      const st = p.sittingOut ? 'fora' : p.allIn ? 'ALL-IN' : p.folded ? 'fold' : (inProgress(t) && p.lastAction ? ACTION_PT[p.lastAction] : '');
+      return `<tr class="${cls}"><td>${p.seat === t.dealerSeat ? 'Ⓓ ' : ''}${esc(p.name)}${p.id === snap.myId ? ' (você)' : ''}</td><td>${cards}</td><td class="r">${st}</td><td class="r bet">${p.bet ? fmt(p.bet) : ''}</td><td class="r">${fmt(p.stack)}</td></tr>`;
+    }).join('');
+  }
+
+  // minha mão
+  const cards = $('myCards');
+  cards.innerHTML = '';
+  const mine = snap.me?.cards ?? [];
+  if (mine.length) mine.forEach((c) => cards.appendChild(cardEl(c)));
+  else { cards.appendChild(cardEl(null, { placeholder: true })); cards.appendChild(cardEl(null, { placeholder: true })); }
+  $('best').textContent = snap.me?.bestHand ? `Sua mão: ${snap.me.bestHand}` : '';
+  $('myStack').textContent = fmt(me.stack);
+  $('myBet').textContent = me.bet ? `(na mesa: ${fmt(me.bet)})` : '';
+
+  const status = $('status');
+  status.classList.toggle('turn', myTurn);
+  $('timerbar').classList.toggle('hidden', !myTurn);
+  if (snap.status === 'lobby') status.textContent = snap.isHost ? 'Você é o anfitrião. Abra ⚙ para iniciar.' : 'Aguardando o anfitrião iniciar…';
+  else if (snap.status === 'ended') status.textContent = snap.message ?? 'Torneio encerrado';
+  else if (snap.status === 'paused') status.textContent = 'Jogo pausado';
+  else if (me.sittingOut) status.textContent = 'Você está fora. Volte pelo menu ⚙.';
+  else if (me.stack === 0 && !me.inHand) status.textContent = 'Sem fichas. Peça ao anfitrião.';
+  else if (myTurn) status.textContent = legal.call ? `Sua vez · pagar ${fmt(legal.call)}` : 'Sua vez';
+  else if (me.folded) status.textContent = 'Você desistiu desta mão';
+  else if (inProgress(t)) { const cur = t.players.find((p) => p.id === t.currentPlayerId); status.textContent = cur ? `Vez de ${cur.name}` : '…'; }
+  else if (snap.clock?.inBreak) status.textContent = 'Intervalo';
+  else status.textContent = t.stage === 'finished' ? '' : 'Aguardando próxima mão…';
+
+  const result = $('result');
+  if (t.stage === 'finished' && t.lastResult) { result.textContent = resultText(t); result.classList.remove('hidden'); }
+  else result.classList.add('hidden');
+
+  // ações
+  const raising = !$('raisebox').classList.contains('hidden');
+  $('actions').classList.toggle('hidden', !myTurn || raising);
+  if (myTurn) {
+    $('btnCall').textContent = legal.check ? 'Check' : `Pagar ${fmt(legal.call)}`;
+    $('btnRaise').disabled = !legal.raise;
+    $('btnAllin').textContent = `ALL-IN (${fmt(legal.allIn)})`;
+    if (lastTurnHand !== `${t.handNumber}:${t.stage}`) { lastTurnHand = `${t.handNumber}:${t.stage}`; alertTurn(); }
+  } else {
+    $('raisebox').classList.add('hidden');
+  }
+
+  // menu
+  $('sitBtn').textContent = me.sittingOut ? 'Voltar para a mesa' : 'Sentar fora';
+  $('hostPanel').classList.toggle('hidden', !snap.isHost);
+  if (snap.isHost) {
+    $('startBtn').disabled = snap.status !== 'lobby';
+    $('pauseBtn').disabled = snap.status !== 'running';
+    $('resumeBtn').disabled = snap.status !== 'paused';
+    $('levelRow').classList.toggle('hidden', snap.config.mode !== 'torneio');
+    $('hostPlayers').innerHTML = t.players.map((p) => `<tr><td>${esc(p.name)}${p.connected ? '' : ' (offline)'}</td><td>${fmt(p.stack)}</td><td class="r"><button data-add="${p.id}">+ fichas</button><button data-kick="${p.id}">Remover</button></td></tr>`).join('');
+    $('hostPlayers').querySelectorAll('[data-add]').forEach((b) => (b.onclick = () => { const v = prompt('Quantas fichas adicionar?', String(snap.config.startingStack)); if (v) socket.emit('host:addChips', { playerId: b.dataset.add, amount: Number(v) }); }));
+    $('hostPlayers').querySelectorAll('[data-kick]').forEach((b) => (b.onclick = () => { if (confirm('Remover este jogador?')) socket.emit('host:kick', { playerId: b.dataset.kick }); }));
+  }
+}
+
+function resultText(t) {
+  const r = t.lastResult;
+  const names = r.winners.map((w) => `${t.players.find((p) => p.id === w.playerId)?.name ?? '?'} +${fmt(w.amount)}`).join(', ');
+  return r.type === 'fold' ? `${names} leva o pote` : `${names} com ${r.winners[0]?.handName}`;
+}
+
+// relógio e timer de ação
+setInterval(() => {
+  if (!snap) return;
+  const c = snap.clock;
+  if (c) {
+    const rem = c.running ? c.remaining - (serverNow() - snap.serverNow) / 1000 : c.remaining;
+    $('topClock').textContent = c.item.type === 'break' ? `Intervalo ${fmtMMSS(rem)}` : `N${c.item.level} ${fmtMMSS(rem)}`;
+  } else $('topClock').textContent = '';
+  const bar = $('timerbar').querySelector('i');
+  if (snap.actionDeadline && snap.me?.legalActions) {
+    const left = (snap.actionDeadline - serverNow()) / 1000;
+    bar.style.width = Math.max(0, Math.min(100, (left / snap.actionSeconds) * 100)) + '%';
+    bar.classList.toggle('low', left < 8);
+  }
+}, 200);
+
+// aviso de "sua vez": vibração + bip
+let audio = null;
+function alertTurn() {
+  try { navigator.vibrate?.([200, 100, 200]); } catch {}
+  try {
+    audio ??= new (window.AudioContext || window.webkitAudioContext)();
+    const o = audio.createOscillator(); const g = audio.createGain();
+    o.frequency.value = 880; g.gain.value = 0.15; o.connect(g); g.connect(audio.destination);
+    o.start(); o.stop(audio.currentTime + 0.25);
+  } catch {}
+}
+document.addEventListener('click', () => { try { audio ??= new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch {} }, { once: true });
+
+// mantém a tela acesa
+let wakeLock = null;
+async function requestWakeLock() {
+  try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && joined) requestWakeLock(); });
+</script>
+</body>
+</html>

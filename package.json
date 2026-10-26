@@ -1,0 +1,27 @@
+{
+  "name": "poker-semipresencial",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Poker semipresencial: a TV é o board, os jogadores usam o celular.",
+  "type": "module",
+  "main": "server/src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/src/index.js",
+    "dev": "node --watch server/src/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pokersolver": "^2.1.4",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.4",
+    "vitest": "^3.2.4"
+  }
+}

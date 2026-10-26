@@ -1,7 +1,7 @@
 # Esboço: Poker Semipresencial
 
 Data: 2026-10-26
-Estado: proposta inicial para discussão
+Estado: Fase 1 e Fase 2 implementadas (ver README.md). Este documento é o desenho original.
 
 ## 1. A ideia em uma frase
 
